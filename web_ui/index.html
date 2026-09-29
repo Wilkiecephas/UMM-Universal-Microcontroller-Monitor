@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="home">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sanctuary OS | Virtual House & Smart Monitor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- Top Navigation Header with Full Routing Links -->
+  <header class="navbar">
+    <div class="brand">
+      <a href="#monitor" class="brand-link">
+        <div class="brand-logo">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/>
+            <path d="M9 21V12h6v9"/>
+          </svg>
+        </div>
+        <div class="brand-title-wrap">
+          <h1 class="brand-title" id="displayFacilityName">KyU Telemetry Lab 4</h1>
+        </div>
+      </a>
+      <button class="btn-icon-subtle" id="btnEditFacility" title="Rename Facility">✏️</button>
+    </div>
+
+    <!-- Active Navigation Routing Tabs -->
+    <nav class="nav-tabs" id="mainNavTabs">
+      <a href="#monitor" class="nav-tab active" data-tab="virtual-house">
+        <span class="tab-icon">🏠</span> Monitor
+      </a>
+      <a href="#sensors" class="nav-tab" data-tab="telemetry">
+        <span class="tab-icon">📊</span> Sensors
+      </a>
+      <a href="#controls" class="nav-tab" data-tab="controls">
+        <span class="tab-icon">🌿</span> Controls
+      </a>
+      <a href="#gallery" class="nav-tab" data-tab="media-gallery">
+        <span class="tab-icon">📸</span> Gallery
+      </a>
+      <a href="#alarms" class="nav-tab" data-tab="alarms">
+        <span class="tab-icon">🔔</span> Alarms
+      </a>
+      <a href="#reports" class="nav-tab" data-tab="reports">
+        <span class="tab-icon">📑</span> Reports
+      </a>
+      <a href="#servers" class="nav-tab" data-tab="cloud-servers">
+        <span class="tab-icon">🌐</span> Cloud & Servers
+      </a>
+      <a href="#setup" class="nav-tab" data-tab="facility-rooms">
+        <span class="tab-icon">🏢</span> Setup & Pins
+      </a>
+    </nav>
+
+    <!-- Header Tools: 10 Themes, Connection Pill & Engineering IDE Link -->
+    <div class="header-actions">
+      <!-- 10 Theme Environment Selector -->
+      <select class="theme-select" id="themeSelect" title="Select Theme Environment">
+        <option value="home" selected>🏡 Home</option>
+        <option value="office">💼 Office</option>
+        <option value="workshop">🔨 Workshop</option>
+        <option value="space">🚀 Space</option>
+        <option value="cyber">⚡ Cyber</option>
+        <option value="lab">🔬 Lab</option>
+        <option value="garden">🌿 Garden</option>
+        <option value="night">🌙 Night</option>
+        <option value="ocean">🌊 Ocean</option>
+        <option value="industrial">🏭 Industrial</option>
+      </select>
+
+      <!-- Connection Status Pill -->
+      <div class="connection-status-pill" id="globalConnStatus">
+        <span class="status-dot waiting" id="globalConnDot"></span>
+        <span class="status-label" id="globalConnLabel">Awaiting Board</span>
+      </div>
+
+      <!-- Segregated IDE Route Button -->
+      <a href="#ide" class="btn btn-secondary btn-sm" id="btnToggleEngineering" title="Open Hardware IDE & Serial Terminal">
+        <span>⚡</span> IDE
+      </a>
+    </div>
+  </header>
+
+  <!-- ======================================================================= -->
+  <!-- MAIN WORKSPACE CONTAINER (ROUTED PAGES)                                  -->
+  <!-- ======================================================================= -->
+  <main class="main-container">
+
+    <!-- ===================================================================== -->
+    <!-- TAB 1: HOME MONITOR (HERO HOUSE + LIVE CAMERA FEED + ROUTE BUTTONS)   -->
+    <!-- ===================================================================== -->
+    <section id="tab-virtual-house" class="tab-content active">
+      
+      <!-- Top Action Navigation Bar (Routes directly to each section) -->
+      <div class="monitor-lead-bar">
+        <div class="status-summary-group">
+          <span class="badge badge-peaceful" id="houseOverallStatus">🏡 All Systems Serene & Safe</span>
+          <span class="meta-detail" id="houseTimeIndicator">--:--:--</span>
+        </div>
+
+        <div class="lead-buttons-group">
+          <a href="#sensors" class="lead-btn" id="btnRouteSensors">
+            <span class="lead-btn-icon">📊</span>
+            <div class="lead-btn-text">
+              <span class="lead-btn-title">Live Sensors</span>
+              <span class="lead-btn-sub" id="btnSubSensors">6 Channels Active</span>
+            </div>
+          </a>
+
+          <a href="#controls" class="lead-btn" id="btnRouteControls">
+            <span class="lead-btn-icon">🌿</span>
+            <div class="lead-btn-text">
+              <span class="lead-btn-title">Controls</span>
+              <span class="lead-btn-sub" id="btnSubControls">Fan, Window, Chime</span>
+            </div>
+          </a>
+
+          <a href="#gallery" class="lead-btn" id="btnRouteGallery">
+            <span class="lead-btn-icon">📸</span>
+            <div class="lead-btn-text">
+              <span class="lead-btn-title">Evidence Gallery</span>
+              <span class="lead-btn-sub" id="btnSubGallery">Snapshots Saved</span>
+            </div>
+          </a>
+
+          <button class="lead-btn lead-btn-test" id="btnToggleTestMode">
+            <span class="lead-btn-icon">🧪</span>
+            <div class="lead-btn-text">
+              <span class="lead-btn-title">Test Simulator</span>
+              <span class="lead-btn-sub" id="btnSubTest">Click to Enable</span>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Test Simulator Trigger Bar (Visible when Test Mode is turned on) -->
+      <div class="sim-interactive-bar" id="simInteractiveBar" style="display: none;">
+        <span class="sim-badge">🧪 Simulation Mode Active:</span>
+        <button class="btn btn-secondary btn-sm" id="btnTriggerMotion">🚶 Simulate PIR Motion</button>
+        <button class="btn btn-secondary btn-sm" id="btnToggleDoor">🚪 Open/Close Door (Reed)</button>
+        <button class="btn btn-secondary btn-sm" id="btnTriggerGas">💨 Simulate Gas Leak (MQ-2)</button>
+        <button class="btn btn-primary btn-sm" id="btnResetHouse">🌿 Normalize All</button>
+      </div>
+
+      <!-- Monitor Main View: Floor Plan (Left) + Live Camera Stream & Quick Status (Right) -->
+      <div class="monitor-grid">
+        
+        <!-- Floor Plan Card -->
+        <div class="floorplan-hero-card">
+          <div class="card-header" style="margin-bottom: 6px;">
+            <span class="card-title">Virtual Model House Twin</span>
+            <span class="meta-detail">Click any room to view details</span>
+          </div>
+
+          <div class="floorplan-hero-wrapper" id="floorplanWrapper">
+            <svg id="houseSvg" viewBox="0 0 900 560" preserveAspectRatio="xMidYMid meet">
+              <defs>
+                <filter id="alarmGlow" x="-30%" y="-30%" width="160%" height="160%">
+                  <feGaussianBlur stdDeviation="14" result="blur"/>
+                  <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+                </filter>
+              </defs>
+
+              <rect x="20" y="20" width="860" height="520" rx="18" class="house-outer-wall"/>
+
+              <!-- Room 1: Front Entrance (Reed Switch) -->
+              <g class="room-group clickable-room" id="room-porch" data-room="Front Entrance">
+                <rect x="35" y="35" width="240" height="230" rx="12" class="room-floor"/>
+                <text x="50" y="65" class="room-label" id="lblRoomEntrance">Front Entrance</text>
+                <text x="50" y="85" class="room-sublabel">Magnetic Reed Switch</text>
+                <path d="M 35 150 L 35 220" class="door-frame" />
+                <line id="doorSwing" x1="35" y1="150" x2="35" y2="220" class="door-leaf" />
+                <g id="marker-reed" class="sensor-marker" transform="translate(70, 180)">
+                  <circle r="16" class="marker-circle reed-circle"/>
+                  <text y="5" text-anchor="middle" class="marker-icon">🚪</text>
+                </g>
+                <text x="100" y="185" class="marker-reading" id="txtReedStatus">Door Closed</text>
+              </g>
+
+              <!-- Room 2: Living Room (PIR & ESP32-CAM) -->
+              <g class="room-group clickable-room" id="room-living" data-room="Living Room">
+                <rect x="290" y="35" width="340" height="290" rx="12" class="room-floor"/>
+                <text x="310" y="65" class="room-label" id="lblRoomLiving">Living Room</text>
+                <text x="310" y="85" class="room-sublabel">ESP32-CAM & Motion</text>
+                <rect x="340" y="120" width="160" height="50" rx="8" class="furniture sofa"/>
+                <rect x="360" y="190" width="120" height="35" rx="4" class="furniture table"/>
+                <path id="cameraCone" d="M 590 60 L 400 130 L 440 260 Z" class="camera-cone" />
+                <g id="marker-cam" class="sensor-marker" transform="translate(590, 60)">
+                  <circle r="16" class="marker-circle cam-circle"/>
+                  <text y="5" text-anchor="middle" class="marker-icon">📷</text>
+                </g>
+                <g id="marker-pir" class="sensor-marker" transform="translate(330, 260)">
+                  <circle r="16" class="marker-circle pir-circle"/>
+                  <text y="5" text-anchor="middle" class="marker-icon">🚶</text>
+                </g>
+                <text x="360" y="265" class="marker-reading" id="txtPirStatus">No Motion</text>
+              </g>
+
+              <!-- Room 3: Kitchen (MQ-2 Gas Sensor & Fan) -->
+              <g class="room-group clickable-room" id="room-kitchen" data-room="Kitchen">
+                <rect x="645" y="35" width="220" height="290" rx="12" class="room-floor"/>
+                <text x="660" y="65" class="room-label" id="lblRoomKitchen">Kitchen</text>
+                <text x="660" y="85" class="room-sublabel">MQ-2 Gas & Exhaust</text>
+                <rect x="730" y="120" width="115" height="70" rx="6" class="furniture stove"/>
+                <circle cx="760" cy="155" r="14" class="burner"/>
+                <circle cx="805" cy="155" r="14" class="burner"/>
+                <g id="marker-gas" class="sensor-marker" transform="translate(685, 155)">
+                  <circle r="16" class="marker-circle gas-circle"/>
+                  <text y="5" text-anchor="middle" class="marker-icon">💨</text>
+                </g>
+                <text x="660" y="240" class="marker-reading" id="txtGasStatus">Air: Clean</text>
+                <g id="fanGraphic" class="fan-icon" transform="translate(820, 65)">
+                  <circle r="14" class="fan-housing"/>
+                  <path d="M 0 -8 L 0 8 M -8 0 L 8 0" class="fan-blades"/>
+                </g>
+                <text x="730" y="70" class="marker-subtle" id="txtFanStatus">Fan: Off</text>
+              </g>
+
+              <!-- Room 4: Master Bedroom (DHT22 & Ultrasonic) -->
+              <g class="room-group clickable-room" id="room-bed" data-room="Master Haven">
+                <rect x="35" y="280" width="380" height="245" rx="12" class="room-floor"/>
+                <text x="50" y="310" class="room-label" id="lblRoomBedroom">Master Haven</text>
+                <text x="50" y="330" class="room-sublabel">DHT22 Climate Haven</text>
+                <rect x="70" y="360" width="130" height="135" rx="8" class="furniture bed"/>
+                <g id="marker-dht" class="sensor-marker" transform="translate(260, 390)">
+                  <circle r="16" class="marker-circle dht-circle"/>
+                  <text y="5" text-anchor="middle" class="marker-icon">🌡️</text>
+                </g>
+                <text x="290" y="385" class="marker-reading" id="txtTempReading">-- °C</text>
+                <text x="290" y="405" class="marker-subtle" id="txtHumReading">-- %</text>
+                <g id="marker-ultra" class="sensor-marker" transform="translate(260, 460)">
+                  <circle r="14" class="marker-circle ultra-circle"/>
+                  <text y="4" text-anchor="middle" class="marker-icon">📡</text>
+                </g>
+                <text x="290" y="465" class="marker-subtle" id="txtDistReading">Clear: -- cm</text>
+              </g>
+
+              <!-- Room 5: Utility & Mains Power (ZMPT101B, ACS712, GSM) -->
+              <g class="room-group clickable-room" id="room-utility" data-room="Power Utility">
+                <rect x="430" y="340" width="435" height="185" rx="12" class="room-floor"/>
+                <text x="450" y="370" class="room-label" id="lblRoomUtility">Power & Communications Utility</text>
+                <text x="450" y="390" class="room-sublabel">UEDCL Grid, SIM800L GSM</text>
+                <rect x="455" y="420" width="85" height="85" rx="6" class="furniture panel-box"/>
+                <g id="marker-power" class="sensor-marker" transform="translate(580, 440)">
+                  <circle r="16" class="marker-circle volt-circle"/>
+                  <text y="5" text-anchor="middle" class="marker-icon">⚡</text>
+                </g>
+                <text x="610" y="435" class="marker-reading" id="txtVoltageReading">-- V AC</text>
+                <text x="610" y="455" class="marker-subtle" id="txtPowerReading">-- W</text>
+                <g id="marker-gsm" class="sensor-marker" transform="translate(740, 440)">
+                  <circle r="16" class="marker-circle gsm-circle"/>
+                  <text y="5" text-anchor="middle" class="marker-icon">📶</text>
+                </g>
+                <text x="770" y="435" class="marker-reading" id="txtGsmCarrier">SIM800L</text>
+                <text x="770" y="455" class="marker-subtle" id="txtGsmStatus">SMS Armed</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Right Side: Live Camera Viewfinder Directly on Monitor + Quick Vitals -->
+        <div class="monitor-sidebar">
+          
+          <!-- Live Camera Card (Directly visible on Monitor) -->
+          <div class="card monitor-camera-card">
+            <div class="card-header">
+              <div class="card-icon-title">
+                <span class="card-icon">📷</span>
+                <div>
+                  <h3 class="card-title">Live ESP32-CAM Stream</h3>
+                  <span class="pin-tag">Living Room Stream</span>
+                </div>
+              </div>
+              <span class="live-pill" id="cameraLivePill">ONLINE</span>
+            </div>
+            
+            <div class="viewfinder-frame">
+              <canvas id="cameraCanvas" width="320" height="240"></canvas>
+              <div class="viewfinder-overlay">
+                <span class="timestamp-badge" id="cameraTimestamp">--:--:--</span>
+                <span class="detection-badge" id="cameraDetectBadge">Area Normal</span>
+              </div>
+            </div>
+
+            <div class="camera-card-actions">
+              <button class="btn btn-primary btn-sm" id="btnSnapPhoto">
+                📸 Snapshot
+              </button>
+              <button class="btn btn-secondary btn-sm" id="btnSimSubject">
+                👤 Test Subject
+              </button>
+              <a href="#gallery" class="btn btn-secondary btn-sm">
+                📂 Gallery
+              </a>
+            </div>
+          </div>
+
+          <!-- Quick Vitals Pill Card -->
+          <div class="card monitor-vitals-card">
+            <div class="card-header" style="margin-bottom: 8px;">
+              <h3 class="card-title">Sanctuary Vitals</h3>
+              <a href="#sensors" class="meta-detail" style="color:var(--accent-primary); font-weight:700;">View All ↗</a>
+            </div>
+            <div class="vital-row">
+              <span class="vital-label">🌿 Atmosphere</span>
+              <span class="vital-value badge-soft-green" id="vitalComfort">Awaiting Signal</span>
+            </div>
+            <div class="vital-row">
+              <span class="vital-label">💨 Air Purity</span>
+              <span class="vital-value badge-soft-green" id="vitalGas">Awaiting Signal</span>
+            </div>
+            <div class="vital-row">
+              <span class="vital-label">🚪 Front Door</span>
+              <span class="vital-value badge-soft-green" id="vitalDoor">Awaiting Signal</span>
+            </div>
+            <div class="vital-row">
+              <span class="vital-label">⚡ UEDCL Grid</span>
+              <span class="vital-value badge-soft-green" id="vitalPower">Awaiting Signal</span>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 2: LIVE SENSORS & METRICS DASHBOARD                               -->
+    <!-- ===================================================================== -->
+    <section id="tab-telemetry" class="tab-content">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Physical Sensors Telemetry</h2>
+          <p class="section-desc">Real-time signals ingested via Web Serial (Arduino / ESP32) or Wi-Fi</p>
+        </div>
+        <a href="#monitor" class="btn btn-secondary btn-sm">← Back to Monitor</a>
+      </div>
+
+      <div class="cards-grid">
+        <div class="card metric-card">
+          <div class="card-header">
+            <div class="card-icon-title">
+              <span class="card-icon">🌡️</span>
+              <div>
+                <h3 class="card-title">Temperature & Humidity</h3>
+                <span class="pin-tag">DHT22 (GPIO 13)</span>
+              </div>
+            </div>
+            <span class="badge badge-peaceful" id="badgeDht">Normal</span>
+          </div>
+          <div class="big-metric"><span class="val" id="cardTemp">--</span><span class="unit">°C</span></div>
+          <div class="sub-metric"><span>Humidity: <strong id="cardHum">--</strong>%</span>
+            <div class="mini-bar-track"><div class="mini-bar-fill" id="barHum" style="width: 0%;"></div></div>
+          </div>
+        </div>
+
+        <div class="card metric-card">
+          <div class="card-header">
+            <div class="card-icon-title">
+              <span class="card-icon">💨</span>
+              <div>
+                <h3 class="card-title">MQ-2 Gas / Smoke</h3>
+                <span class="pin-tag">ADC1_0 (GPIO 36 / A0)</span>
+              </div>
+            </div>
+            <span class="badge badge-peaceful" id="badgeGas">Clean</span>
+          </div>
+          <div class="big-metric"><span class="val" id="cardGas">--</span><span class="unit">ppm</span></div>
+          <div class="sub-metric"><span>Threshold: <strong>350 ppm</strong></span>
+            <div class="mini-bar-track"><div class="mini-bar-fill" id="barGas" style="width: 0%;"></div></div>
+          </div>
+        </div>
+
+        <div class="card metric-card">
+          <div class="card-header">
+            <div class="card-icon-title">
+              <span class="card-icon">⚡</span>
+              <div>
+                <h3 class="card-title">UEDCL Mains Voltage</h3>
+                <span class="pin-tag">ZMPT101B (GPIO 39 / A1)</span>
+              </div>
+            </div>
+            <span class="badge badge-peaceful" id="badgeVolt">Normal</span>
+          </div>
+          <div class="big-metric"><span class="val" id="cardVolt">--</span><span class="unit">V</span></div>
+          <div class="sub-metric"><span>Nominal Range: <strong>180V – 260V</strong></span>
+            <div class="mini-bar-track"><div class="mini-bar-fill" id="barVolt" style="width: 0%;"></div></div>
+          </div>
+        </div>
+
+        <div class="card metric-card">
+          <div class="card-header">
+            <div class="card-icon-title">
+              <span class="card-icon">🔌</span>
+              <div>
+                <h3 class="card-title">AC Current & Load Power</h3>
+                <span class="pin-tag">ACS712 (GPIO 34 / A2)</span>
+              </div>
+            </div>
+            <span class="badge badge-peaceful">Active</span>
+          </div>
+          <div class="big-metric"><span class="val" id="cardPower">--</span><span class="unit">W</span></div>
+          <div class="sub-metric"><span>Current: <strong id="cardCurrent">--</strong> A (Energy: <span id="cardKwh">0.00</span> kWh)</span></div>
+        </div>
+
+        <div class="card metric-card">
+          <div class="card-header">
+            <div class="card-icon-title">
+              <span class="card-icon">🚪</span>
+              <div>
+                <h3 class="card-title">Front Door Reed Switch</h3>
+                <span class="pin-tag">GPIO 14 / D2</span>
+              </div>
+            </div>
+            <span class="badge badge-peaceful" id="badgeReed">Closed</span>
+          </div>
+          <div class="big-metric"><span class="val" id="cardReed">CLOSED</span></div>
+          <div class="sub-metric"><span>Barrier: Circuit Intact (Pullup)</span></div>
+        </div>
+
+        <div class="card metric-card">
+          <div class="card-header">
+            <div class="card-icon-title">
+              <span class="card-icon">🚶</span>
+              <div>
+                <h3 class="card-title">PIR Motion & Proximity</h3>
+                <span class="pin-tag">GPIO 12 / GPIO 15</span>
+              </div>
+            </div>
+            <span class="badge badge-peaceful" id="badgePir">Quiet</span>
+          </div>
+          <div class="big-metric"><span class="val" id="cardDist">--</span><span class="unit">cm</span></div>
+          <div class="sub-metric"><span>Status: <strong id="cardPirText">No Movement</strong></span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 3: CONTROLS & ACTUATORS                                           -->
+    <!-- ===================================================================== -->
+    <section id="tab-controls" class="tab-content">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Home Automation & Controls</h2>
+          <p class="section-desc">Manage physical relays, ventilation, security routines, and emergency chimes</p>
+        </div>
+        <a href="#monitor" class="btn btn-secondary btn-sm">← Back to Monitor</a>
+      </div>
+
+      <div class="cards-grid">
+        <div class="card control-card">
+          <div class="card-header">
+            <div class="card-icon-title">
+              <span class="card-icon">🌀</span>
+              <div>
+                <h3 class="card-title">Kitchen Exhaust Fan</h3>
+                <span class="pin-tag">Relay 1: GPIO 4</span>
+              </div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="toggleFan">
+              <span class="slider round"></span>
+            </label>
+          </div>
+          <p class="control-note">Turns on automatically during high gas concentration or via manual switch.</p>
+        </div>
+
+        <div class="card control-card">
+          <div class="card-header">
+            <div class="card-icon-title">
+              <span class="card-icon">🪟</span>
+              <div>
+                <h3 class="card-title">Smart Airflow Window</h3>
+                <span class="pin-tag">Servo: GPIO 2</span>
+              </div>
+            </div>
+            <span class="control-badge" id="lblWindowPercent">45% Ajar</span>
+          </div>
+          <input type="range" min="0" max="100" value="45" class="range-slider" id="sliderWindow">
+          <div class="range-labels">
+            <span>Closed (0%)</span>
+            <span>Ajar (50%)</span>
+            <span>Open (100%)</span>
+          </div>
+        </div>
+
+        <div class="card control-card">
+          <div class="card-header">
+            <div class="card-icon-title">
+              <span class="card-icon">🌙</span>
+              <div>
+                <h3 class="card-title">Night Guard Auto-Arm</h3>
+                <span class="pin-tag">10 PM - 6 AM Routine</span>
+              </div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="toggleNightGuard" checked>
+              <span class="slider round"></span>
+            </label>
+          </div>
+          <p class="control-note">Automatically engages after 10:00 PM: triggers camera snapshot & SMS on unauthorized movement.</p>
+        </div>
+
+        <div class="card control-card">
+          <div class="card-header">
+            <div class="card-icon-title">
+              <span class="card-icon">🔔</span>
+              <div>
+                <h3 class="card-title">Alarm Sounder (Buzzer)</h3>
+                <span class="pin-tag">Piezo: GPIO 33</span>
+              </div>
+            </div>
+            <button class="btn btn-secondary btn-sm" id="btnTestBuzzer">Test Chime (2s)</button>
+          </div>
+          <p class="control-note">Audible 85dB piezoelectric siren for emergency gas leaks and intrusions.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 4: EVIDENCE PHOTO GALLERY                                         -->
+    <!-- ===================================================================== -->
+    <section id="tab-media-gallery" class="tab-content">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Evidence & Photo Gallery</h2>
+          <p class="section-desc">Snapshots captured by the ESP32-CAM or security breach triggers</p>
+        </div>
+        <div class="house-actions">
+          <button class="btn btn-primary btn-sm" id="btnCaptureNewPhoto">📸 Capture Now</button>
+          <button class="btn btn-secondary btn-sm" id="btnClearGallery">🗑️ Clear Gallery</button>
+        </div>
+      </div>
+      <div class="gallery-grid" id="photoGalleryContainer">
+        <!-- Dynamically rendered -->
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 5: SYSTEM ALARMS & LOGS                                           -->
+    <!-- ===================================================================== -->
+    <section id="tab-alarms" class="tab-content">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">System Alarm History</h2>
+          <p class="section-desc">Log of door breaches, gas warnings, and electrical grid deviations</p>
+        </div>
+        <button class="btn btn-secondary btn-sm" id="btnClearAlarmLogs">Clear History</button>
+      </div>
+      <div class="card">
+        <div class="table-responsive">
+          <table class="sensor-table">
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>Category</th>
+                <th>Sensor</th>
+                <th>Detail</th>
+                <th>Action Taken</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="alarmLogTableBody">
+              <!-- Dynamically rendered -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 6: PDF REPORTS GENERATOR                                          -->
+    <!-- ===================================================================== -->
+    <section id="tab-reports" class="tab-content">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Automated PDF Report Generator</h2>
+          <p class="section-desc">Generate official Daily, Weekly, or Monthly engineering reports</p>
+        </div>
+      </div>
+      <div class="reports-layout">
+        <div class="card report-config-card">
+          <h3 class="card-title">Report Settings</h3>
+          <div class="form-group" style="margin-top: 12px;">
+            <label class="input-label">Report Period</label>
+            <select class="input-control" id="reportPeriodSelect">
+              <option value="Daily">Daily Summary (24 Hours)</option>
+              <option value="Weekly" selected>Weekly Review (7 Days)</option>
+              <option value="Monthly">Monthly Comprehensive (30 Days)</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-top: 10px;">
+            <label class="input-label">Format Type</label>
+            <label class="radio-label">
+              <input type="radio" name="reportType" value="brief" checked>
+              <span><strong>Brief Summary:</strong> Telemetry vitals & incident summary</span>
+            </label>
+            <label class="radio-label" style="margin-top: 6px;">
+              <input type="radio" name="reportType" value="full">
+              <span><strong>Full Engineering:</strong> Health checks, wiring matrices, and code</span>
+            </label>
+          </div>
+          <div style="margin-top: 18px; display: flex; gap: 8px;">
+            <button class="btn btn-primary" id="btnDownloadPdf">📥 Download PDF</button>
+            <button class="btn btn-secondary" id="btnPreviewReport">👁️ Preview</button>
+          </div>
+        </div>
+
+        <div class="card report-preview-card">
+          <h3 class="card-title">Document Preview</h3>
+          <div class="report-paper" id="reportPreviewContent">
+            <!-- Dynamically generated preview -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 7: CLOUD & MULTI-SERVER INTEGRATION GATEWAY                      -->
+    <!-- ===================================================================== -->
+    <section id="tab-cloud-servers" class="tab-content">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Cloud & Multi-Server Gateway</h2>
+          <p class="section-desc">Configure, monitor, and test real-time servers: Telegram Bot, Discord, Google Colab ML, and Blynk IoT</p>
+        </div>
+        <div class="house-actions">
+          <button class="btn btn-secondary btn-sm" id="btnTestAllServers">🚀 Test All Enabled</button>
+          <button class="btn btn-primary btn-sm" id="btnSaveServerConfigs">💾 Save Settings</button>
+        </div>
+      </div>
+
+      <!-- Server Gateway Summary Metrics -->
+      <div class="server-summary-bar">
+        <div class="server-stat-chip">
+          <span class="chip-label">Active Cloud Relays:</span>
+          <strong id="statActiveServers">4 Connected</strong>
+        </div>
+        <div class="server-stat-chip">
+          <span class="chip-label">Alerts Dispatched:</span>
+          <strong id="statDispatchedAlerts">28 Today</strong>
+        </div>
+        <div class="server-stat-chip">
+          <span class="chip-label">Avg Cloud Latency:</span>
+          <strong id="statCloudLatency">42 ms</strong>
+        </div>
+        <div class="server-stat-chip">
+          <span class="chip-label">ML Sync Pipeline:</span>
+          <span class="badge badge-peaceful" id="statMlStatus">Active (Colab)</span>
+        </div>
+      </div>
+
+      <!-- Multi-Server Configuration Grid -->
+      <div class="server-grid">
+        
+        <!-- ================================================================ -->
+        <!-- SERVER 1: TELEGRAM BOT API                                       -->
+        <!-- ================================================================ -->
+        <div class="card server-card" id="cardTelegramServer">
+          <div class="server-card-header">
+            <div class="server-title-group">
+              <div class="server-logo telegram-logo">✈️</div>
+              <div>
+                <h3 class="server-card-title">Telegram Bot API</h3>
+                <span class="server-subtitle">Instant intrusion snapshots & two-way command execution</span>
+              </div>
+            </div>
+            <span class="server-status-pill online" id="statusPillTelegram">Online</span>
+          </div>
+
+          <div class="server-form-body">
+            <div class="form-group">
+              <label class="input-label">Bot Authentication Token</label>
+              <div class="input-with-action">
+                <input type="password" class="input-control" id="telegramBotToken" value="6892014522:AAFP8qY2-8Z3jL89NmK4qW92JkLm" placeholder="e.g. 123456789:ABCdefGHIjklmn">
+                <button type="button" class="btn-icon-subtle toggle-visibility" data-target="telegramBotToken" title="Toggle Visibility">👁️</button>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="input-label">Admin Chat ID</label>
+                <input type="text" class="input-control" id="telegramChatId" value="-100234857901" placeholder="e.g. 987654321 or -100...">
+              </div>
+              <div class="form-group">
+                <label class="input-label">Alert Priority</label>
+                <select class="input-control" id="telegramPriority">
+                  <option value="high" selected>High (Bypass Do-Not-Disturb)</option>
+                  <option value="normal">Standard Notification</option>
+                  <option value="silent">Silent Delivery</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="server-options-list">
+              <label class="server-check-item">
+                <input type="checkbox" id="chkTelegramSnapshots" checked>
+                <span>Send JPEG snapshot on PIR / Door breach</span>
+              </label>
+              <label class="server-check-item">
+                <input type="checkbox" id="chkTelegramPowerAlerts" checked>
+                <span>Notify on AC blackout or voltage spikes (&gt;250V)</span>
+              </label>
+              <label class="server-check-item">
+                <input type="checkbox" id="chkTelegramGasAlerts" checked>
+                <span>Critical alert on LPG / Smoke (&gt;350 ppm)</span>
+              </label>
+            </div>
+
+            <!-- Two-Way Bot Interactive Simulator -->
+            <div class="server-simulator-box">
+              <span class="simulator-label">Interactive Bot Terminal (/status, /snap, /fan_on, /window_45)</span>
+              <div class="simulator-input-wrap">
+                <input type="text" class="input-control input-sm" id="telegramSimInput" placeholder="Type /status or /snap...">
+                <button class="btn btn-secondary btn-xs" id="btnTelegramSendCmd">Send</button>
+              </div>
+              <div class="simulator-output" id="telegramSimOutput">
+                🤖 <strong>@KyUTelemetryBot:</strong> Online. Awaiting command.
+              </div>
+            </div>
+
+            <div class="server-actions-bar">
+              <button class="btn btn-secondary btn-sm" id="btnTestTelegramAlert">✉️ Test Text Alert</button>
+              <button class="btn btn-primary btn-sm" id="btnTestTelegramPhoto">📸 Test Snapshot Dispatch</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================================================================ -->
+        <!-- SERVER 2: DISCORD WEBHOOK & BOT SERVER                           -->
+        <!-- ================================================================ -->
+        <div class="card server-card" id="cardDiscordServer">
+          <div class="server-card-header">
+            <div class="server-title-group">
+              <div class="server-logo discord-logo">🎮</div>
+              <div>
+                <h3 class="server-card-title">Discord Server Webhook</h3>
+                <span class="server-subtitle">Team audit log, rich embeds & emergency @here notifications</span>
+              </div>
+            </div>
+            <span class="server-status-pill online" id="statusPillDiscord">Online</span>
+          </div>
+
+          <div class="server-form-body">
+            <div class="form-group">
+              <label class="input-label">Discord Incoming Webhook URL</label>
+              <input type="password" class="input-control" id="discordWebhookUrl" value="https://discord.com/api/webhooks/118920491029/XyZ892_TokenAlphaSecure" placeholder="https://discord.com/api/webhooks/...">
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="input-label">Channel Designation</label>
+                <input type="text" class="input-control" id="discordChannelName" value="#lab4-security-feed" placeholder="#channel-name">
+              </div>
+              <div class="form-group">
+                <label class="input-label">Role Mention on Incident</label>
+                <select class="input-control" id="discordRoleMention">
+                  <option value="@here" selected>@here (Active Operators)</option>
+                  <option value="@admin">@Security-Admin</option>
+                  <option value="@everyone">@everyone (Urgent Evac)</option>
+                  <option value="none">No Mention</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="server-options-list">
+              <label class="server-check-item">
+                <input type="checkbox" id="chkDiscordEmbeds" checked>
+                <span>Format alerts as high-contrast Rich Embeds</span>
+              </label>
+              <label class="server-check-item">
+                <input type="checkbox" id="chkDiscordAttachImage" checked>
+                <span>Attach ESP32-CAM evidence snapshot files</span>
+              </label>
+              <label class="server-check-item">
+                <input type="checkbox" id="chkDiscordTts">
+                <span>Enable Text-To-Speech (TTS) for gas evacuations</span>
+              </label>
+            </div>
+
+            <!-- Discord Live Embed Preview Box -->
+            <div class="discord-preview-card">
+              <div class="discord-embed-side red-side"></div>
+              <div class="discord-embed-content">
+                <div class="discord-embed-author">🔔 Sanctuary OS Security Bot • Today at 17:30</div>
+                <div class="discord-embed-title" id="discordPreviewTitle">🚨 INTRUSION DETECTED — Front Entrance</div>
+                <div class="discord-embed-desc" id="discordPreviewDesc">Magnetic Reed Switch opened while system was armed. PIR motion active.</div>
+                <div class="discord-embed-fields">
+                  <div class="discord-field"><span>Room</span><strong>Porch / Entrance</strong></div>
+                  <div class="discord-field"><span>Grid AC</span><strong id="discordFieldVolt">238V (OK)</strong></div>
+                  <div class="discord-field"><span>Evidence</span><strong>Saved to SD</strong></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="server-actions-bar">
+              <button class="btn btn-secondary btn-sm" id="btnTestDiscordNormal">💬 Test Regular Log</button>
+              <button class="btn btn-primary btn-sm" id="btnTestDiscordEmergency">🚨 Test Emergency Alert</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================================================================ -->
+        <!-- SERVER 3: GOOGLE COLAB / COLLAB ML ANALYTICS SERVER              -->
+        <!-- ================================================================ -->
+        <div class="card server-card" id="cardColabServer">
+          <div class="server-card-header">
+            <div class="server-title-group">
+              <div class="server-logo colab-logo">🔬</div>
+              <div>
+                <h3 class="server-card-title">Google Colab ML Server</h3>
+                <span class="server-subtitle">Time-series data stream, Isolation Forest anomaly detection & forecasting</span>
+              </div>
+            </div>
+            <span class="server-status-pill sync" id="statusPillColab">Connected</span>
+          </div>
+
+          <div class="server-form-body">
+            <div class="form-group">
+              <label class="input-label">Colab Inference Endpoint / Ngrok URL</label>
+              <input type="text" class="input-control" id="colabEndpointUrl" value="https://colab-worker-92.ngrok-free.app/api/infer" placeholder="https://xxxx.ngrok-free.app/api/infer">
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="input-label">Telemetry Streaming Rate</label>
+                <select class="input-control" id="colabStreamRate">
+                  <option value="1000">Live (Every 1 Second)</option>
+                  <option value="5000" selected>Standard (Every 5 Seconds)</option>
+                  <option value="15000">Batch (Every 15 Seconds)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="input-label">ML Model Type</label>
+                <select class="input-control" id="colabModelType">
+                  <option value="isolation_forest" selected>Isolation Forest (Anomaly Detection)</option>
+                  <option value="linear_regression">Linear Regression (Energy Forecast)</option>
+                  <option value="autoencoder">LSTM Autoencoder (Drift Analysis)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Colab Model Telemetry Diagnostics -->
+            <div class="colab-metric-card">
+              <div class="colab-metric-header">
+                <span>Model Confidence</span>
+                <strong id="colabConfidenceVal">99.4% (Nominal)</strong>
+              </div>
+              <div class="metric-bar-wrap">
+                <div class="metric-bar-fill" id="colabConfidenceBar" style="width: 94%;"></div>
+              </div>
+              <p class="control-note" style="margin-top: 6px;">Zero anomalies flagged in the current 60-second rolling window. AC voltage standard deviation: ±1.2V.</p>
+            </div>
+
+            <div class="server-actions-bar">
+              <button class="btn btn-secondary btn-sm" id="btnColabExportData">📥 Export Dataset (CSV)</button>
+              <button class="btn btn-primary btn-sm" id="btnTestColabInference">🧠 Run ML Inference Ping</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================================================================ -->
+        <!-- SERVER 4: BLYNK IOT CLOUD SERVER                                 -->
+        <!-- ================================================================ -->
+        <div class="card server-card" id="cardBlynkServer">
+          <div class="server-card-header">
+            <div class="server-title-group">
+              <div class="server-logo blynk-logo">📱</div>
+              <div>
+                <h3 class="server-card-title">Blynk IoT Cloud Server</h3>
+                <span class="server-subtitle">Mobile smartphone app dashboard, tactile toggles & virtual pins</span>
+              </div>
+            </div>
+            <span class="server-status-pill online" id="statusPillBlynk">Online</span>
+          </div>
+
+          <div class="server-form-body">
+            <div class="form-group">
+              <label class="input-label">Blynk Device Auth Token</label>
+              <div class="input-with-action">
+                <input type="password" class="input-control" id="blynkAuthToken" value="bl_8a92KmqL02948vnZ9810KqW" placeholder="e.g. blynk_auth_token_here">
+                <button type="button" class="btn-icon-subtle toggle-visibility" data-target="blynkAuthToken" title="Toggle Visibility">👁️</button>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="input-label">Template ID</label>
+                <input type="text" class="input-control" id="blynkTemplateId" value="TMPL_KyU_Lab4" placeholder="e.g. TMPL123456">
+              </div>
+              <div class="form-group">
+                <label class="input-label">Server Host</label>
+                <select class="input-control" id="blynkServerHost">
+                  <option value="blynk.cloud" selected>blynk.cloud (Global Cloud)</option>
+                  <option value="fra1.blynk.cloud">fra1.blynk.cloud (Europe)</option>
+                  <option value="custom">Custom Local Server (Port 8080)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Virtual Pin Assignment Matrix -->
+            <div class="blynk-vpins-table-wrap">
+              <table class="blynk-vpin-table">
+                <thead>
+                  <tr>
+                    <th>Virtual Pin</th>
+                    <th>Metric / Actuator</th>
+                    <th>Current Value</th>
+                    <th>Sync</th>
+                  </tr>
+                </thead>
+                <tbody id="blynkVpinBody">
+                  <tr><td><code>V0</code></td><td>Ambient Temperature</td><td id="blynkV0">24.2 °C</td><td><span class="badge badge-peaceful">Synced</span></td></tr>
+                  <tr><td><code>V1</code></td><td>Relative Humidity</td><td id="blynkV1">58 %</td><td><span class="badge badge-peaceful">Synced</span></td></tr>
+                  <tr><td><code>V2</code></td><td>LPG / Smoke Level</td><td id="blynkV2">184 ppm</td><td><span class="badge badge-peaceful">Synced</span></td></tr>
+                  <tr><td><code>V3</code></td><td>Exhaust Fan Relay</td><td id="blynkV3">OFF (0)</td><td><span class="badge badge-peaceful">Synced</span></td></tr>
+                  <tr><td><code>V4</code></td><td>Intrusion Status</td><td id="blynkV4">SECURE</td><td><span class="badge badge-peaceful">Synced</span></td></tr>
+                  <tr><td><code>V5</code></td><td>AC Grid Voltage</td><td id="blynkV5">238 V</td><td><span class="badge badge-peaceful">Synced</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="server-actions-bar">
+              <button class="btn btn-secondary btn-sm" id="btnTestBlynkPush">🔔 Push Notification Test</button>
+              <button class="btn btn-primary btn-sm" id="btnSyncBlynkPins">🔄 Force Sync All Pins</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Live Server Dispatch & Audit Console -->
+      <div class="card server-audit-card">
+        <div class="server-audit-header">
+          <h3 class="card-title">Real-Time Cloud Dispatch Log</h3>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-secondary btn-xs" id="btnClearServerAudit">Clear Log</button>
+          </div>
+        </div>
+        <div class="server-audit-window" id="serverAuditWindow">
+          <div class="audit-row"><span class="audit-time">[17:30:15]</span> <span class="audit-tag tag-telegram">TELEGRAM</span> Snapshot dispatched to Chat ID -100234857901 (HTTP 200 OK)</div>
+          <div class="audit-row"><span class="audit-time">[17:30:18]</span> <span class="audit-tag tag-discord">DISCORD</span> Webhook incident embed sent to #lab4-security-feed (HTTP 204 No Content)</div>
+          <div class="audit-row"><span class="audit-time">[17:30:20]</span> <span class="audit-tag tag-colab">COLAB ML</span> Telemetry packet [24.2°C, 58%, 184ppm, 238V] ingested by Isolation Forest: Score 0.94 (Nominal)</div>
+          <div class="audit-row"><span class="audit-time">[17:30:22]</span> <span class="audit-tag tag-blynk">BLYNK</span> Virtual pins V0-V5 synchronized with Blynk 2.0 Cloud successfully</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 8: FACILITY, ROOMS & PINS SETUP                                  -->
+    <!-- ===================================================================== -->
+    <section id="tab-facility-rooms" class="tab-content">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Facility, Rooms & Sensor Pinout</h2>
+          <p class="section-desc">Manage architectural rooms and physical GPIO pin mappings</p>
+        </div>
+        <div class="house-actions">
+          <button class="btn btn-secondary btn-sm" id="btnOpenAddRoomModal">➕ Add Room</button>
+          <button class="btn btn-primary btn-sm" id="btnOpenAddSensorModal">➕ Add Sensor / Pin</button>
+        </div>
+      </div>
+
+      <div class="facility-summary-bar">
+        <div class="facility-chip"><span class="chip-label">Facility:</span><strong id="chipFacilityName">KyU Telemetry Lab 4</strong></div>
+        <div class="facility-chip"><span class="chip-label">Rooms:</span><span id="chipRoomCount">5 Rooms</span></div>
+        <div class="facility-chip"><span class="chip-label">Sensors:</span><span id="chipSensorCount">10 Mapped</span></div>
+      </div>
+
+      <div class="pins-layout">
+        <!-- Interactive Board Pinout Graphic -->
+        <div class="card pinout-card">
+          <div class="card-header">
+            <h3 class="card-title">Board Pinout Map</h3>
+            <div style="display: flex; gap: 6px;">
+              <button type="button" class="btn btn-primary btn-xs" id="btnPinoutEsp32">ESP32-CAM</button>
+              <button type="button" class="btn btn-secondary btn-xs" id="btnPinoutSpark">Spark Core (Particle)</button>
+            </div>
+          </div>
+          <p class="pinout-help" id="pinoutHelpText">Click any pin to inspect assigned function or assign a new sensor</p>
+
+          <!-- ESP32-CAM Pinout Graphic -->
+          <div class="esp32-board-graphic" id="graphicEsp32">
+            <div class="pin-header left-header">
+              <div class="pin-chip" data-pin="5V">5V</div>
+              <div class="pin-chip" data-pin="GND">GND</div>
+              <div class="pin-chip" data-pin="GPIO 12">GPIO 12 (PIR)</div>
+              <div class="pin-chip" data-pin="GPIO 13">GPIO 13 (DHT22)</div>
+              <div class="pin-chip" data-pin="GPIO 15">GPIO 15 (Ultra)</div>
+              <div class="pin-chip" data-pin="GPIO 14">GPIO 14 (Reed)</div>
+              <div class="pin-chip" data-pin="GPIO 2">GPIO 2 (Window)</div>
+              <div class="pin-chip" data-pin="GPIO 4">GPIO 4 (Relay)</div>
+            </div>
+            <div class="esp32-core">
+              <div class="ov2640-lens"><div class="lens-glass"></div></div>
+              <span class="mcu-name">ESP32-CAM</span>
+              <span class="mcu-sub">Dual Core + OV2640 Camera</span>
+            </div>
+            <div class="pin-header right-header">
+              <div class="pin-chip" data-pin="3V3">3V3</div>
+              <div class="pin-chip" data-pin="GPIO 16">GPIO 16 (RX2)</div>
+              <div class="pin-chip" data-pin="GPIO 0">GPIO 0 (Boot)</div>
+              <div class="pin-chip" data-pin="GND">GND</div>
+              <div class="pin-chip" data-pin="GPIO 36">GPIO 36 (MQ-2)</div>
+              <div class="pin-chip" data-pin="GPIO 39">GPIO 39 (Volt)</div>
+              <div class="pin-chip" data-pin="GPIO 34">GPIO 34 (Current)</div>
+              <div class="pin-chip" data-pin="GPIO 33">GPIO 33 (Buzzer)</div>
+            </div>
+          </div>
+
+          <!-- Spark Core Pinout Graphic -->
+          <div class="esp32-board-graphic spark-board-graphic" id="graphicSparkCore" style="display: none;">
+            <div class="pin-header left-header">
+              <div class="pin-chip" data-pin="RAW">RAW (VIN 5V)</div>
+              <div class="pin-chip" data-pin="GND">GND</div>
+              <div class="pin-chip" data-pin="TX">TX (to ESP32 RX)</div>
+              <div class="pin-chip" data-pin="RX">RX (from ESP32 TX)</div>
+              <div class="pin-chip" data-pin="A2">A2 (ACS712 Current)</div>
+              <div class="pin-chip" data-pin="A1">A1 (ZMPT101B AC)</div>
+              <div class="pin-chip" data-pin="A0">A0 (MQ-2 Gas)</div>
+            </div>
+            <div class="esp32-core spark-core-body">
+              <div class="particle-rgb-led"><div class="rgb-glow"></div></div>
+              <span class="mcu-name">SPARK CORE</span>
+              <span class="mcu-sub">STM32F103 + CC3000 Wi-Fi</span>
+            </div>
+            <div class="pin-header right-header">
+              <div class="pin-chip" data-pin="3V3">3V3</div>
+              <div class="pin-chip" data-pin="RST">RST</div>
+              <div class="pin-chip" data-pin="D7">D7 (Relay Fan)</div>
+              <div class="pin-chip" data-pin="D6">D6 (HC-SR04 Echo)</div>
+              <div class="pin-chip" data-pin="D5">D5 (HC-SR04 Trig)</div>
+              <div class="pin-chip" data-pin="D4">D4 (PIR Motion)</div>
+              <div class="pin-chip" data-pin="D3">D3 (Reed Door)</div>
+              <div class="pin-chip" data-pin="D2">D2 (DHT22 Climate)</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sensor Table -->
+        <div class="card sensor-table-card">
+          <h3 class="card-title">Configured Sensor Pins</h3>
+          <div class="table-responsive">
+            <table class="sensor-table">
+              <thead>
+                <tr>
+                  <th>Sensor Name</th>
+                  <th>Pin</th>
+                  <th>Type</th>
+                  <th>Room</th>
+                  <th>Threshold</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="sensorTableBody">
+                <!-- Dynamically rendered -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ======================================================================= -->
+  <!-- SLIDE-OVER DETAIL DRAWER (OPENS ON ROOM CLICKS)                         -->
+  <!-- ======================================================================= -->
+  <aside class="slide-drawer" id="slideDrawer">
+    <div class="drawer-header">
+      <h3 class="drawer-title" id="drawerTitle">Room Details</h3>
+      <button class="drawer-close" id="btnCloseDrawer">&times;</button>
+    </div>
+    <div class="drawer-content" id="drawerContent">
+      <!-- Injected dynamically by JavaScript -->
+    </div>
+  </aside>
+  <div class="drawer-backdrop" id="drawerBackdrop"></div>
+
+  <!-- ======================================================================= -->
+  <!-- SEGREGATED ENGINEERING IDE & FLASHER WORKSPACE                          -->
+  <!-- ======================================================================= -->
+  <aside class="engineering-workspace" id="engineeringWorkspace">
+    <div class="eng-header">
+      <div class="eng-brand">
+        <span class="eng-icon">⚡</span>
+        <div>
+          <h2 class="eng-title">Engineering IDE & Flasher Workbench</h2>
+          <p class="eng-subtitle">Web Serial hardware terminal and multi-board flasher</p>
+        </div>
+      </div>
+      <a href="#monitor" class="btn btn-secondary btn-sm" id="btnCloseEngineering">
+        ✕ Back to Monitor
+      </a>
+    </div>
+
+    <div class="eng-body">
+      <!-- Universal Serial Connection Bar -->
+      <div class="card eng-conn-bar">
+        <div class="eng-conn-group">
+          <label class="input-label">Hardware Board</label>
+          <select class="input-control" id="boardSelector">
+            <option value="esp32cam">ESP32-CAM (AI-Thinker)</option>
+            <option value="spark_core" selected>Spark Core (Particle STM32 + CC3000)</option>
+            <option value="esp32">ESP32 DevKit</option>
+            <option value="arduino_uno">Arduino Uno / Nano</option>
+            <option value="sparkfun">SparkFun Thing Plus / RedBoard</option>
+            <option value="rp2040">Raspberry Pi Pico / RP2040</option>
+          </select>
+        </div>
+
+        <div class="eng-conn-group">
+          <label class="input-label">Baud Rate</label>
+          <select class="input-control" id="ideBaudSelect">
+            <option value="115200" selected>115200 baud</option>
+            <option value="9600">9600 baud</option>
+            <option value="57600">57600 baud</option>
+          </select>
+        </div>
+
+        <div class="eng-conn-group">
+          <label class="input-label">Serial / Cloud Action</label>
+          <div style="display: flex; gap: 6px;">
+            <button class="btn btn-primary btn-sm" id="btnIdeConnectSerial">🔌 Connect Serial</button>
+            <button class="btn btn-secondary btn-sm" id="btnIdeDisconnectSerial" disabled>Disconnect</button>
+            <button class="btn btn-secondary btn-sm" id="btnSparkCloudConnect" title="Connect Spark Core via Particle Cloud REST API">⚡ Spark Cloud</button>
+          </div>
+        </div>
+
+        <div class="eng-conn-group">
+          <label class="input-label">External Web Tools</label>
+          <div style="display: flex; gap: 6px;">
+            <a href="https://esp.web.tools/" target="_blank" class="btn btn-secondary btn-sm">ESP Web Tools ↗</a>
+            <a href="https://create.arduino.cc/editor" target="_blank" class="btn btn-secondary btn-sm">Arduino Editor ↗</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- IDE Editor & Live Terminal Grid -->
+      <div class="eng-grid">
+        <div class="card editor-card">
+          <div class="editor-header">
+            <div class="editor-tabs">
+              <button class="code-tab active" data-sketch="esp32cam">ESP32-CAM.ino</button>
+              <button class="code-tab" data-sketch="spark_core">Spark_Core_Full.ino</button>
+              <button class="code-tab" data-sketch="telegram">Telegram_Bot.ino</button>
+              <button class="code-tab" data-sketch="discord">Discord_Webhook.ino</button>
+              <button class="code-tab" data-sketch="colab">Colab_Analytics.py</button>
+              <button class="code-tab" data-sketch="blynk">Blynk_IoT.ino</button>
+              <button class="code-tab" data-sketch="arduino">Arduino_Uno.ino</button>
+              <button class="code-tab" data-sketch="sparkfun">SparkFun.ino</button>
+            </div>
+            <button class="btn btn-secondary btn-xs" id="btnCopyCode">📋 Copy</button>
+          </div>
+          <div class="code-editor-area">
+            <pre><code id="codeViewer" class="code-content">// Select sketch</code></pre>
+          </div>
+        </div>
+
+        <div class="card terminal-card">
+          <div class="terminal-header">
+            <h3 class="card-title">Live Serial Terminal</h3>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <label class="terminal-checkbox"><input type="checkbox" id="chkAutoScroll" checked> Auto-Scroll</label>
+              <button class="btn btn-secondary btn-xs" id="btnClearTerminal">Clear</button>
+            </div>
+          </div>
+          <div class="terminal-window" id="terminalWindow">
+            <div class="terminal-line system-msg">[Sanctuary Serial Driver online. Connect your board]</div>
+          </div>
+          <div class="terminal-input-bar">
+            <input type="text" class="input-control" id="terminalInput" placeholder="Send serial command...">
+            <button class="btn btn-primary btn-xs" id="btnSendTerminal">Send</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ======================================================================= -->
+  <!-- MODALS (SENSOR, ROOM, FACILITY, LIGHTBOX)                              -->
+  <!-- ======================================================================= -->
+  <div class="modal-overlay" id="addSensorModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">Configure Sensor Pin</h3>
+        <button class="modal-close" id="btnCloseSensorModal">&times;</button>
+      </div>
+      <form id="formAddSensor" class="modal-body">
+        <div class="form-group">
+          <label class="input-label">Sensor Name</label>
+          <input type="text" class="input-control" id="newSensorName" placeholder="e.g. Rain Sensor" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="input-label">Pin Assignment</label>
+            <select class="input-control" id="newSensorPin">
+              <option value="GPIO 12">GPIO 12 (D12)</option>
+              <option value="GPIO 13">GPIO 13 (D13)</option>
+              <option value="GPIO 14">GPIO 14 (D14)</option>
+              <option value="GPIO 15">GPIO 15 (D15)</option>
+              <option value="GPIO 2">GPIO 2 (D2)</option>
+              <option value="GPIO 4">GPIO 4 (D4)</option>
+              <option value="GPIO 32">GPIO 32</option>
+              <option value="GPIO 33">GPIO 33 (Buzzer)</option>
+              <option value="GPIO 34">GPIO 34 (ADC)</option>
+              <option value="GPIO 36">GPIO 36 (ADC)</option>
+              <option value="GPIO 39">GPIO 39 (ADC)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="input-label">Channel Type</label>
+            <select class="input-control" id="newSensorType">
+              <option value="Analog (ADC)">Analog (ADC)</option>
+              <option value="Digital Input">Digital Input</option>
+              <option value="Digital Output">Digital Output</option>
+              <option value="Digital Pulse">Digital Pulse (PWM)</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="input-label">Assigned Room</label>
+            <select class="input-control" id="newSensorRoom"></select>
+          </div>
+          <div class="form-group">
+            <label class="input-label">Threshold / Range</label>
+            <input type="text" class="input-control" id="newSensorThreshold" placeholder="e.g. > 350 ppm" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btnCancelSensorModal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Pin</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="addRoomModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">Add Room / Zone</h3>
+        <button class="modal-close" id="btnCloseRoomModal">&times;</button>
+      </div>
+      <form id="formAddRoom" class="modal-body">
+        <div class="form-group">
+          <label class="input-label">Room Name</label>
+          <input type="text" class="input-control" id="newRoomName" placeholder="e.g. Balcony, Server Room" required>
+        </div>
+        <div class="form-group">
+          <label class="input-label">Purpose</label>
+          <input type="text" class="input-control" id="newRoomPurpose" placeholder="e.g. Environmental Zone" required>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btnCancelRoomModal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Add Room</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="editFacilityModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">Rename Facility</h3>
+        <button class="modal-close" id="btnCloseFacilityModal">&times;</button>
+      </div>
+      <form id="formEditFacility" class="modal-body">
+        <div class="form-group">
+          <label class="input-label">Facility Name</label>
+          <input type="text" class="input-control" id="inputFacilityName" value="KyU Telemetry Lab 4" required>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btnCancelFacilityModal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="lightboxModal">
+    <div class="modal-box lightbox-box">
+      <div class="modal-header">
+        <h3 class="modal-title" id="lightboxTitle">Snapshot</h3>
+        <button class="modal-close" id="btnCloseLightbox">&times;</button>
+      </div>
+      <div class="lightbox-img-wrap"><img id="lightboxImg" src="" alt="Snapshot"></div>
+      <div class="lightbox-footer">
+        <span class="meta-detail" id="lightboxMeta">--</span>
+        <button class="btn btn-secondary btn-xs" id="btnDownloadSinglePhoto">💾 Download</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Spark Core Particle Cloud Modal -->
+  <div class="modal-overlay" id="sparkCloudModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 1.2rem;">⚡</span>
+          <h3 class="modal-title">Spark Core (Particle Cloud API)</h3>
+        </div>
+        <button class="modal-close" id="btnCloseSparkModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="section-desc" style="margin-bottom: 8px;">Stream all 7 sensors & ESP32-CAM trigger over Particle Cloud REST API or local USB.</p>
+        <div class="form-group">
+          <label class="input-label">Device ID</label>
+          <input type="text" class="input-control" id="sparkDeviceId" value="54ff74066678574924331067" placeholder="e.g. 54ff74066678574924331067">
+        </div>
+        <div class="form-group">
+          <label class="input-label">Access Token</label>
+          <div class="input-with-action">
+            <input type="password" class="input-control" id="sparkAccessToken" value="a0797b36a33322a66526d0580e6fe270a5ade86f" placeholder="Particle Access Token">
+            <button type="button" class="btn-icon-subtle toggle-visibility" data-target="sparkAccessToken" title="Toggle Visibility">👁️</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="input-label">Cloud Variable</label>
+          <input type="text" class="input-control" id="sparkVarName" value="telemetry" placeholder="e.g. telemetry">
+        </div>
+        <div class="server-options-list" style="margin-top: 4px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.78rem;">
+            <span>Cloud Stream Status:</span>
+            <span class="server-status-pill online" id="sparkCloudStatusPill">Ready</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="btnCancelSparkModal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="btnStartSparkCloudStream">⚡ Start Cloud Stream</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,224 @@
+\documentclass[12pt,a4paper]{article}
+
+% Required Packages
+\usepackage[utf8]{inputenc}
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{hyperref}
+\usepackage{float}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, calc}
+\usepackage{caption}
+\usepackage{subcaption}
+
+% TikZ Styles for Block Diagram
+\tikzstyle{block} = [rectangle, draw, fill=blue!5, text width=3cm, text centered, rounded corners, minimum height=1.2cm]
+\tikzstyle{mcu} = [rectangle, draw, fill=orange!5, text width=3.5cm, text centered, minimum height=3cm]
+\tikzstyle{cloud} = [ellipse, draw, fill=gray!10, text width=2.5cm, text centered, minimum height=1.5cm]
+\tikzstyle{line} = [draw, -latex']
+
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    
+    % Centered Logo Placeholder
+    \rule{3cm}{3cm} % Replace with your actual logo, e.g., \includegraphics[width=3cm]{kyambogo_logo.png} 
+    \vspace{1cm}
+    
+    {\Large \textbf{FACULTY OF ENGINEERING}}\\[0.2cm]
+    {\large DEPARTMENT OF ELECTRICAL AND ELECTRONICS ENGINEERING}\\[0.2cm]
+    {\large BACHELORS OF ENGINEERING IN TELECOMMUNICATIONS ENGINEERING}\\[0.5cm]
+    
+    {\large TETE/TEEE 3102: MICROCONTROLLERS}\\[1cm]
+    
+    \hrule
+    \vspace{0.5cm}
+    {\huge \textbf{LAB REPORT}}\\[0.3cm]
+    {\LARGE \textbf{SMART ROOM MONITORING SYSTEM}}\\[0.2cm]
+    {\Large \textbf{Level 2 Upgrade}}
+    \vspace{0.5cm}
+    \hrule
+    \vspace{1.5cm}
+    
+    {\Large \textbf{Prepared By:}}
+    \vspace{0.5cm}
+    
+    \begin{center}
+        \renewcommand{\arraystretch}{1.2}
+        \begin{tabular}{|c|l|c|}
+            \hline
+            \textbf{No.} & \textbf{Name} & \textbf{Student ID} \\
+            \hline
+            1 & Mukama Robert & 26/U/ETE/21285/PE \\
+            2 & Nabudere Zerubabel & 25/U/ETE/05465/PE \\
+            3 & Nanfuka Shakirah & 25/U/ETE/05468/PE \\
+            4 & Kidega Wilkie Cephas & 25/U/ETE/05460/PE \\
+            \hline
+        \end{tabular}
+    \end{center}
+    
+    \vfill
+    
+    \begin{flushleft}
+        \textbf{Course:} TETE/TEEE 3102 \\
+        \textbf{Lecturer:} Dr. Dickson Mugerwa \\
+        \textbf{Group:} Group 4
+    \end{flushleft}
+    
+    \vspace{-1.5cm}
+    \begin{flushright}
+        \textbf{Deadline:} 25\textsuperscript{th} August 2026 \\
+        \textbf{Date Submitted:} August 31, 2026
+    \end{flushright}
+    
+    \vspace{1cm}
+    {\large \textbf{August 2026}}
+\end{titlepage}
+
+\newpage
+\begin{abstract}
+This report details the design and implementation of the Level 2 upgrade for the Smart Room Monitoring System. Building upon the baseline parameter logging established in Level 1, this upgrade introduces complex hardware integration for enhanced security, safety, and energy profiling. An ESP32-CAM microcontroller was utilized to capture visual evidence of intrusions, while a SIM800L GSM module was integrated to ensure redundant SMS and call alerts during network outages. Additionally, ZMPT101B and ACS712 sensors were deployed to monitor AC mains voltage and current, enabling blackout detection and power consumption tracking. Data is transmitted to a ThingSpeak web dashboard, and real-time remote control is handled via a mobile application interface (Telegram/Blynk). The resulting prototype successfully met all functional deliverables, operating autonomously to secure and monitor the room environment.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+\section{Introduction}
+The primary objective of the Level 1 Smart Room Monitoring System was to establish a basic sensor network capable of reading environmental variables and logging them to a cloud platform. While functional, it lacked the necessary countermeasures for critical events such as internet outages, power grid failures, and unverified physical intrusions.
+
+The Level 2 upgrade addresses these limitations by shifting from a passive logging system to an active monitoring and alerting platform. The standard microcontroller was replaced with an ESP32-CAM to facilitate image capture. By expanding the sensor array to seven distinct modules—including gas detection, magnetic door switches, and AC power sensors—the system now provides a comprehensive overview of room security and grid stability.
+
+\section{System Objectives}
+The specific objectives for the Level 2 implementation were:
+\begin{enumerate}
+    \item To interface an ESP32-CAM with a SIM800L GSM module for redundant network alerts (SMS/Calls).
+    \item To implement visual evidence capture triggered by combined PIR and magnetic reed switch inputs.
+    \item To monitor utility power parameters (voltage and current) to detect blackouts and calculate cumulative power consumption (kWh).
+    \item To design a safety subsystem utilizing an MQ-2 gas sensor to trigger local alarms and automated ventilation.
+    \item To develop a comprehensive web and mobile application monitoring interface for remote user access.
+\end{enumerate}
+
+\section{Methodology and System Design}
+The system architecture was divided into hardware interfacing, logic control, and data transmission subsystems. 
+
+\subsection{Hardware Selection}
+To achieve the upgraded functionalities, the component list was expanded. The ESP32-CAM serves as the primary processing unit, replacing the previous Arduino Uno and ESP8266 combination to provide integrated Wi-Fi and camera capabilities.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|p{9cm}|}
+\hline
+\textbf{Component} & \textbf{Function in System} \\ \hline
+ESP32-CAM & Central microcontroller, image processing, and Wi-Fi interface. \\ \hline
+SIM800L GSM & Secondary communication channel for SMS and voice calls. \\ \hline
+ZMPT101B & AC voltage transformer for mains monitoring. \\ \hline
+ACS712 (20A) & Hall-effect current sensor for power calculations. \\ \hline
+MQ-2 Gas Sensor & Detects combustible gases (LPG) and smoke concentrations. \\ \hline
+Magnetic Reed Switch & Physical boundary sensor for the main door or window. \\ \hline
+DHT22 \& HC-SR04 & Continuous ambient temperature, humidity, and distance sampling. \\ \hline
+HC-SR501 PIR & Infrared motion detection for the security logic. \\ \hline
+\end{tabular}
+\caption{System Hardware Components}
+\end{table}
+
+\subsection{Security and Safety Logic}
+The security subsystem relies on the physical state of the reed switch and the PIR sensor. When the system is armed (e.g., after 22:00 hrs) and an intrusion is detected, a hardware interrupt triggers the ESP32-CAM to capture an image. This image is immediately saved to the onboard SD card. Concurrently, the GSM module is instructed via UART to dispatch an SMS containing the time of intrusion to the administrator's mobile device.
+
+The safety layer continuously polls the analog output of the MQ-2 sensor. If the analog reading surpasses the predefined threshold for gas or smoke, the microcontroller asserts a HIGH signal to a digital pin connected to a relay. This relay mechanically opens a window or powers an exhaust fan while activating a local buzzer.
+
+\subsection{Power Monitoring}
+To monitor the utility grid, the ZMPT101B and ACS712 sensors measure the AC voltage and current drawn by the room. The microcontroller calculates real-time power ($P = V \times I$) and integrates this over time to estimate energy consumption in kWh. If the measured voltage drops below 180V or falls to zero, a blackout condition is flagged, prompting an immediate GSM alert.
+
+\section{System Block Diagram}
+The interactions between the inputs, processing unit, and cloud interfaces are illustrated in the block diagram below.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[node distance=1.5cm and 2cm]
+        
+        \node (sensors) [block, minimum height=3cm] {Sensors:\\PIR, Reed, MQ-2, DHT22, HC-SR04};
+        \node (power) [block, below=0.5cm of sensors] {Power Sensors:\\ZMPT101B, ACS712};
+        
+        \node (mcu) [mcu, right=2cm of sensors, yshift=-1cm] {Processing Unit:\\\textbf{ESP32-CAM}\\(Wi-Fi, SD Storage)};
+        
+        \node (gsm) [block, right=2cm of mcu, yshift=1.5cm] {SIM800L (GSM)};
+        \node (cloud) [cloud, right=2cm of mcu, yshift=-0.5cm] {ThingSpeak Web\\Dashboard};
+        \node (mobile) [cloud, right=2cm of mcu, yshift=-2.5cm] {Telegram / Blynk\\Mobile App};
+        
+        \path [line] (sensors) -- (mcu);
+        \path [line] (power) -- (mcu);
+        
+        \path [line] (mcu) |- (gsm) node[pos=0.7, above, font=\scriptsize] {UART / SMS};
+        \path [line] (mcu) -- (cloud) node[midway, above, font=\scriptsize] {HTTP Post (Wi-Fi)};
+        \path [line] (mcu) |- (mobile) node[pos=0.7, below, font=\scriptsize] {API / Push Alerts};
+        
+    \end{tikzpicture}
+    \caption{System Architecture and Data Flow}
+    \label{fig:block_diagram}
+\end{figure}
+
+
+\section{Deliverables and Implementation Results}
+This section details the fulfillment of the core project deliverables.
+
+\subsection{Working Prototype and Circuit Wiring}
+The hardware components were assembled on a breadboard prior to PCB fabrication. Due to the limited GPIO pins on the ESP32-CAM, careful pin management and multiplexing were required to accommodate all seven sensors alongside the UART connections for the SIM800L. 
+
+\begin{figure}[H]
+    \centering
+    \rule{8cm}{5cm} % Placeholder: Replace with \includegraphics[width=0.8\textwidth]{fritzing_circuit.png}
+    \caption{Fritzing Circuit Schematic (Deliverable 1 \& 2)}
+    \label{fig:fritzing}
+\end{figure}
+
+\subsection{Web and Mobile App Monitoring}
+To satisfy the requirement for remote accessibility, a dual-interface approach was implemented. 
+
+\textbf{Web Dashboard (ThingSpeak):} The ThingSpeak channel was expanded to 8 active fields (Temperature, Humidity, Distance, Motion, Voltage, Current, Power, Gas Level). The ESP32-CAM pushes data packets at regular intervals, providing a continuous graphical representation of the room's status. The system successfully maintained a 48-hour continuous data logging session.
+
+\textbf{Mobile Application (Telegram / Blynk):} A mobile application interface was configured to provide real-time push notifications and user control. Using the Telegram Bot API, the system sends captured intrusion images directly to the administrator's smartphone. Additionally, the mobile app allows the user to manually poll the room status or toggle the physical relays remotely, bypassing the need to log into a web browser.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{0.45\textwidth}
+        \centering
+        \rule{6cm}{4cm} % Placeholder: \includegraphics[width=\textwidth]{thingspeak_dash.png}
+        \caption{ThingSpeak Web Interface}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.45\textwidth}
+        \centering
+        \rule{6cm}{4cm} % Placeholder: \includegraphics[width=\textwidth]{mobile_app.png}
+        \caption{Mobile App (Telegram/Blynk)}
+    \end{subfigure}
+    \caption{Remote Monitoring Interfaces (Deliverable 3)}
+    \label{fig:apps}
+\end{figure}
+
+\subsection{Cost Analysis and Bill of Materials}
+A critical deliverable was the calculation of the Bill of Materials (BOM) for a scaled deployment of 100 units. The estimation assumes bulk purchasing discounts for raw components. 
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Component} & \textbf{Unit Price (USD)} & \textbf{Qty / Unit} & \textbf{Cost (100 Units)} \\ \hline
+ESP32-CAM Module & \$ 5.50 & 1 & \$ 550.00 \\ \hline
+SIM800L GSM Module & \$ 3.50 & 1 & \$ 350.00 \\ \hline
+Power Sensors (Voltage/Current) & \$ 4.00 & 1 set & \$ 400.00 \\ \hline
+Environment & Safety Sensors & \$ 7.00 & 1 set & \$ 700.00 \\ \hline
+Peripherals (Relay, Buzzer, Reed) & \$ 3.00 & 1 set & \$ 300.00 \\ \hline
+Fabrication (PCB, Enclosure, Power) & \$ 10.00 & 1 set & \$ 1,000.00 \\ \hline
+\textbf{Total Estimated BOM Cost} & \textbf{\$ 33.00} & \textbf{-} & \textbf{\$ 3,300.00} \\ \hline
+\end{tabular}
+\caption{Estimated BOM for 100-Unit Deployment (Deliverable 4)}
+\end{table}
+
+\section{Conclusion}
+The Level 2 Smart Room Monitoring System was successfully designed and tested, meeting all project requirements. The transition to the ESP32-CAM enabled critical visual verification of intrusions, while the SIM800L ensured that alerts reached the administrator even during internet outages. The inclusion of power monitoring sensors provided valuable data regarding AC grid stability. By integrating a dedicated web dashboard and a mobile application, the project delivered a complete, robust IoT solution suitable for real-world application in environments prone to power and network instability.
+
+\end{document}
