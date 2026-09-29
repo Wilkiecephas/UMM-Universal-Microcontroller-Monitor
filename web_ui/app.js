@@ -2300,6 +2300,153 @@ function renderDynamicSensorsGrid() {
   attachSensorWidgetControlsListeners();
 }
 
+
+// =============================================================================
+// SENSOR ANIMATION & MICRO-DESIGN VISUAL GENERATOR
+// =============================================================================
+function getSensorAnimatedVisual(sensor) {
+  const cat = (sensor.category || '').toLowerCase();
+  const id = (sensor.templateId || String(sensor.id) || '').toLowerCase();
+  const name = (sensor.name || '').toLowerCase();
+
+  // 1. Radar & Motion Security
+  if (id.includes('radar') || cat === 'motion' || id.includes('pir') || id.includes('rcwl') || id.includes('hcsr501') || id.includes('sw420') || name.includes('radar') || name.includes('motion')) {
+    return `
+      <div class="sensor-visual-badge radar-visual-badge" title="Active Doppler Radar Sentry">
+        <div class="radar-scope">
+          <div class="radar-crosshair-h"></div>
+          <div class="radar-crosshair-v"></div>
+          <div class="radar-sweep-beam"></div>
+          <div class="radar-target-blip blip-1"></div>
+          <div class="radar-target-blip blip-2"></div>
+          <div class="radar-sonar-wave"></div>
+        </div>
+      </div>`;
+  }
+
+  // 2. Light / Optical & Lux
+  if (id.includes('light') || id.includes('ldr') || id.includes('bh1750') || id.includes('lux') || name.includes('light') || (cat === 'optical' && !name.includes('max30102') && !name.includes('spo2'))) {
+    return `
+      <div class="sensor-visual-badge light-visual-badge" title="Ambient Solar & Lux Radiator">
+        <div class="light-corona-aura">
+          <div class="light-sun-core"></div>
+          <div class="light-solar-rays"></div>
+          <div class="light-shimmer-ring"></div>
+        </div>
+      </div>`;
+  }
+
+  // 3. Buzzer / Acoustic Siren
+  if (id.includes('buzzer') || id.includes('siren') || id.includes('piezo') || id.includes('speaker') || name.includes('buzzer') || name.includes('siren') || name.includes('alarm')) {
+    return `
+      <div class="sensor-visual-badge buzzer-visual-badge" title="Acoustic Soundwave Radiator">
+        <div class="buzzer-speaker-box">
+          <div class="buzzer-cone">📢</div>
+          <div class="acoustic-wave wave-1"></div>
+          <div class="acoustic-wave wave-2"></div>
+          <div class="acoustic-wave wave-3"></div>
+        </div>
+        <div class="eq-bars-mini">
+          <span class="eq-bar bar-1"></span>
+          <span class="eq-bar bar-2"></span>
+          <span class="eq-bar bar-3"></span>
+          <span class="eq-bar bar-4"></span>
+        </div>
+      </div>`;
+  }
+
+  // 4. Fire / Flame / Burner
+  if (id.includes('flame') || id.includes('fire') || name.includes('flame') || name.includes('fire') || name.includes('burner')) {
+    return `
+      <div class="sensor-visual-badge flame-visual-badge" title="Flickering Flame & Thermal Core">
+        <div class="flame-core-container">
+          <div class="flame-outer"></div>
+          <div class="flame-inner"></div>
+          <div class="ember-spark ember-1"></div>
+          <div class="ember-spark ember-2"></div>
+        </div>
+      </div>`;
+  }
+
+  // 5. Gas / Smoke / Methane Diffusion
+  if (cat === 'gas' || id.includes('mq') || id.includes('sgp') || id.includes('smoke') || id.includes('gas') || id.includes('co2')) {
+    return `
+      <div class="sensor-visual-badge gas-visual-badge" title="Vapor Diffusion Cloud">
+        <div class="smoke-cloud-container">
+          <div class="smoke-puff puff-1"></div>
+          <div class="smoke-puff puff-2"></div>
+          <div class="smoke-puff puff-3"></div>
+          <div class="gas-molecule-icon">💨</div>
+        </div>
+      </div>`;
+  }
+
+  // 6. Liquid / Fluid Slosh & Tank
+  if (cat === 'liquid' || id.includes('water') || id.includes('flow') || id.includes('tank') || id.includes('level') || id.includes('hydro') || id.includes('submersible')) {
+    return `
+      <div class="sensor-visual-badge liquid-visual-badge" title="Fluid Slosh & Air Bubbles">
+        <div class="liquid-tank-mini">
+          <div class="fluid-wave-surface"></div>
+          <div class="fluid-bubble bub-1"></div>
+          <div class="fluid-bubble bub-2"></div>
+          <div class="fluid-impeller">🌀</div>
+        </div>
+      </div>`;
+  }
+
+  // 7. AC/DC Power & Electric Arc
+  if (cat === 'power' || id.includes('volt') || id.includes('zmpt') || id.includes('acs') || id.includes('pzem') || id.includes('ina219') || name.includes('voltage') || name.includes('power')) {
+    return `
+      <div class="sensor-visual-badge power-visual-badge" title="AC Sine Wave & High-Voltage Arc">
+        <div class="power-arc-container">
+          <svg class="ac-sine-svg" viewBox="0 0 50 24">
+            <path class="sine-path" d="M0,12 Q12.5,0 25,12 T50,12" />
+          </svg>
+          <div class="electric-spark">⚡</div>
+        </div>
+      </div>`;
+  }
+
+  // 8. Biometric ECG Cardiac
+  if (id.includes('max30102') || id.includes('ad8232') || id.includes('ecg') || id.includes('spo2') || name.includes('ecg') || name.includes('spo2') || name.includes('heart')) {
+    return `
+      <div class="sensor-visual-badge ecg-visual-badge" title="Cardiac Rhythm & Pulse Telemetry">
+        <div class="cardiac-container">
+          <div class="pulsing-heart">❤️</div>
+          <svg class="ecg-mini-wave" viewBox="0 0 60 20">
+            <polyline points="0,10 15,10 20,2 25,18 30,10 40,10 43,5 46,15 48,10 60,10" />
+          </svg>
+        </div>
+      </div>`;
+  }
+
+  // 9. Actuator & Hydraulic Valve
+  if (cat === 'actuator' || id.includes('valve') || id.includes('solenoid') || id.includes('relay') || name.includes('valve') || name.includes('relay') || name.includes('ac')) {
+    return `
+      <div class="sensor-visual-badge actuator-visual-badge" title="Hydraulic Actuation & Flow Dashing">
+        <div class="actuator-gear-container">
+          <div class="spinning-gear">⚙️</div>
+          <div class="pipe-flow-dashes">
+            <span class="flow-dot"></span>
+            <span class="flow-dot"></span>
+            <span class="flow-dot"></span>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  // 10. Climate & Thermometer
+  return `
+    <div class="sensor-visual-badge climate-visual-badge" title="Atmospheric Thermometer & Microclimate">
+      <div class="climate-thermo-container">
+        <div class="thermo-stem">
+          <div class="thermo-fluid"></div>
+        </div>
+        <div class="thermo-bulb"></div>
+      </div>
+    </div>`;
+}
+
 function renderIndividualSensorWidget(sensor) {
   const cat = sensor.category || 'climate';
   const telem = state.telemetry;
@@ -2478,14 +2625,22 @@ function renderIndividualSensorWidget(sensor) {
   return `
     <div class="rich-sensor-card" data-sensor-id="${sensor.id}">
       <div>
-        <div class="rich-card-head">
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <span style="font-size: 1.3rem;">${getSensorIconByCategory(sensor.category)}</span>
-            <div>
-              <h3 style="margin: 0; font-size: 0.95rem; font-weight: 700; color: var(--text-main);">${sensor.name}</h3>
-              <span class="pin-tag">${sensor.pin}</span>
+        <div class="rich-card-head" style="align-items: center; gap: 10px;">
+          <div style="flex: 1; overflow: hidden;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span style="font-size: 1.15rem;">${getSensorIconByCategory(cat)}</span>
+              <strong style="font-size: 0.92rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${sensor.name}</strong>
+            </div>
+            <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 2px;">
+              ${sensor.room} &bull; <span style="font-family: monospace;">${sensor.pin}</span>
             </div>
           </div>
+          <!-- Animated Dynamic Sensor Micro-Visual -->
+          ${getSensorAnimatedVisual(sensor)}
+          <div style="text-align: right; flex-shrink: 0;">
+            <span class="zone-clearance-pill">${sensor.type}</span>
+          </div>
+        </div>
           <span class="badge" style="background: #f1f5f9; color: #334155; font-size: 0.68rem; font-weight: 600;">${sensor.room}</span>
         </div>
         ${metricHtml}

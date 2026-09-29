@@ -339,15 +339,18 @@ To accommodate diverse industrial, enterprise, and residential deployments, the 
     
     \item \textbf{Interactive Drag-and-Drop Facility Layout Canvas:} Built using native HTML5 drag-and-drop APIs without external UI dependencies. Operators can visually rearrange facility zones, drag sensor chips between zones to reallocate physical coverage, and drag new devices directly from a searchable 124+ sensor template palette into any room. A custom zone creation modal allows operators to provision new spatial areas with distinctive iconography, operational purpose notes, and multi-tier security clearance levels (\textit{Public, General, Safety Critical, Restricted, Hazardous, Sterile, Biohazard Level 3}).
     
-    \item \textbf{Rich Visual Designs with Dedicated Interactive Controls:} Each sensor widget features custom animated visuals, calibrated metric scales, and operational hardware control trays:
+    \item \textbf{Rich Visual Designs \& Real-Time Dynamic Micro-Animations:} Each sensor widget incorporates custom animated hardware graphics, calibrated metric scales, and operational hardware control trays:
     \begin{itemize}
-        \item \textit{Climate Thermostats:} Display ambient vs. setpoint temperatures, a dual-direction slider bar, and mode selector buttons (\textit{Cool, Heat, Fan, Auto}).
-        \item \textit{Toxic \& Flammable Gas Gauges:} Incorporate animated circular SVG PPM gauges with color-coded safety thresholds, an audible siren test button, and a one-touch emergency gas solenoid trip interlock.
-        \item \textit{AC/DC Power Monitors:} Feature multi-parameter voltage, current, active power, and cumulative energy readouts paired with a simulated circuit breaker trip and reset switch.
-        \item \textit{Motorized Valves \& Solenoids:} Include animated fluid piping graphics with active flow particles, Open/Close toggle states, and 12~V 100~ms pulse triggering for pulse-latching valves.
-        \item \textit{Hydrostatic Liquid Columns:} Display animated tank fluid columns with dynamic wave surfaces, volumetric capacity percentages, and auto-fill pump toggles.
-        \item \textit{Perimeter Radar Sentinels:} Feature a real-time revolving radar beam sweep animation, detection sensitivity range controls, and perimeter strobe floodlight triggers.
-        \item \textit{Biometric Vital Signs:} Render a continuous SVG electrocardiogram (ECG) pulse waveform, live SpO$_2$ and heart rate metrics, and a direct nurse call alert station trigger.
+        \item \textit{PIR \& Microwave Doppler Radar Sentinels:} Feature a 360$^\circ$ revolving sweep beam with phosphorescent radial gradient decay, quadrant crosshairs, dynamic sonar ripple waves, and blinking target blip indicators that pulse upon motion intrusion.
+        \item \textit{Light, LDR \& Optical Lux Radiators:} Feature a radiant solar corona with an oscillating sun core aura, spinning solar flare rays, and luminous shimmer rings that expand proportionally to ambient lux levels.
+        \item \textit{Buzzer \& Acoustic Siren Radiators:} Incorporate an acoustic soundwave generator featuring a vibrating speaker cone, triple-layer expanding concentric soundwave arcs, and dynamic four-channel decibel equalizer spectrum bars.
+        \item \textit{Flickering Flame \& Burner Core Scanners:} Render a multi-layered flickering teardrop flame envelope with an incandescent inner core, chromatic thermal gradients, and buoyant rising ember sparks.
+        \item \textit{Gas \& Toxic Vapor Diffusion Clouds:} Feature counter-rotating translucent vapor vortex puffs that transition dynamically from emerald (safe) to amber (warning) and pulsing crimson (hazardous leakage).
+        \item \textit{Fluid Tanks \& Hydrostatic Columns:} Render an undulating sinusoidal liquid wave surface, buoyant rising aeration bubbles, and spinning flow turbine impellers reflecting live flow rates.
+        \item \textit{AC/DC Power Oscilloscopes \& Breaker Arcs:} Display a continuous scrolling high-voltage AC sinusoidal waveform with electrical spark flashes across circuit breaker contacts.
+        \item \textit{Biometric Vital Signs \& Cardiac Monitors:} Feature an illuminated P-Q-R-S-T electrocardiogram (ECG) sweep waveform paired with a rhythmic anatomical heartbeat pulse icon.
+        \item \textit{Hydraulic Valves \& Motorized Actuators:} Render a translucent pipeline with active fluid velocity particle dashing and motorized rotary gear rotation.
+        \item \textit{Atmospheric Microclimate Thermometers:} Render a dual-column thermometer with dynamic capillary fluid expansion, ambient heat haze shimmer waves, and cooling frost glows.
     \end{itemize}
     
     \item \textbf{Autonomous Serial Telemetry Detection \& Sensor Ingestion:} When serial devices stream data via Web Serial, USB COM ports, or wireless bridges, the heuristic examination engine matches the incoming packet signature against the 124+ catalog profiles. If an unmapped sensor signature is detected with confidence $\ge 60\%$, the system automatically instantiates a rich sensor widget in the appropriate facility zone without requiring manual configuration, broadcasting an operator toast notification and logging the hardware pairing.

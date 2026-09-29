@@ -2327,3 +2327,597 @@ input:checked + .slider:before { transform: translateX(20px); }
 }
 
 .btn-tree-action:hover { opacity: 1; }
+
+/* ==========================================================================
+   DYNAMIC SENSOR VISUALS & ANIMATIONS SYSTEM
+   (Radar Sweep, Light Corona, Buzzer Waves, Flames, Smoke, Fluids, AC Sine)
+   ========================================================================== */
+
+/* Universal Sensor Visual Badge Container */
+.sensor-visual-badge {
+  width: 58px;
+  height: 58px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.25), 0 2px 8px rgba(0, 0, 0, 0.08);
+  flex-shrink: 0;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sensor-visual-badge:hover {
+  transform: scale(1.06);
+}
+
+/* 1. PIR / RADAR SCOPE ANIMATION */
+.radar-visual-badge {
+  background: #021a10;
+  border: 1.5px solid #10b981;
+}
+
+.radar-scope {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 1px dashed rgba(16, 185, 129, 0.4);
+  position: relative;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 20%, rgba(2, 26, 16, 0.8) 70%);
+  overflow: hidden;
+}
+
+.radar-crosshair-h, .radar-crosshair-v {
+  position: absolute;
+  background: rgba(16, 185, 129, 0.25);
+}
+.radar-crosshair-h { top: 50%; left: 0; width: 100%; height: 1px; transform: translateY(-50%); }
+.radar-crosshair-v { left: 50%; top: 0; height: 100%; width: 1px; transform: translateX(-50%); }
+
+.radar-sweep-beam {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 25px;
+  height: 25px;
+  transform-origin: 0% 0%;
+  background: conic-gradient(from 0deg at 0% 0%, rgba(16, 185, 129, 0.8) 0deg, rgba(16, 185, 129, 0.1) 45deg, transparent 60deg);
+  animation: radarSweep 2s linear infinite;
+  border-radius: 0 100% 0 0;
+}
+
+@keyframes radarSweep {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.radar-target-blip {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #ef4444;
+  box-shadow: 0 0 6px #ef4444;
+  animation: blipBlink 1.4s ease-in-out infinite alternate;
+}
+.blip-1 { top: 12px; right: 14px; }
+.blip-2 { bottom: 10px; left: 16px; animation-delay: 0.7s; }
+
+@keyframes blipBlink {
+  0% { opacity: 0.15; transform: scale(0.6); }
+  100% { opacity: 1; transform: scale(1.3); }
+}
+
+.radar-sonar-wave {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  margin-top: -4px;
+  margin-left: -4px;
+  border: 1.5px solid #10b981;
+  border-radius: 50%;
+  animation: sonarExpand 2s cubic-bezier(0.1, 0.6, 0.9, 1) infinite;
+}
+
+@keyframes sonarExpand {
+  0% { width: 4px; height: 4px; margin-top: -2px; margin-left: -2px; opacity: 1; }
+  100% { width: 46px; height: 46px; margin-top: -23px; margin-left: -23px; opacity: 0; }
+}
+
+/* 2. LIGHT / OPTICAL CORONA ANIMATION */
+.light-visual-badge {
+  background: radial-gradient(circle, #2a1f05 0%, #110e05 100%);
+  border: 1.5px solid #f59e0b;
+}
+
+.light-corona-aura {
+  width: 48px;
+  height: 48px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.light-sun-core {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fffbeb 20%, #f59e0b 80%, #d97706 100%);
+  box-shadow: 0 0 14px #f59e0b, 0 0 24px rgba(245, 158, 11, 0.6);
+  animation: sunCoreBreath 2s ease-in-out infinite alternate;
+  z-index: 2;
+}
+
+@keyframes sunCoreBreath {
+  0% { transform: scale(0.9); box-shadow: 0 0 10px #f59e0b; }
+  100% { transform: scale(1.15); box-shadow: 0 0 20px #fbbf24, 0 0 30px rgba(245, 158, 11, 0.8); }
+}
+
+.light-solar-rays {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px dashed rgba(251, 191, 36, 0.5);
+  animation: solarRaySpin 8s linear infinite;
+}
+
+@keyframes solarRaySpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.light-shimmer-ring {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(253, 230, 138, 0.4);
+  animation: shimmerPulse 3s ease-in-out infinite alternate;
+}
+
+@keyframes shimmerPulse {
+  0% { transform: scale(0.85); opacity: 0.3; }
+  100% { transform: scale(1.2); opacity: 0.9; }
+}
+
+/* 3. BUZZER / ACOUSTIC SOUNDWAVE ANIMATION */
+.buzzer-visual-badge {
+  background: radial-gradient(circle, #2d1212 0%, #150808 100%);
+  border: 1.5px solid #ef4444;
+}
+
+.buzzer-speaker-box {
+  width: 46px;
+  height: 32px;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.buzzer-cone {
+  font-size: 1.25rem;
+  animation: speakerThump 0.25s infinite alternate;
+  transform-origin: center left;
+  z-index: 2;
+}
+
+@keyframes speakerThump {
+  0% { transform: scale(0.9) rotate(-3deg); }
+  100% { transform: scale(1.15) rotate(3deg); }
+}
+
+.acoustic-wave {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  border: 2px solid #ef4444;
+  border-left: none;
+  border-radius: 0 50px 50px 0;
+  transform: translateY(-50%);
+  animation: acousticRadiate 1.5s cubic-bezier(0, 0.3, 0.8, 1) infinite;
+}
+
+.wave-1 { width: 8px; height: 14px; animation-delay: 0s; }
+.wave-2 { width: 14px; height: 22px; animation-delay: 0.4s; }
+.wave-3 { width: 20px; height: 28px; animation-delay: 0.8s; }
+
+@keyframes acousticRadiate {
+  0% { opacity: 0; transform: translateY(-50%) scale(0.5); }
+  50% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-50%) scale(1.4); }
+}
+
+.eq-bars-mini {
+  position: absolute;
+  bottom: 4px;
+  display: flex;
+  gap: 2px;
+  align-items: flex-end;
+  height: 10px;
+}
+
+.eq-bar {
+  width: 3px;
+  background: #ef4444;
+  border-radius: 1px;
+}
+.bar-1 { height: 4px; animation: eqBounce 0.5s ease infinite alternate; }
+.bar-2 { height: 8px; animation: eqBounce 0.7s ease infinite alternate 0.2s; }
+.bar-3 { height: 6px; animation: eqBounce 0.6s ease infinite alternate 0.1s; }
+.bar-4 { height: 9px; animation: eqBounce 0.8s ease infinite alternate 0.3s; }
+
+@keyframes eqBounce {
+  0% { height: 2px; background: #f87171; }
+  100% { height: 9px; background: #ef4444; }
+}
+
+/* 4. FLAME / FIRE / THERMAL ANIMATION */
+.flame-visual-badge {
+  background: radial-gradient(circle, #3b1406 0%, #150601 100%);
+  border: 1.5px solid #f97316;
+}
+
+.flame-core-container {
+  width: 40px;
+  height: 48px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flame-outer {
+  position: absolute;
+  bottom: 6px;
+  width: 22px;
+  height: 32px;
+  background: radial-gradient(circle at bottom, #f97316 0%, #ef4444 80%);
+  border-radius: 50% 50% 20% 20% / 60% 60% 40% 40%;
+  transform-origin: bottom center;
+  animation: flameWobble 0.6s ease-in-out infinite alternate;
+  filter: blur(0.5px);
+  box-shadow: 0 0 12px #f97316;
+}
+
+.flame-inner {
+  position: absolute;
+  bottom: 8px;
+  width: 12px;
+  height: 18px;
+  background: radial-gradient(circle at bottom, #fffbeb 20%, #fde047 70%, #f97316 100%);
+  border-radius: 50% 50% 20% 20% / 60% 60% 40% 40%;
+  transform-origin: bottom center;
+  animation: flameWobble 0.4s ease-in-out infinite alternate-reverse;
+  z-index: 2;
+}
+
+@keyframes flameWobble {
+  0% { transform: scale(1) rotate(-3deg); }
+  50% { transform: scale(1.08, 0.94) rotate(2deg); }
+  100% { transform: scale(0.96, 1.05) rotate(-2deg); }
+}
+
+.ember-spark {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  background: #fde047;
+  border-radius: 50%;
+  box-shadow: 0 0 4px #fde047;
+  animation: emberRise 1.8s ease-out infinite;
+}
+.ember-1 { bottom: 12px; left: 10px; animation-delay: 0.2s; }
+.ember-2 { bottom: 14px; right: 10px; animation-delay: 0.9s; }
+
+@keyframes emberRise {
+  0% { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(-24px) scale(0.2); opacity: 0; }
+}
+
+/* 5. GAS / SMOKE DIFFUSION CLOUD ANIMATION */
+.gas-visual-badge {
+  background: radial-gradient(circle, #0e2920 0%, #061510 100%);
+  border: 1.5px solid #14b8a6;
+}
+
+.smoke-cloud-container {
+  width: 48px;
+  height: 48px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.smoke-puff {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(20, 184, 166, 0.25);
+  filter: blur(4px);
+  animation: smokeSwirl 3.5s ease-in-out infinite alternate;
+}
+
+.puff-1 { width: 28px; height: 28px; top: 8px; left: 8px; animation-delay: 0s; }
+.puff-2 { width: 34px; height: 34px; bottom: 6px; right: 6px; animation-delay: 1.2s; }
+.puff-3 { width: 20px; height: 20px; top: 12px; right: 12px; animation-delay: 2s; }
+
+@keyframes smokeSwirl {
+  0% { transform: rotate(0deg) scale(0.85); opacity: 0.3; }
+  50% { transform: rotate(180deg) scale(1.1); opacity: 0.6; }
+  100% { transform: rotate(360deg) scale(0.9); opacity: 0.35; }
+}
+
+.gas-molecule-icon {
+  font-size: 1.2rem;
+  z-index: 2;
+  animation: moleculeFloat 2s ease-in-out infinite alternate;
+}
+
+@keyframes moleculeFloat {
+  0% { transform: translateY(-2px) scale(0.95); }
+  100% { transform: translateY(2px) scale(1.05); }
+}
+
+/* 6. LIQUID / TANK SLOSH & AIR BUBBLES ANIMATION */
+.liquid-visual-badge {
+  background: radial-gradient(circle, #082845 0%, #031322 100%);
+  border: 1.5px solid #0284c7;
+}
+
+.liquid-tank-mini {
+  width: 46px;
+  height: 46px;
+  border-radius: 8px;
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  position: relative;
+  overflow: hidden;
+  background: rgba(2, 132, 199, 0.1);
+}
+
+.fluid-wave-surface {
+  position: absolute;
+  bottom: 0;
+  width: 100px;
+  height: 26px;
+  background: linear-gradient(180deg, rgba(56, 189, 248, 0.8) 0%, rgba(2, 132, 199, 0.9) 100%);
+  border-radius: 40%;
+  animation: fluidWave 2.5s ease-in-out infinite alternate;
+  left: -25px;
+}
+
+@keyframes fluidWave {
+  0% { transform: rotate(0deg) translateY(0); }
+  50% { transform: rotate(8deg) translateY(-2px); }
+  100% { transform: rotate(-8deg) translateY(2px); }
+}
+
+.fluid-bubble {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 3px #fff;
+  animation: airBubbleFloat 2s ease-in infinite;
+}
+.bub-1 { bottom: 6px; left: 14px; animation-delay: 0.3s; }
+.bub-2 { bottom: 4px; right: 16px; animation-delay: 1.1s; }
+
+@keyframes airBubbleFloat {
+  0% { transform: translateY(0) scale(0.5); opacity: 0; }
+  30% { opacity: 0.9; }
+  100% { transform: translateY(-26px) scale(1.2); opacity: 0; }
+}
+
+.fluid-impeller {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-size: 0.75rem;
+  animation: impellerRotate 1.2s linear infinite;
+  z-index: 2;
+}
+
+@keyframes impellerRotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 7. AC / DC POWER ELECTRIC SINE & ARCS */
+.power-visual-badge {
+  background: radial-gradient(circle, #1e1338 0%, #0a0614 100%);
+  border: 1.5px solid #8b5cf6;
+}
+
+.power-arc-container {
+  width: 48px;
+  height: 40px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ac-sine-svg {
+  width: 46px;
+  height: 22px;
+  overflow: visible;
+}
+
+.sine-path {
+  fill: none;
+  stroke: #a78bfa;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-dasharray: 6 3;
+  animation: sineScroll 1s linear infinite;
+  filter: drop-shadow(0 0 3px #8b5cf6);
+}
+
+@keyframes sineScroll {
+  0% { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: -18; }
+}
+
+.electric-spark {
+  position: absolute;
+  font-size: 0.95rem;
+  animation: sparkZap 0.8s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 6px #fbbf24);
+}
+
+@keyframes sparkZap {
+  0% { transform: scale(0.85) rotate(-6deg); opacity: 0.6; }
+  100% { transform: scale(1.25) rotate(8deg); opacity: 1; }
+}
+
+/* 8. BIOMETRIC ECG CARDIAC MONITOR */
+.ecg-visual-badge {
+  background: radial-gradient(circle, #2e080e 0%, #120306 100%);
+  border: 1.5px solid #f43f5e;
+}
+
+.cardiac-container {
+  width: 48px;
+  height: 48px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.pulsing-heart {
+  font-size: 1rem;
+  animation: cardiacBeat 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+  margin-bottom: 2px;
+}
+
+@keyframes cardiacBeat {
+  0% { transform: scale(0.9); }
+  25% { transform: scale(1.25); }
+  40% { transform: scale(1.05); }
+  60% { transform: scale(1.2); }
+  100% { transform: scale(0.9); }
+}
+
+.ecg-mini-wave {
+  width: 44px;
+  height: 16px;
+  stroke: #f43f5e;
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 3px #f43f5e);
+  animation: ecgSweepFade 1.6s ease-in-out infinite;
+}
+
+@keyframes ecgSweepFade {
+  0% { opacity: 0.3; stroke-dasharray: 20 60; stroke-dashoffset: 60; }
+  50% { opacity: 1; }
+  100% { opacity: 0.4; stroke-dasharray: 60 20; stroke-dashoffset: 0; }
+}
+
+/* 9. ACTUATOR & VALVE HYDRAULIC FLOW */
+.actuator-visual-badge {
+  background: radial-gradient(circle, #062b33 0%, #021115 100%);
+  border: 1.5px solid #06b6d4;
+}
+
+.actuator-gear-container {
+  width: 46px;
+  height: 46px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinning-gear {
+  font-size: 1.15rem;
+  animation: gearTurn 3s linear infinite;
+}
+
+@keyframes gearTurn {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.pipe-flow-dashes {
+  display: flex;
+  gap: 3px;
+  margin-top: 2px;
+}
+
+.flow-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #22d3ee;
+  animation: flowDotPulse 0.9s ease-in-out infinite;
+}
+.flow-dot:nth-child(1) { animation-delay: 0s; }
+.flow-dot:nth-child(2) { animation-delay: 0.3s; }
+.flow-dot:nth-child(3) { animation-delay: 0.6s; }
+
+@keyframes flowDotPulse {
+  0% { opacity: 0.2; transform: scale(0.7); }
+  50% { opacity: 1; transform: scale(1.3); }
+  100% { opacity: 0.2; transform: scale(0.7); }
+}
+
+/* 10. CLIMATE / THERMO METEOROLOGY */
+.climate-visual-badge {
+  background: radial-gradient(circle, #142838 0%, #07121b 100%);
+  border: 1.5px solid #38bdf8;
+}
+
+.climate-thermo-container {
+  width: 46px;
+  height: 46px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.thermo-stem {
+  width: 6px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+  margin-top: -6px;
+}
+
+.thermo-fluid {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 60%;
+  background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%);
+  border-radius: 3px;
+  animation: thermoRise 2.5s ease-in-out infinite alternate;
+}
+
+@keyframes thermoRise {
+  0% { height: 40%; background: #38bdf8; }
+  100% { height: 80%; background: #f43f5e; }
+}
+
+.thermo-bulb {
+  position: absolute;
+  bottom: 8px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #0284c7;
+  box-shadow: 0 0 6px #38bdf8;
+}
