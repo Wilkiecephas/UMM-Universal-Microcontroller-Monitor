@@ -13,89 +13,99 @@
 <body>
 
   <!-- Top Navigation Header with Full Routing Links -->
-  <header class="navbar">
-    <div class="brand">
-      <a href="#monitor" class="brand-link">
-        <div class="brand-logo">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/>
-            <path d="M9 21V12h6v9"/>
-          </svg>
-        </div>
-        <div class="brand-title-wrap">
-          <h1 class="brand-title" id="displayFacilityName">KyU Telemetry Lab 4</h1>
-        </div>
-      </a>
-      <button class="btn-icon-subtle" id="btnEditFacility" title="Rename Facility">✏️</button>
-    </div>
-
-    <!-- Active Navigation Routing Tabs -->
-    <nav class="nav-tabs" id="mainNavTabs">
-      <a href="#monitor" class="nav-tab active" data-tab="virtual-house">
-        <span class="tab-icon">🏠</span> Monitor
-      </a>
-      <a href="#sensors" class="nav-tab" data-tab="telemetry">
-        <span class="tab-icon">📊</span> Sensors
-      </a>
-      <a href="#controls" class="nav-tab" data-tab="controls">
-        <span class="tab-icon">🌿</span> Controls
-      </a>
-      <a href="#gallery" class="nav-tab" data-tab="media-gallery">
-        <span class="tab-icon">📸</span> Gallery
-      </a>
-      <a href="#alarms" class="nav-tab" data-tab="alarms">
-        <span class="tab-icon">🔔</span> Alarms
-      </a>
-      <a href="#reports" class="nav-tab" data-tab="reports">
-        <span class="tab-icon">📑</span> Reports
-      </a>
-      <a href="#servers" class="nav-tab" data-tab="cloud-servers">
-        <span class="tab-icon">🌐</span> Cloud & Servers
-      </a>
-      <a href="#universal" class="nav-tab" data-tab="universal-devices">
-        <span class="tab-icon">🔌</span> 100+ Sensors & Examiner
-      </a>
-      <a href="#setup" class="nav-tab" data-tab="facility-rooms">
-        <span class="tab-icon">🏢</span> Setup & Pins
-      </a>
-    </nav>
-
-    <!-- Header Tools: Premise Model, 10 Themes, Connection Pill & Engineering IDE Link -->
-    <div class="header-actions">
-      <!-- Premise Model Archetype Selector -->
-      <select class="premise-select" id="premiseModelSelect" title="Select Premise Model Architecture">
-        <option value="home" selected>🏡 Smart Residential Home</option>
-        <option value="telecom">📡 Telecom Site & Perimeter Fence</option>
-        <option value="hospital">🏥 Hospital & Medical Campus</option>
-        <option value="industrial">🏭 Industrial Chemical & Factory</option>
-        <option value="greenhouse">🌾 Smart Agriculture & Greenhouse</option>
-        <option value="datacenter">🏢 Enterprise Data Center</option>
-      </select>
-
-      <!-- 10 Theme Environment Selector -->
-      <select class="theme-select" id="themeSelect" title="Select Theme Environment">
-        <option value="home" selected>🏡 Home Theme</option>
-        <option value="office">💼 Office</option>
-        <option value="workshop">🔨 Workshop</option>
-        <option value="space">🚀 Space</option>
-        <option value="cyber">⚡ Cyber</option>
-        <option value="lab">🔬 Lab</option>
-        <option value="garden">🌿 Garden</option>
-        <option value="night">🌙 Night</option>
-        <option value="ocean">🌊 Ocean</option>
-        <option value="industrial">🏭 Industrial</option>
-      </select>
-
-      <!-- Connection Status Pill -->
-      <div class="connection-status-pill" id="globalConnStatus">
-        <span class="status-dot waiting" id="globalConnDot"></span>
-        <span class="status-label" id="globalConnLabel">Awaiting Board</span>
+  <header class="navbar-wrapper">
+    <!-- Tier 1: Brand & Global Actions -->
+    <div class="navbar-primary">
+      <div class="brand">
+        <a href="#monitor" class="brand-link">
+          <div class="brand-logo">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/>
+              <path d="M9 21V12h6v9"/>
+            </svg>
+          </div>
+          <div class="brand-title-wrap">
+            <h1 class="brand-title" id="displayFacilityName">KyU Telemetry Lab 4</h1>
+          </div>
+        </a>
+        <button class="btn-icon-subtle" id="btnEditFacility" title="Rename Facility">✏️</button>
       </div>
 
-      <!-- Segregated IDE Route Button -->
-      <a href="#ide" class="btn btn-secondary btn-sm" id="btnToggleEngineering" title="Open Hardware IDE & Serial Terminal">
-        <span>⚡</span> IDE
-      </a>
+      <div class="header-actions">
+        <!-- Premise Model Archetype Selector -->
+        <div class="header-control-box" title="Select Premise Model Architecture">
+          <span style="font-size: 0.85rem;">🏰</span>
+          <select class="premise-select" id="premiseModelSelect">
+            <option value="home" selected>🏡 Smart Residential Home</option>
+            <option value="telecom">📡 Telecom Site & Perimeter Fence</option>
+            <option value="hospital">🏥 Hospital & Medical Campus</option>
+            <option value="industrial">🏭 Industrial Chemical & Factory</option>
+            <option value="greenhouse">🌾 Smart Agriculture & Greenhouse</option>
+            <option value="datacenter">🏢 Enterprise Data Center</option>
+          </select>
+        </div>
+
+        <!-- 10 Theme Environment Selector -->
+        <div class="header-control-box" title="Select Theme Environment">
+          <span style="font-size: 0.85rem;">🎨</span>
+          <select class="theme-select" id="themeSelect">
+            <option value="home" selected>🏡 Home Theme</option>
+            <option value="office">💼 Office</option>
+            <option value="workshop">🔨 Workshop</option>
+            <option value="space">🚀 Space</option>
+            <option value="cyber">⚡ Cyber</option>
+            <option value="lab">🔬 Lab</option>
+            <option value="garden">🌿 Garden</option>
+            <option value="night">🌙 Night</option>
+            <option value="ocean">🌊 Ocean</option>
+            <option value="industrial">🏭 Industrial</option>
+          </select>
+        </div>
+
+        <!-- Connection Status Pill -->
+        <div class="connection-status-pill" id="globalConnStatus">
+          <span class="status-dot waiting" id="globalConnDot"></span>
+          <span class="status-label" id="globalConnLabel">Awaiting Board</span>
+        </div>
+
+        <!-- Segregated IDE Route Button -->
+        <a href="#ide" class="btn btn-secondary btn-sm" id="btnToggleEngineering" title="Open Hardware IDE & Serial Terminal">
+          <span>⚡</span> IDE
+        </a>
+      </div>
+    </div>
+
+    <!-- Tier 2: Dedicated Scrollable Routing Tabs -->
+    <div class="navbar-tabs-row">
+      <nav class="nav-tabs" id="mainNavTabs">
+        <a href="#monitor" class="nav-tab active" data-tab="virtual-house">
+          <span class="tab-icon">🏠</span> Monitor
+        </a>
+        <a href="#sensors" class="nav-tab" data-tab="telemetry">
+          <span class="tab-icon">📊</span> Sensors
+        </a>
+        <a href="#controls" class="nav-tab" data-tab="controls">
+          <span class="tab-icon">🌿</span> Controls
+        </a>
+        <a href="#gallery" class="nav-tab" data-tab="media-gallery">
+          <span class="tab-icon">📸</span> Gallery
+        </a>
+        <a href="#alarms" class="nav-tab" data-tab="alarms">
+          <span class="tab-icon">🔔</span> Alarms
+        </a>
+        <a href="#reports" class="nav-tab" data-tab="reports">
+          <span class="tab-icon">📑</span> Reports
+        </a>
+        <a href="#servers" class="nav-tab" data-tab="cloud-servers">
+          <span class="tab-icon">🌐</span> Cloud & Servers
+        </a>
+        <a href="#universal" class="nav-tab" data-tab="universal-devices">
+          <span class="tab-icon">🔌</span> 100+ Sensors & Examiner
+        </a>
+        <a href="#setup" class="nav-tab" data-tab="facility-rooms">
+          <span class="tab-icon">🏢</span> Setup & Pins
+        </a>
+      </nav>
     </div>
   </header>
 
@@ -1061,15 +1071,18 @@
         <div class="card-header" style="flex-wrap: wrap; gap: 8px;">
           <div>
             <div style="display: flex; align-items: center; gap: 8px;">
-              <span style="font-size: 1.25rem;">🖐️</span>
-              <h3 class="card-title" style="margin: 0;">Interactive Drag & Drop Premise & Area Layout Editor</h3>
+              <span style="font-size: 1.3rem;">🏰</span>
+              <h3 class="card-title" style="margin: 0;">Multi-Building, Parent/Child & Drag-and-Drop Facility Studio</h3>
             </div>
-            <p class="section-desc" style="margin: 4px 0 0 0;">Drag sensors between rooms/zones to reallocate physical coverage, drag rooms to reorder, or drag new sensors from the 124+ catalog palette.</p>
+            <p class="section-desc" style="margin: 4px 0 0 0;">Manage parent buildings, sub-wings, room coverage, parent/child sub-devices, custom things, and drag-and-drop sensor allocations.</p>
           </div>
           <div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
-            <button class="btn btn-secondary btn-xs" id="btnResetPremiseDefaults">🔄 Reset Archetype Defaults</button>
-            <button class="btn btn-secondary btn-xs" id="btnExportPremiseLayout">💾 Export Premise JSON</button>
-            <button class="btn btn-primary btn-xs" id="btnHeaderAddArea">➕ Add New Area / Zone</button>
+            <button class="btn btn-secondary btn-xs" id="btnToggleHierarchyView">🌲 Hierarchy Tree View</button>
+            <button class="btn btn-secondary btn-xs" id="btnOpenAddBuilding">🏢 + Add Custom Building</button>
+            <button class="btn btn-secondary btn-xs" id="btnOpenAddCustomThing">✨ + Add Custom Thing</button>
+            <button class="btn btn-primary btn-xs" id="btnHeaderAddArea">➕ Add Area / Zone</button>
+            <button class="btn btn-secondary btn-xs" id="btnResetPremiseDefaults">🔄 Reset</button>
+            <button class="btn btn-secondary btn-xs" id="btnExportPremiseLayout">💾 Export JSON</button>
           </div>
         </div>
 
@@ -1084,8 +1097,8 @@
           <button class="premise-chip" data-model="datacenter">🏢 Enterprise Data Center</button>
         </div>
 
-        <!-- Drag & Drop Layout Workspace -->
-        <div class="drag-drop-workspace">
+        <!-- 1. Drag & Drop Grid Canvas View -->
+        <div id="dragDropCanvasView" class="drag-drop-workspace">
           <!-- Main Droppable Zones Canvas (Left) -->
           <div class="premise-zones-column">
             <div class="premise-zones-grid" id="premiseZonesGrid">
@@ -1096,16 +1109,31 @@
           <!-- Quick Sensor Palette (Right) -->
           <div class="sensor-palette-column">
             <div class="palette-header">
-              <span style="font-weight: 700; font-size: 0.82rem;">📚 Drag-to-Add Sensor Palette</span>
+              <span style="font-weight: 700; font-size: 0.82rem;">📚 124+ Sensor & Custom Things Palette</span>
               <span class="badge" id="paletteBadgeCount">124 Models</span>
             </div>
-            <p style="font-size: 0.72rem; color: var(--text-muted); margin: 0 0 6px 0;">Drag any sensor chip into a room zone to automatically instantiate it.</p>
-            <input type="text" id="paletteSearchInput" class="input-control" style="padding: 4px 8px; font-size: 0.76rem; margin-bottom: 8px;" placeholder="Search 124+ sensors to drag...">
+            <p style="font-size: 0.72rem; color: var(--text-muted); margin: 0 0 6px 0;">Drag any sensor or custom device into a room zone to instantiate it.</p>
+            <input type="text" id="paletteSearchInput" class="input-control" style="padding: 4px 8px; font-size: 0.76rem; margin-bottom: 8px;" placeholder="Search sensors & custom things...">
             <div class="palette-chips-scroll" id="paletteChipsScroll">
               <!-- Dynamically populated draggable sensor templates -->
             </div>
           </div>
         </div>
+
+        <!-- 2. Hierarchy Tree & Parent/Child View (Toggled) -->
+        <div id="hierarchyTreeView" class="hierarchy-tree-workspace" style="display: none; padding: 16px; background: var(--bg-card-subtle);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <div>
+              <h4 style="margin: 0; font-size: 0.95rem;">🌲 Facility Parent / Child Architecture Tree</h4>
+              <p style="font-size: 0.74rem; color: var(--text-muted); margin: 2px 0 0 0;">Visual representation of Buildings &rarr; Wings / Floors &rarr; Zones &rarr; Parent Devices &rarr; Child Sensors / Channels.</p>
+            </div>
+            <button class="btn btn-secondary btn-xs" id="btnSwitchToCanvasView">📊 Return to Grid Canvas</button>
+          </div>
+          <div id="hierarchyTreeContent" class="tree-nodes-container">
+            <!-- Dynamically populated hierarchy tree -->
+          </div>
+        </div>
+      </div>
       </div>
 
       <div class="pins-layout">
@@ -1574,6 +1602,281 @@
 
   <script type="module" src="sensorTemplatesCatalog.js"></script>
   <script src="app.js"></script>
+
+  <!-- Modal: Add Custom Building / Premise -->
+  <div class="modal-overlay" id="modalAddBuilding">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">🏢 Add Custom Building / Facility</h3>
+        <button class="modal-close" id="btnCloseAddBuilding">&times;</button>
+      </div>
+      <form id="formAddBuilding" class="modal-body">
+        <div class="form-group">
+          <label class="input-label">Building Name</label>
+          <input type="text" class="input-control" id="newBuildingName" placeholder="e.g. North Telemetry Tower, Pavilion B" required>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <div class="form-group" style="flex: 1;">
+            <label class="input-label">Building Icon</label>
+            <select class="input-control" id="newBuildingIcon">
+              <option value="🏢">🏢 Commercial Building</option>
+              <option value="🏥">🏥 Hospital / Clinic</option>
+              <option value="📡">📡 Telecom Tower Compound</option>
+              <option value="🏭">🏭 Industrial Factory</option>
+              <option value="🌾">🌾 Agricultural Greenhouse</option>
+              <option value="🏡">🏡 Residential House</option>
+              <option value="🏰">🏰 Main Campus Complex</option>
+              <option value="🔬">🔬 Research Laboratory</option>
+              <option value="⚡">⚡ Substation Facility</option>
+              <option value="🏬">🏬 Warehouse / Logistics</option>
+            </select>
+          </div>
+          <div class="form-group" style="flex: 1;">
+            <label class="input-label">Facility Domain</label>
+            <select class="input-control" id="newBuildingDomain">
+              <option value="custom">Custom Site</option>
+              <option value="telecom">Telecommunications</option>
+              <option value="medical">Medical / Clinical</option>
+              <option value="industrial">Industrial Chemical</option>
+              <option value="residential">Residential IoT</option>
+              <option value="agriculture">Smart Agriculture</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="input-label">Initial Wings / Floors (Comma Separated)</label>
+          <input type="text" class="input-control" id="newBuildingWings" placeholder="e.g. Ground Floor, Upper Deck, Perimeter Zone" value="Ground Level, Upper Level">
+        </div>
+        <div class="form-group">
+          <label class="input-label">Location / Site Description</label>
+          <input type="text" class="input-control" id="newBuildingDesc" placeholder="e.g. Hilltop Relay Station, Sector 4">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btnCancelAddBuilding">Cancel</button>
+          <button type="submit" class="btn btn-primary">➕ Create Building</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Add Custom Thing / Sensor / Actuator -->
+  <div class="modal-overlay" id="modalAddCustomThing">
+    <div class="modal-box" style="max-width: 580px;">
+      <div class="modal-header">
+        <h3 class="modal-title">✨ Add Custom Thing / Sensor / Actuator</h3>
+        <button class="modal-close" id="btnCloseAddCustomThing">&times;</button>
+      </div>
+      <form id="formAddCustomThing" class="modal-body">
+        <div class="form-group">
+          <label class="input-label">Device / Thing Name</label>
+          <input type="text" class="input-control" id="customThingName" placeholder="e.g. Ultrasonic Sludge Level Transmitter, Turbine Vibration 1" required>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <div class="form-group" style="flex: 1;">
+            <label class="input-label">Model Identifier</label>
+            <input type="text" class="input-control" id="customThingModel" placeholder="e.g. US-TANK-500" required>
+          </div>
+          <div class="form-group" style="flex: 1;">
+            <label class="input-label">Device Icon</label>
+            <select class="input-control" id="customThingIcon">
+              <option value="📟">📟 Custom Instrument</option>
+              <option value="🌡️">🌡️ Climate / Thermal</option>
+              <option value="⚠️">⚠️ Toxic / Gas Detector</option>
+              <option value="⚡">⚡ Power / Grid Breaker</option>
+              <option value="🛡️">🛡️ Radar / Security Sentry</option>
+              <option value="💧">💧 Liquid / Flow Sensor</option>
+              <option value="🚰">🚰 Motorized Valve / Actuator</option>
+              <option value="🩺">🩺 Medical Biometric</option>
+              <option value="🌾">🌾 Soil / Crop Sensor</option>
+              <option value="⚙️">⚙️ Industrial Machine Probe</option>
+              <option value="💡">💡 Optical / Flame Scanner</option>
+            </select>
+          </div>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <div class="form-group" style="flex: 1;">
+            <label class="input-label">Category</label>
+            <select class="input-control" id="customThingCategory">
+              <option value="climate">Climate & Environmental</option>
+              <option value="gas">Gas & Chemical Safety</option>
+              <option value="power">AC/DC Power Monitoring</option>
+              <option value="motion">Motion & Radar Security</option>
+              <option value="liquid">Liquid Level & Fluid Flow</option>
+              <option value="actuator">Valves & HVAC Actuators</option>
+              <option value="optical">Optical & Medical Biometric</option>
+              <option value="custom">General Custom Thing</option>
+            </select>
+          </div>
+          <div class="form-group" style="flex: 1;">
+            <label class="input-label">Signal Architecture</label>
+            <select class="input-control" id="customThingSignal">
+              <option value="Analog ADC">Analog ADC (0-3.3V / 4-20mA)</option>
+              <option value="Digital Single-Bus">Digital Single-Bus (1-Wire)</option>
+              <option value="Digital I2C">Digital I2C (SDA/SCL)</option>
+              <option value="Digital SPI">Digital SPI (CS/MOSI/MISO)</option>
+              <option value="UART Serial">UART Serial / Modbus RS485</option>
+              <option value="Relay Output">Relay Actuator Output</option>
+              <option value="Wireless BLE">Wireless BLE / Beacon</option>
+              <option value="Wi-Fi MQTT">Wi-Fi REST / MQTT Stream</option>
+            </select>
+          </div>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <div class="form-group" style="flex: 1;">
+            <label class="input-label">Assigned Room / Zone</label>
+            <select class="input-control" id="customThingRoom">
+              <!-- Dynamically populated with active rooms -->
+            </select>
+          </div>
+          <div class="form-group" style="flex: 1;">
+            <label class="input-label">Parent Device (Parent/Child)</label>
+            <select class="input-control" id="customThingParentDevice">
+              <option value="">None (Independent Standalone)</option>
+              <!-- Dynamically populated with active parent sensors -->
+            </select>
+          </div>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <div class="form-group" style="flex: 1;">
+            <label class="input-label">Hardware Pin / Channel</label>
+            <input type="text" class="input-control" id="customThingPin" placeholder="e.g. GPIO 25, A0, I2C 0x68">
+          </div>
+          <div class="form-group" style="flex: 1;">
+            <label class="input-label">Threshold / Nominal Range</label>
+            <input type="text" class="input-control" id="customThingThreshold" placeholder="e.g. 20 - 80% Full, < 100 ppm">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btnCancelAddCustomThing">Cancel</button>
+          <button type="submit" class="btn btn-primary">➕ Save Custom Thing</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Edit Zone / Room Properties -->
+  <div class="modal-overlay" id="modalEditZone">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">✏️ Edit Area / Zone Settings</h3>
+        <button class="modal-close" id="btnCloseEditZone">&times;</button>
+      </div>
+      <form id="formEditZone" class="modal-body">
+        <input type="hidden" id="editZoneOldName">
+        <div class="form-group">
+          <label class="input-label">Zone Name</label>
+          <input type="text" class="input-control" id="editZoneName" required>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <div class="form-group" style="flex: 1;">
+            <label class="input-label">Zone Icon</label>
+            <select class="input-control" id="editZoneIcon">
+              <option value="🚪">🚪 Entrance / Door</option>
+              <option value="🛋️">🛋️ Living / Office</option>
+              <option value="🍳">🍳 Kitchen / Cooking</option>
+              <option value="🛏️">🛏️ Bedroom / Quarters</option>
+              <option value="⚡">⚡ Electrical Utility</option>
+              <option value="🛡️">🛡️ Perimeter Fence</option>
+              <option value="🖧">🖧 BTS Shelter / Rack</option>
+              <option value="🔋">🔋 Battery / UPS Bank</option>
+              <option value="🗼">🗼 Tower Mast / Mast</option>
+              <option value="⛽">⛽ Fuel / Genset Depot</option>
+              <option value="🩺">🩺 ICU / Medical</option>
+              <option value="❄️">❄️ Cryo / Freezer</option>
+              <option value="🥼">🥼 Operating Theater</option>
+              <option value="☣️">☣️ Isolation Ward</option>
+              <option value="🧪">🧪 Chemical Bay</option>
+              <option value="🔥">🔥 Boiler / Furnace</option>
+              <option value="⚙️">⚙️ Assembly Line</option>
+              <option value="💧">💧 Hydroponics Bay</option>
+              <option value="🌾">🌾 Agriculture Field</option>
+              <option value="🏢">🏢 Server Containment</option>
+            </select>
+          </div>
+          <div class="form-group" style="flex: 1;">
+            <label class="input-label">Security Clearance</label>
+            <select class="input-control" id="editZoneClearance">
+              <option value="General">General Access</option>
+              <option value="Public">Public Barrier</option>
+              <option value="Safety">Safety Critical</option>
+              <option value="Restricted">Restricted / Staff</option>
+              <option value="Hazardous">Hazardous / Hazmat</option>
+              <option value="Sterile">Sterile Medical</option>
+              <option value="Biohazard">Biohazard Level 3</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="input-label">Parent Building / Facility</label>
+          <select class="input-control" id="editZoneParentBuilding">
+            <!-- Populated with buildings -->
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="input-label">Operational Purpose</label>
+          <input type="text" class="input-control" id="editZonePurpose" required>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btnCancelEditZone">Cancel</button>
+          <button type="submit" class="btn btn-primary">💾 Update Zone</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Edit Sensor / Thing (Parent/Child & Metadata) -->
+  <div class="modal-overlay" id="modalEditSensor">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">✏️ Edit Sensor & Parent/Child Association</h3>
+        <button class="modal-close" id="btnCloseEditSensor">&times;</button>
+      </div>
+      <form id="formEditSensor" class="modal-body">
+        <input type="hidden" id="editSensorId">
+        <div class="form-group">
+          <label class="input-label">Sensor / Display Label</label>
+          <input type="text" class="input-control" id="editSensorLabel" required>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <div class="form-group" style="flex: 1;">
+            <label class="input-label">Assigned Room / Zone</label>
+            <select class="input-control" id="editSensorRoom">
+              <!-- Populated dynamically -->
+            </select>
+          </div>
+          <div class="form-group" style="flex: 1;">
+            <label class="input-label">Parent Device (Parent/Child)</label>
+            <select class="input-control" id="editSensorParent">
+              <option value="">None (Top-Level Device)</option>
+              <!-- Populated with parent candidates -->
+            </select>
+          </div>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <div class="form-group" style="flex: 1;">
+            <label class="input-label">Hardware Pin</label>
+            <input type="text" class="input-control" id="editSensorPin">
+          </div>
+          <div class="form-group" style="flex: 1;">
+            <label class="input-label">Operational Status</label>
+            <select class="input-control" id="editSensorStatus">
+              <option value="active">Active (Armed & Streaming)</option>
+              <option value="maintenance">Maintenance / Calibration</option>
+              <option value="bypassed">Bypassed / Inactive</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="input-label">Alarm Threshold / Nominal Bounds</label>
+          <input type="text" class="input-control" id="editSensorThreshold">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btnCancelEditSensor">Cancel</button>
+          <button type="submit" class="btn btn-primary">💾 Save Sensor Settings</button>
+        </div>
+      </form>
+    </div>
+  </div>
 </body>
 </html>
 

@@ -266,26 +266,33 @@ body {
 }
 
 /* ==========================================================================
-   MINIMALIST NAVBAR
+   ROBUST TWO-TIER NAVIGATION HEADER (PREVENTS ANY MERGING OR OVERFLOW)
    ========================================================================== */
-.navbar {
+.navbar-wrapper {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-light);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  width: 100%;
+}
+
+.navbar-primary {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 24px;
-  background: var(--bg-card);
+  padding: 8px 24px;
+  gap: 16px;
+  flex-wrap: wrap;
   border-bottom: 1px solid var(--border-light);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  box-shadow: var(--card-glow);
-  height: 56px;
 }
 
 .brand {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-shrink: 0;
 }
 
 .brand-logo {
@@ -306,10 +313,12 @@ body {
 }
 
 .brand-title {
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   font-weight: 800;
   letter-spacing: -0.02em;
   color: var(--text-primary);
+  margin: 0;
+  white-space: nowrap;
 }
 
 .btn-icon-subtle {
@@ -322,29 +331,82 @@ body {
 
 .btn-icon-subtle:hover { opacity: 1; }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.header-control-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-card-subtle);
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-light);
+}
+
+.premise-select, .theme-select {
+  font-family: var(--font-main);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 5px 8px;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+  outline: none;
+  max-width: 220px;
+}
+
+.navbar-tabs-row {
+  display: flex;
+  align-items: center;
+  padding: 4px 20px;
+  background: var(--bg-card-subtle);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+
+.navbar-tabs-row::-webkit-scrollbar {
+  height: 3px;
+}
+.navbar-tabs-row::-webkit-scrollbar-thumb {
+  background: var(--border-color, #cbd5e1);
+  border-radius: 3px;
+}
+
 .nav-tabs {
   display: flex;
-  background: var(--bg-card-subtle);
-  padding: 4px;
-  border-radius: var(--radius-md);
+  align-items: center;
   gap: 4px;
-  border: 1px solid var(--border-light);
+  width: max-content;
+  background: transparent;
+  padding: 0;
+  border: none;
 }
 
 .nav-tab {
   background: transparent;
   border: none;
   font-family: var(--font-main);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 600;
   color: var(--text-secondary);
-  padding: 6px 14px;
+  padding: 6px 12px;
   border-radius: var(--radius-sm);
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 6px;
   transition: var(--transition-fast);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .nav-tab:hover {
@@ -356,24 +418,6 @@ body {
   background: var(--bg-card);
   color: var(--accent-primary);
   box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.theme-select {
-  font-family: var(--font-main);
-  font-size: 0.8rem;
-  font-weight: 600;
-  padding: 6px 10px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-light);
-  background: var(--bg-card);
-  color: var(--text-primary);
-  cursor: pointer;
 }
 
 .connection-status-pill {
@@ -403,9 +447,12 @@ body {
    MAIN CONTAINER & CLEAN MONITOR VIEW
    ========================================================================== */
 .main-container {
-  padding: 16px 28px;
-  max-width: 1400px;
+  padding: 18px 24px;
+  max-width: 1440px;
   margin: 0 auto;
+  box-sizing: border-box;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 .tab-content { display: none; }
@@ -2163,3 +2210,120 @@ input:checked + .slider:before { transform: translateX(20px); }
 }
 
 
+
+/* ==========================================================================
+   HIERARCHY TREE & PARENT/CHILD STYLES
+   ========================================================================== */
+.hierarchy-tree-workspace {
+  border-radius: 0 0 10px 10px;
+}
+
+.tree-nodes-container {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.tree-building-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color, #cbd5e1);
+  border-radius: 10px;
+  padding: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.tree-building-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-light);
+  margin-bottom: 10px;
+}
+
+.tree-wings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 12px;
+}
+
+.tree-wing-block {
+  background: var(--bg-card-subtle);
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.tree-wing-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tree-zone-row {
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin-bottom: 6px;
+}
+
+.tree-zone-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.tree-sensors-list {
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-left: 14px;
+  border-left: 2px solid var(--accent-primary, #0284c7);
+}
+
+.tree-sensor-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.74rem;
+  padding: 4px 8px;
+  background: var(--bg-card-subtle);
+  border-radius: 4px;
+  border: 1px solid var(--border-light);
+}
+
+.tree-sensor-item.is-child {
+  margin-left: 12px;
+  background: rgba(2, 132, 199, 0.08);
+  border-left: 3px solid #0284c7;
+}
+
+.parent-child-tag {
+  font-size: 0.64rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(139, 92, 246, 0.15);
+  color: #8b5cf6;
+  font-weight: 600;
+}
+
+.btn-tree-action {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 4px;
+  font-size: 0.76rem;
+  opacity: 0.75;
+  transition: opacity 0.2s;
+}
+
+.btn-tree-action:hover { opacity: 1; }

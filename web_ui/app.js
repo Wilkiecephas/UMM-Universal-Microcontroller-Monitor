@@ -2007,6 +2007,23 @@ function updateFloorplanLabelsForPremise(archetype) {
 // =============================================================================
 // DRAG AND DROP PREMISE LAYOUT WORKSPACE
 // =============================================================================
+
+// Initialize buildings within switchPremiseArchetype
+function ensurePremiseBuildings(archKey) {
+  const archetype = PREMISE_ARCHETYPES[archKey] || PREMISE_ARCHETYPES.home;
+  if (!state.buildings || state.buildings.length === 0) {
+    const defaultBuildingMap = {
+      home: [{ id: 'bld_home', name: 'Main Residential Villa', icon: '🏡', wings: ['Ground Floor', 'Upper Deck'] }],
+      telecom: [{ id: 'bld_telecom', name: 'Tower Site Compound', icon: '📡', wings: ['Perimeter Security', 'Equipment Shelter', 'Tower Mast & Fuel Depot'] }],
+      hospital: [{ id: 'bld_hospital', name: 'Main Clinical Pavilion', icon: '🏥', wings: ['Critical Care Wing', 'Surgical Center', 'Cryo Vault & Medical Gas'] }],
+      industrial: [{ id: 'bld_industrial', name: 'Chemical Processing Works', icon: '🏭', wings: ['Synthesis Sector', 'Boiler Hall', 'Packaging & Solvents'] }],
+      greenhouse: [{ id: 'bld_greenhouse', name: 'Agri-Tech Commercial Range', icon: '🌾', wings: ['Nutrient Bay', 'Canopy Zone', 'Field Irrigation'] }],
+      datacenter: [{ id: 'bld_datacenter', name: 'Data Center Complex', icon: '🏢', wings: ['Aisle Containment', 'Power Distribution', 'Subfloor Facilities'] }]
+    };
+    state.buildings = JSON.parse(JSON.stringify(defaultBuildingMap[archKey] || defaultBuildingMap.home));
+  }
+}
+
 function renderPremiseZones() {
   const grid = document.getElementById('premiseZonesGrid');
   if (!grid) return;
@@ -2023,30 +2040,48 @@ function renderPremiseZones() {
               <span class="zone-clearance-pill">${room.clearance || 'General'}</span>
             </div>
           </div>
-          <button class="btn-icon-subtle btn-del-zone" data-room="${room.name}" title="Remove Zone">✕</button>
+          <div style="display: flex; gap: 4px; align-items: center;">
+            <button class="btn-icon-subtle btn-edit-zone" data-room="${room.name}" title="Edit Zone Properties">✏️</button>
+            <button class="btn-icon-subtle btn-del-zone" data-room="${room.name}" title="Remove Zone">✕</button>
+          </div>
         </div>
         <p style="font-size: 0.72rem; color: var(--text-muted); margin: 0 0 8px 0;">${room.purpose}</p>
         
         <div class="zone-sensors-container" data-room-name="${room.name}">
           ${sensorsInRoom.length === 0 ? '<div class="zone-empty-hint">Drop sensors here</div>' : ''}
-          ${sensorsInRoom.map(s => `
-            <div class="draggable-sensor-chip" draggable="true" data-sensor-id="${s.id}" data-room-name="${room.name}">
-              <div style="display: flex; align-items: center; gap: 6px;">
+          ${sensorsInRoom.map(s => {
+            const hasParent = s.parentSensorId ? true : false;
+            const childCount = state.configuredSensors.filter(c => String(c.parentSensorId) === String(s.id)).length;
+            const parentDevice = hasParent ? state.configuredSensors.find(p => String(p.id) === String(s.parentSensorId)) : null;
+            
+            return `
+            <div class="draggable-sensor-chip ${hasParent ? 'is-child-chip' : ''}" draggable="true" data-sensor-id="${s.id}" data-room-name="${room.name}">
+              <div style="display: flex; align-items: center; gap: 6px; overflow: hidden; flex: 1;">
                 <span>${getSensorIconByCategory(s.category)}</span>
-                <div>
-                  <strong style="font-size: 0.78rem;">${s.name}</strong>
+                <div style="overflow: hidden;">
+                  <div style="display: flex; align-items: center; gap: 4px;">
+                    <strong style="font-size: 0.78rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${s.name}</strong>
+                    ${hasParent ? `<span class="parent-child-tag" title="Child of ${parentDevice ? parentDevice.name : 'Parent'}">👶 Child</span>` : ''}
+                    ${childCount > 0 ? `<span class="parent-child-tag" title="Has ${childCount} child channels">👨‍👦 +${childCount}</span>` : ''}
+                  </div>
                   <div style="font-size: 0.68rem; color: var(--text-muted);">${s.pin} &bull; ${s.type}</div>
                 </div>
               </div>
-              <span style="font-size: 0.7rem; color: #94a3b8; cursor: grab;">⠿</span>
-            </div>
-          `).join('')}
+              <div style="display: flex; align-items: center; gap: 2px;">
+                <button class="btn-icon-subtle btn-edit-sensor" data-sensor-id="${s.id}" title="Edit Sensor & Parent/Child" style="padding: 2px 4px; font-size: 0.72rem;">✏️</button>
+                <button class="btn-icon-subtle btn-del-sensor" data-sensor-id="${s.id}" title="Remove Sensor" style="padding: 2px 4px; font-size: 0.72rem; color: #ef4444;">✕</button>
+                <span style="font-size: 0.7rem; color: #94a3b8; cursor: grab; padding-left: 2px;">⠿</span>
+              </div>
+            </div>`;
+          }).join('')}
         </div>
       </div>`;
   }).join('');
 
   // Attach Drag & Drop Listeners
   attachDragAndDropHandlers();
+  attachEditButtons();
+  renderHierarchyTree();
 }
 
 function attachDragAndDropHandlers() {
