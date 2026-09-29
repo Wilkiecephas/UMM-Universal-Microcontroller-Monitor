@@ -351,6 +351,14 @@ To accommodate diverse industrial, enterprise, and residential deployments, the 
     \end{itemize}
     
     \item \textbf{Autonomous Serial Telemetry Detection \& Sensor Ingestion:} When serial devices stream data via Web Serial, USB COM ports, or wireless bridges, the heuristic examination engine matches the incoming packet signature against the 124+ catalog profiles. If an unmapped sensor signature is detected with confidence $\ge 60\%$, the system automatically instantiates a rich sensor widget in the appropriate facility zone without requiring manual configuration, broadcasting an operator toast notification and logging the hardware pairing.
+
+    \item \textbf{Multi-Tier Spatial Hierarchy, Custom Things \& Responsive Layout Architecture:} To eliminate user interface congestion across diverse viewports, the platform implements a segregated \textbf{Two-Tier Responsive Navigation Header} with dedicated global controls (facility model selector, theme environment switcher, connection status monitor, and engineering IDE link) separated from an overflow-free, touch-scrollable navigation tab bar. Furthermore, the architecture supports a multi-tier spatial hierarchy:
+    \begin{itemize}
+        \item \textit{Custom Building \& Facility Management:} Operators can provision custom physical buildings (e.g., auxiliary transmission shacks, research pavilions, or chemical depots) with customizable iconography, domain tags, and multi-floor/wing segmentations.
+        \item \textit{Custom Thing \& Instrument Provisioning:} Beyond pre-mapped catalog models, operators can synthesize bespoke custom sensors and actuators by specifying custom signal architectures (Analog ADC, Dallas 1-Wire, I$^2$C, SPI, UART, BLE, Wi-Fi), operating voltages, GPIO pins, and alert threshold boundaries.
+        \item \textit{Parent/Child Sub-Device Relationships:} Multi-channel hardware instruments (e.g., 3-phase power meters, weather stations, or multi-sensor microcontroller gateways) can be linked as parent-child clusters, where secondary channels and sub-devices inherit parent telemetry bus bindings and are organized in both drag-and-drop canvas mode and an expandable hierarchy tree view.
+        \item \textit{Full-Lifecycle Entity Editing:} Interactive inline editing controls allow real-time modification of sensor aliases, operational maintenance states (\textit{Active, Maintenance, Bypassed}), parent zone associations, and security clearances without database resets.
+    \end{itemize}
 \end{enumerate}
 
 \subsection{Cost Analysis and Bill of Materials}
