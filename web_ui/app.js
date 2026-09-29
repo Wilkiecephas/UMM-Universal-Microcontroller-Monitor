@@ -1807,12 +1807,823 @@ function exportPdfDocument() {
 }
 
 // =============================================================================
+// 11. PREMISE MODELS, DYNAMIC SENSOR CONTROLS & DRAG-AND-DROP CANVAS
+// =============================================================================
+const PREMISE_ARCHETYPES = {
+  home: {
+    id: 'home',
+    name: 'Sanctuary Smart Residence',
+    type: 'Smart Residential Home',
+    icon: '🏡',
+    description: 'Autonomous residential home monitoring climate, gas leaks, AC mains power, intrusion, and smart actuators.',
+    rooms: [
+      { id: 'entrance', name: 'Front Entrance', icon: '🚪', purpose: 'Perimeter Barrier & Door Chime', clearance: 'Public' },
+      { id: 'living', name: 'Living Room', icon: '🛋️', purpose: 'Surveillance & PIR Motion', clearance: 'General' },
+      { id: 'kitchen', name: 'Gourmet Kitchen', icon: '🍳', purpose: 'LPG Gas / Smoke Safety & Auto-Exhaust', clearance: 'Safety' },
+      { id: 'bedroom', name: 'Master Haven', icon: '🛏️', purpose: 'Atmospheric Climate & Smart AC', clearance: 'Private' },
+      { id: 'utility', name: 'Power Utility', icon: '⚡', purpose: 'AC Grid Stability & Backup Power', clearance: 'Restricted' }
+    ],
+    defaultSensors: [
+      { id: 1, templateId: 'dht22', name: 'DHT22 Climate Sensor', pin: 'GPIO 13', type: 'Digital / 1-Wire', room: 'Master Haven', threshold: '18°C – 28°C', category: 'climate' },
+      { id: 2, templateId: 'mq2', name: 'MQ-2 Gas & Smoke Detector', pin: 'GPIO 36', type: 'Analog (ADC)', room: 'Gourmet Kitchen', threshold: '> 350 ppm', category: 'gas' },
+      { id: 3, templateId: 'zmpt101b', name: 'ZMPT101B AC Voltage Sensor', pin: 'GPIO 39', type: 'Analog (ADC)', room: 'Power Utility', threshold: '180V – 260V', category: 'power' },
+      { id: 4, templateId: 'acs712_20', name: 'ACS712 20A Current Sensor', pin: 'GPIO 34', type: 'Analog (ADC)', room: 'Power Utility', threshold: '< 15 A', category: 'power' },
+      { id: 5, templateId: 'reed_switch', name: 'Magnetic Door Reed Switch', pin: 'GPIO 14', type: 'Digital Input', room: 'Front Entrance', threshold: 'HIGH on Open', category: 'motion' },
+      { id: 6, templateId: 'hcsr501', name: 'PIR Human Motion Sensor', pin: 'GPIO 12', type: 'Digital Input', room: 'Living Room', threshold: 'HIGH on Motion', category: 'motion' },
+      { id: 7, templateId: 'relay_1ch', name: 'Exhaust Fan Relay Module', pin: 'GPIO 4', type: 'Digital Output', room: 'Gourmet Kitchen', threshold: 'Active LOW', category: 'actuator' },
+      { id: 8, templateId: 'solenoid_valve_12v', name: '12V Brass Gas Solenoid Valve', pin: 'GPIO 5', type: 'Digital Output', room: 'Gourmet Kitchen', threshold: 'Cutoff on Gas', category: 'actuator' },
+      { id: 9, templateId: 'tuya_smart_ac', name: 'Tuya Smart AC Controller', pin: 'UART TX/RX', type: 'Digital Serial', room: 'Master Haven', threshold: 'Target 22°C', category: 'actuator' }
+    ]
+  },
+  telecom: {
+    id: 'telecom',
+    name: 'KyU Telecom Cell Tower 04',
+    type: 'Telecom Site & Perimeter Infrastructure',
+    icon: '📡',
+    description: 'Critical communications infrastructure with multi-tier perimeter radar security, BTS shelter climate, and UPS battery monitoring.',
+    rooms: [
+      { id: 'fence', name: 'Perimeter Security Fence', icon: '🛡️', purpose: 'Intrusion Radar, Vibration & Laser Fence', clearance: 'Restricted' },
+      { id: 'bts_shelter', name: 'BTS Equipment Shelter', icon: '🖧', purpose: 'Telecom Transceiver Rack & CRAC Cooling', clearance: 'Authorized Only' },
+      { id: 'battery_bank', name: 'Battery & UPS Room', icon: '🔋', purpose: '48V Lead-Acid/Lithium Bank & H2 Detection', clearance: 'Hazardous' },
+      { id: 'tower_mast', name: 'Tower Mast & Antenna Array', icon: '🗼', purpose: 'Structural Tilt, Wind & Aviation Beacon', clearance: 'Climber Only' },
+      { id: 'generator_depot', name: 'Diesel Generator & Fuel Depot', icon: '⛽', purpose: 'Backup Genset & Fuel Column Level', clearance: 'Maintenance' }
+    ],
+    defaultSensors: [
+      { id: 101, templateId: 'rcwl0516', name: 'RCWL-0516 Doppler Microwave Radar', pin: 'GPIO 14', type: 'Digital (Doppler)', room: 'Perimeter Security Fence', threshold: 'Motion Trigger', category: 'motion' },
+      { id: 102, templateId: 'sw420', name: 'SW-420 Fence Vibration Impact Sensor', pin: 'GPIO 12', type: 'Digital Pulse', room: 'Perimeter Security Fence', threshold: 'Vibration Tamper', category: 'motion' },
+      { id: 103, templateId: 'relay_1ch', name: 'Perimeter Searchlight Relay', pin: 'GPIO 4', type: 'Digital Output', room: 'Perimeter Security Fence', threshold: 'Active on Breach', category: 'actuator' },
+      { id: 104, templateId: 'bme280', name: 'BME280 Rack Environmental Sensor', pin: 'I2C SDA/SCL', type: 'Digital I2C', room: 'BTS Equipment Shelter', threshold: '< 30°C / < 60%', category: 'climate' },
+      { id: 105, templateId: 'midea_ac_uart', name: 'Shelter CRAC Cooling Unit', pin: 'UART 9600', type: 'Digital Serial', room: 'BTS Equipment Shelter', threshold: 'Target 20°C', category: 'actuator' },
+      { id: 106, templateId: 'mq8', name: 'MQ-8 Hydrogen Gas Sensor (UPS Safety)', pin: 'GPIO 36', type: 'Analog ADC', room: 'Battery & UPS Room', threshold: '> 100 ppm H2', category: 'gas' },
+      { id: 107, templateId: 'ina219', name: 'INA219 48V DC Bus Current Shunt', pin: 'I2C 0x40', type: 'Digital I2C', room: 'Battery & UPS Room', threshold: '42V - 54V DC', category: 'power' },
+      { id: 108, templateId: 'submersible_level', name: 'Hydrostatic Diesel Fuel Level Probe', pin: 'ADC 4-20mA', type: 'Analog Current', room: 'Diesel Generator & Fuel Depot', threshold: '> 20% Tank', category: 'liquid' },
+      { id: 109, templateId: 'pzem016', name: 'PZEM-016 3-Phase Generator Monitor', pin: 'RS485 Modbus', type: 'Digital RS485', room: 'Diesel Generator & Fuel Depot', threshold: '230V / 50Hz', category: 'power' }
+    ]
+  },
+  hospital: {
+    id: 'hospital',
+    name: 'Metropolitan Hospital & Trauma Center',
+    type: 'Healthcare & Life-Safety Campus',
+    icon: '🏥',
+    description: 'Medical critical facility with patient biometric monitoring, vaccine cryo-storage (-80°C), cleanroom air handling, and medical oxygen pipeline security.',
+    rooms: [
+      { id: 'icu', name: 'Intensive Care Unit (ICU)', icon: '🩺', purpose: 'Patient Biometrics & Vital Telemetry', clearance: 'Medical Staff' },
+      { id: 'cryo_storage', name: 'Vaccine & Blood Cryo-Storage', icon: '❄️', purpose: '-80°C Freezer & Liquid Nitrogen Vault', clearance: 'Laboratory Only' },
+      { id: 'operating_theater', name: 'Surgical Operating Theater 1', icon: '🥼', purpose: 'Laminar Airflow & Anesthetic Gas Monitoring', clearance: 'Sterile Surgical' },
+      { id: 'isolation_ward', name: 'Negative Pressure Isolation Ward', icon: '☣️', purpose: 'Airborne Infectious Disease Containment', clearance: 'Biohazard Level 3' },
+      { id: 'gas_manifold', name: 'Medical Oxygen & Gas Manifold', icon: '🫁', purpose: 'Hospital Oxygen Pipeline Pressure & Shutoff', clearance: 'Facilities Engineering' }
+    ],
+    defaultSensors: [
+      { id: 201, templateId: 'max30102', name: 'MAX30102 SpO2 & Heart Rate Monitor', pin: 'I2C 0x57', type: 'Digital I2C', room: 'Intensive Care Unit (ICU)', threshold: 'SpO2 > 94%', category: 'optical' },
+      { id: 202, templateId: 'mlx90614', name: 'MLX90614 Non-Contact IR Thermometer', pin: 'I2C 0x5A', type: 'Digital I2C', room: 'Intensive Care Unit (ICU)', threshold: '36.5°C - 37.5°C', category: 'optical' },
+      { id: 203, templateId: 'pt100_max31865', name: 'PT100 Ultra-Low Temp RTD (-80°C Cryo)', pin: 'SPI CS/SCK', type: 'Digital SPI', room: 'Vaccine & Blood Cryo-Storage', threshold: '-85°C to -75°C', category: 'climate' },
+      { id: 204, templateId: 'sgp30', name: 'SGP30 Anesthetic & VOC Gas Scanner', pin: 'I2C 0x58', type: 'Digital I2C', room: 'Surgical Operating Theater 1', threshold: '< 100 ppb TVOC', category: 'gas' },
+      { id: 205, templateId: 'pms5003', name: 'Plantower PMS5003 Airborne Particulate', pin: 'UART 9600', type: 'Digital UART', room: 'Surgical Operating Theater 1', threshold: 'Cleanroom ISO 5', category: 'gas' },
+      { id: 206, templateId: 'belimo_damper', name: 'Belimo Negative Pressure Air Damper', pin: '0-10V Analog', type: 'Analog 0-10V', room: 'Negative Pressure Isolation Ward', threshold: '-15 Pa Negative', category: 'actuator' },
+      { id: 207, templateId: 'relay_1ch', name: 'UV-C Germicidal Disinfection Relay', pin: 'GPIO 4', type: 'Digital Output', room: 'Negative Pressure Isolation Ward', threshold: 'Timer Controlled', category: 'actuator' },
+      { id: 208, templateId: 'pressure_transducer', name: 'Medical O2 High-Pressure Transducer', pin: '0.5-4.5V ADC', type: 'Analog Voltage', room: 'Medical Oxygen & Gas Manifold', threshold: '4.0 - 5.5 Bar', category: 'liquid' },
+      { id: 209, templateId: 'solenoid_valve_12v', name: 'Emergency Oxygen Pipeline Shutoff Valve', pin: 'GPIO 5', type: 'Digital Output', room: 'Medical Oxygen & Gas Manifold', threshold: 'Emergency Trip', category: 'actuator' }
+    ]
+  },
+  industrial: {
+    id: 'industrial',
+    name: 'Apex Chemical & Advanced Manufacturing',
+    type: 'Industrial Chemical & Plant Facility',
+    icon: '🏭',
+    description: 'Heavy chemical synthesis facility with toxic gas detection, steam boiler pressure management, and automated conveyor interlocks.',
+    rooms: [
+      { id: 'chemical_bay', name: 'Chemical Synthesis Bay', icon: '🧪', purpose: 'Toxic Fumes (H2S / Ammonia) & Emergency Scrubbing', clearance: 'PPE Level A' },
+      { id: 'boiler_room', name: 'High-Pressure Steam Boiler Room', icon: '🔥', purpose: 'Steam Pressure & Flame Scanner Diagnostics', clearance: 'Boiler Certified' },
+      { id: 'assembly_line', name: 'Conveyor Assembly Line', icon: '⚙️', purpose: 'Robotic Material Handling & Proximity Interlocks', clearance: 'Operators' },
+      { id: 'solvent_storage', name: 'Hazardous Solvent Depot', icon: '📦', purpose: 'Flammable Vapors & Explosion-Proof Ventilation', clearance: 'Restricted Hazmat' }
+    ],
+    defaultSensors: [
+      { id: 301, templateId: 'mq136', name: 'MQ-136 Hydrogen Sulfide (H2S) Sensor', pin: 'GPIO 36', type: 'Analog ADC', room: 'Chemical Synthesis Bay', threshold: '< 10 ppm H2S', category: 'gas' },
+      { id: 302, templateId: 'mq137', name: 'MQ-137 Ammonia (NH3) Gas Detector', pin: 'GPIO 39', type: 'Analog ADC', room: 'Chemical Synthesis Bay', threshold: '< 25 ppm NH3', category: 'gas' },
+      { id: 303, templateId: 'motorized_ball_valve', name: 'DN15-CR02 Acid Feed Ball Valve', pin: 'GPIO 21/22', type: 'Actuator Reversible', room: 'Chemical Synthesis Bay', threshold: 'Limit Monitored', category: 'actuator' },
+      { id: 304, templateId: 'pressure_transducer', name: '1.2 MPa Steam Pressure Transducer', pin: 'ADC Pin 34', type: 'Analog Voltage', room: 'High-Pressure Steam Boiler Room', threshold: '< 8.0 Bar', category: 'liquid' },
+      { id: 305, templateId: 'ky026', name: 'KY-026 Optical Flame Scanner', pin: 'GPIO 15', type: 'Digital / Analog', room: 'High-Pressure Steam Boiler Room', threshold: 'Flame Presence', category: 'optical' },
+      { id: 306, templateId: 'lj12a3', name: 'LJ12A3-4 Inductive Metal Proximity Switch', pin: 'GPIO 14', type: 'Digital NPN', room: 'Conveyor Assembly Line', threshold: 'Metal Sensing 4mm', category: 'motion' },
+      { id: 307, templateId: 'relay_4ch', name: 'Conveyor Multi-Stage Relay Bank', pin: 'GPIO 4/16/17/18', type: 'Digital Output x4', room: 'Conveyor Assembly Line', threshold: 'E-Stop Interlock', category: 'actuator' },
+      { id: 308, templateId: 'mq138', name: 'MQ-138 VOC Chemical Solvent Sensor', pin: 'GPIO 35', type: 'Analog ADC', room: 'Hazardous Solvent Depot', threshold: '< 50 ppm VOC', category: 'gas' }
+    ]
+  },
+  greenhouse: {
+    id: 'greenhouse',
+    name: 'KyU Precision Agriculture Greenhouse',
+    type: 'Smart Agriculture & Controlled Environment',
+    icon: '🌾',
+    description: 'Precision horticulture facility regulating hydroponic nutrient solutions, solar PAR lighting, and automated drip irrigation.',
+    rooms: [
+      { id: 'hydroponics', name: 'Hydroponic Nutrient Bay', icon: '💧', purpose: 'Closed-Loop pH, TDS & Nutrient Circulation', clearance: 'Agronomists' },
+      { id: 'canopy', name: 'Crop Canopy Climate Zone', icon: '🌿', purpose: 'CO2 Injection & PAR Sunlight Optimization', clearance: 'General' },
+      { id: 'drip_field', name: 'Drip Irrigation Field Bed', icon: '🚜', purpose: 'Soil Moisture Profiling & Solenoid Zones', clearance: 'Field Staff' }
+    ],
+    defaultSensors: [
+      { id: 401, templateId: 'ph_sensor_e201', name: 'E-201-C Analog pH Water Meter', pin: 'GPIO 36', type: 'Analog Glass Probe', room: 'Hydroponic Nutrient Bay', threshold: '5.8 - 6.5 pH', category: 'liquid' },
+      { id: 402, templateId: 'tds_sensor', name: 'Total Dissolved Solids (TDS) Probe', pin: 'GPIO 39', type: 'Analog Conductivity', room: 'Hydroponic Nutrient Bay', threshold: '600 - 900 ppm', category: 'liquid' },
+      { id: 403, templateId: 'yfs201', name: 'YF-S201 Water Flow Rate Meter', pin: 'GPIO 14', type: 'Digital Pulse', room: 'Hydroponic Nutrient Bay', threshold: '2.0 - 15.0 L/min', category: 'liquid' },
+      { id: 404, templateId: 'scd30', name: 'Sensirion SCD30 True NDIR CO2 Sensor', pin: 'I2C 0x61', type: 'Digital I2C', room: 'Crop Canopy Climate Zone', threshold: '800 - 1200 ppm', category: 'gas' },
+      { id: 405, templateId: 'bh1750', name: 'BH1750 Ambient PAR Sunlight Meter', pin: 'I2C 0x23', type: 'Digital I2C', room: 'Crop Canopy Climate Zone', threshold: '20,000 - 50,000 Lux', category: 'optical' },
+      { id: 406, templateId: 'cap_soil_v12', name: 'Capacitive Soil Moisture Probe HW-390', pin: 'GPIO 34', type: 'Analog Capacitive', room: 'Drip Irrigation Field Bed', threshold: '55% - 75%', category: 'liquid' },
+      { id: 407, templateId: 'solenoid_valve_12v', name: '12V Drip Irrigation Solenoid Valve', pin: 'GPIO 4', type: 'Digital Output', room: 'Drip Irrigation Field Bed', threshold: 'Moisture Controlled', category: 'actuator' }
+    ]
+  },
+  datacenter: {
+    id: 'datacenter',
+    name: 'Equinix Tier-IV Hyperscale Data Center',
+    type: 'Enterprise Data Center & Server Farm',
+    icon: '🏢',
+    description: 'High-density compute facility with cold-aisle containment, CRAC unit telemetry, 3-phase grid power meters, and subfloor leak detection.',
+    rooms: [
+      { id: 'cold_aisle', name: 'Cold Aisle Containment Pod', icon: '❄️', purpose: 'Inflow Server Intake Cooling & Static Pressure', clearance: 'Datacenter Ops' },
+      { id: 'hot_aisle', name: 'Hot Aisle Heat Exhaust', icon: '🔥', purpose: 'Thermal Exhaust Extraction & Smoke Aspirating', clearance: 'Restricted' },
+      { id: 'power_distribution', name: 'Main Power Distribution & UPS', icon: '🔌', purpose: '3-Phase Busway Current & Static Transfer Switch', clearance: 'Electrical Master' },
+      { id: 'subfloor', name: 'Subfloor Plenum & Leak Zone', icon: '💧', purpose: 'Condensate Drainage & Conductive Leak Rope', clearance: 'Facilities' }
+    ],
+    defaultSensors: [
+      { id: 501, templateId: 'bme280', name: 'BME280 Inflow Air Temp & Pressure', pin: 'I2C 0x76', type: 'Digital I2C', room: 'Cold Aisle Containment Pod', threshold: '18°C - 24°C / ASHRAE', category: 'climate' },
+      { id: 502, templateId: 'tuya_smart_ac', name: 'CRAC Chilled Water Cooling Unit', pin: 'Modbus RS485', type: 'Digital Modbus', room: 'Cold Aisle Containment Pod', threshold: 'Redundant N+1', category: 'actuator' },
+      { id: 503, templateId: 'ds18b20', name: 'DS18B20 Multi-Drop Rack Exhaust Probe', pin: '1-Wire Pin 13', type: 'Digital 1-Wire', room: 'Hot Aisle Heat Exhaust', threshold: '< 38°C Rack Top', category: 'climate' },
+      { id: 504, templateId: 'pzem016', name: 'PZEM-016 3-Phase Main Energy Meter', pin: 'RS485 Addr 0x01', type: 'Digital Modbus', room: 'Main Power Distribution & UPS', threshold: 'PUE Calculation', category: 'power' },
+      { id: 505, templateId: 'ina219', name: 'INA219 DC Battery Backup Shunt', pin: 'I2C 0x40', type: 'Digital I2C', room: 'Main Power Distribution & UPS', threshold: '54V DC Float', category: 'power' },
+      { id: 506, templateId: 'optical_level', name: 'Subfloor Liquid Leak Rope Sensor', pin: 'GPIO 12', type: 'Digital Optical', room: 'Subfloor Plenum & Leak Zone', threshold: 'Immediate Cutoff', category: 'liquid' }
+    ]
+  }
+};
+
+let currentPremiseModel = 'home';
+let telemetryRoomFilter = 'all';
+let telemetryCategoryFilter = 'all';
+
+function switchPremiseArchetype(archetypeKey) {
+  const archetype = PREMISE_ARCHETYPES[archetypeKey] || PREMISE_ARCHETYPES.home;
+  currentPremiseModel = archetype.id;
+  state.facilityName = archetype.name;
+  state.rooms = JSON.parse(JSON.stringify(archetype.rooms));
+  state.configuredSensors = JSON.parse(JSON.stringify(archetype.defaultSensors));
+
+  // Sync Selects and Badges
+  const premiseSelect = document.getElementById('premiseModelSelect');
+  if (premiseSelect) premiseSelect.value = archetype.id;
+
+  document.querySelectorAll('.premise-chip').forEach(chip => {
+    chip.classList.toggle('active', chip.dataset.model === archetype.id);
+  });
+
+  const premiseBadge = document.getElementById('telemetryPremiseBadge');
+  if (premiseBadge) {
+    premiseBadge.textContent = `${archetype.icon} ${archetype.name}`;
+  }
+
+  // Update Floorplan labels if in Home vs Other premises
+  updateFloorplanLabelsForPremise(archetype);
+
+  updateFacilityInfo();
+  populateRoomSelects();
+  renderSensorsTable();
+  renderDynamicSensorsGrid();
+  renderPremiseZones();
+  renderSensorPalette();
+
+  showToast(`Switched to ${archetype.icon} "${archetype.name}" (${archetype.rooms.length} zones, ${archetype.defaultSensors.length} sensors)`, 'info');
+}
+
+function updateFloorplanLabelsForPremise(archetype) {
+  const lblEntrance = document.getElementById('lblRoomEntrance');
+  const lblLiving = document.getElementById('lblRoomLiving');
+  const lblKitchen = document.getElementById('lblRoomKitchen');
+  const lblBedroom = document.getElementById('lblRoomBedroom');
+  const lblUtility = document.getElementById('lblRoomUtility');
+
+  const r = archetype.rooms;
+  if (lblEntrance && r[0]) lblEntrance.textContent = r[0].name;
+  if (lblLiving && r[1]) lblLiving.textContent = r[1].name;
+  if (lblKitchen && r[2]) lblKitchen.textContent = r[2].name;
+  if (lblBedroom && r[3]) lblBedroom.textContent = r[3].name;
+  if (lblUtility && r[4]) lblUtility.textContent = r[4].name;
+}
+
+// =============================================================================
+// DRAG AND DROP PREMISE LAYOUT WORKSPACE
+// =============================================================================
+function renderPremiseZones() {
+  const grid = document.getElementById('premiseZonesGrid');
+  if (!grid) return;
+
+  grid.innerHTML = state.rooms.map(room => {
+    const sensorsInRoom = state.configuredSensors.filter(s => s.room === room.name);
+    return `
+      <div class="zone-panel" data-room-name="${room.name}">
+        <div class="zone-header">
+          <div class="zone-title-wrap">
+            <span class="zone-icon">${room.icon || '📍'}</span>
+            <div>
+              <h4 class="zone-name">${room.name}</h4>
+              <span class="zone-clearance-pill">${room.clearance || 'General'}</span>
+            </div>
+          </div>
+          <button class="btn-icon-subtle btn-del-zone" data-room="${room.name}" title="Remove Zone">✕</button>
+        </div>
+        <p style="font-size: 0.72rem; color: var(--text-muted); margin: 0 0 8px 0;">${room.purpose}</p>
+        
+        <div class="zone-sensors-container" data-room-name="${room.name}">
+          ${sensorsInRoom.length === 0 ? '<div class="zone-empty-hint">Drop sensors here</div>' : ''}
+          ${sensorsInRoom.map(s => `
+            <div class="draggable-sensor-chip" draggable="true" data-sensor-id="${s.id}" data-room-name="${room.name}">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span>${getSensorIconByCategory(s.category)}</span>
+                <div>
+                  <strong style="font-size: 0.78rem;">${s.name}</strong>
+                  <div style="font-size: 0.68rem; color: var(--text-muted);">${s.pin} &bull; ${s.type}</div>
+                </div>
+              </div>
+              <span style="font-size: 0.7rem; color: #94a3b8; cursor: grab;">⠿</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>`;
+  }).join('');
+
+  // Attach Drag & Drop Listeners
+  attachDragAndDropHandlers();
+}
+
+function attachDragAndDropHandlers() {
+  const chips = document.querySelectorAll('.draggable-sensor-chip');
+  const dropTargets = document.querySelectorAll('.zone-panel, .zone-sensors-container');
+
+  chips.forEach(chip => {
+    chip.addEventListener('dragstart', (e) => {
+      chip.classList.add('dragging');
+      e.dataTransfer.setData('text/plain', JSON.stringify({
+        action: 'move_existing',
+        sensorId: chip.dataset.sensorId,
+        fromRoom: chip.dataset.roomName
+      }));
+    });
+
+    chip.addEventListener('dragend', () => {
+      chip.classList.remove('dragging');
+      document.querySelectorAll('.zone-panel').forEach(z => z.classList.remove('drop-target-active'));
+    });
+  });
+
+  dropTargets.forEach(target => {
+    target.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      const zonePanel = target.closest('.zone-panel');
+      if (zonePanel) zonePanel.classList.add('drop-target-active');
+    });
+
+    target.addEventListener('dragleave', (e) => {
+      const zonePanel = target.closest('.zone-panel');
+      if (zonePanel && !zonePanel.contains(e.relatedTarget)) {
+        zonePanel.classList.remove('drop-target-active');
+      }
+    });
+
+    target.addEventListener('drop', (e) => {
+      e.preventDefault();
+      const zonePanel = target.closest('.zone-panel');
+      if (zonePanel) zonePanel.classList.remove('drop-target-active');
+
+      const targetRoom = zonePanel?.dataset.roomName;
+      if (!targetRoom) return;
+
+      try {
+        const raw = e.dataTransfer.getData('text/plain');
+        if (!raw) return;
+        const data = JSON.parse(raw);
+
+        if (data.action === 'move_existing') {
+          const s = state.configuredSensors.find(x => String(x.id) === String(data.sensorId));
+          if (s && s.room !== targetRoom) {
+            s.room = targetRoom;
+            renderPremiseZones();
+            renderDynamicSensorsGrid();
+            renderSensorsTable();
+            showToast(`Moved "${s.name}" to ${targetRoom}`, 'success');
+          }
+        } else if (data.action === 'add_from_palette') {
+          // Instantiate sensor from catalog template
+          const templates = window.SENSOR_TEMPLATES || [];
+          const tmpl = templates.find(t => t.id === data.templateId);
+          if (tmpl) {
+            const newSensor = {
+              id: Date.now(),
+              templateId: tmpl.id,
+              name: tmpl.name,
+              pin: tmpl.pins[1] || 'GPIO ' + (Math.floor(Math.random() * 20) + 10),
+              type: tmpl.signalType,
+              room: targetRoom,
+              threshold: 'Nominal Range',
+              category: tmpl.category
+            };
+            state.configuredSensors.push(newSensor);
+            renderPremiseZones();
+            renderDynamicSensorsGrid();
+            renderSensorsTable();
+            updateFacilityInfo();
+            showToast(`Added "${tmpl.model}" to ${targetRoom}!`, 'success');
+          }
+        }
+      } catch (err) {
+        console.error('Drop error:', err);
+      }
+    });
+  });
+
+  // Delete Zone handler
+  document.querySelectorAll('.btn-del-zone').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const rName = btn.dataset.room;
+      if (state.rooms.length <= 1) {
+        showToast('Facility must have at least one active area.', 'warning');
+        return;
+      }
+      state.rooms = state.rooms.filter(r => r.name !== rName);
+      // Re-assign orphaned sensors to first available room
+      state.configuredSensors.forEach(s => {
+        if (s.room === rName) s.room = state.rooms[0].name;
+      });
+      populateRoomSelects();
+      renderPremiseZones();
+      renderDynamicSensorsGrid();
+      renderSensorsTable();
+      updateFacilityInfo();
+      showToast(`Removed zone "${rName}"`, 'info');
+    });
+  });
+}
+
+function renderSensorPalette() {
+  const container = document.getElementById('paletteChipsScroll');
+  if (!container) return;
+
+  const templates = window.SENSOR_TEMPLATES || [];
+  const searchInput = document.getElementById('paletteSearchInput');
+  const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+  const filtered = templates.filter(t => {
+    if (!query) return true;
+    return (t.name + ' ' + t.model + ' ' + t.category + ' ' + t.signalType).toLowerCase().includes(query);
+  });
+
+  const badge = document.getElementById('paletteBadgeCount');
+  if (badge) badge.textContent = `${filtered.length} Ready`;
+
+  container.innerHTML = filtered.map(t => `
+    <div class="palette-sensor-chip" draggable="true" data-template-id="${t.id}">
+      <div style="display: flex; align-items: center; gap: 6px;">
+        <span>${getSensorIconByCategory(t.category)}</span>
+        <div>
+          <strong>${t.model}</strong>
+          <div style="font-size: 0.68rem; color: var(--text-muted);">${t.analogOrDigital} &bull; ${t.voltage}</div>
+        </div>
+      </div>
+      <button class="btn btn-secondary btn-xs btn-quick-add-to-zone" data-template-id="${t.id}" title="Add to current active zone" style="padding: 2px 6px;">+</button>
+    </div>
+  `).join('');
+
+  // Palette dragstart
+  container.querySelectorAll('.palette-sensor-chip').forEach(chip => {
+    chip.addEventListener('dragstart', (e) => {
+      e.dataTransfer.setData('text/plain', JSON.stringify({
+        action: 'add_from_palette',
+        templateId: chip.dataset.templateId
+      }));
+    });
+  });
+
+  // Quick add button
+  container.querySelectorAll('.btn-quick-add-to-zone').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tmplId = btn.dataset.templateId;
+      const targetRoom = state.rooms[0]?.name || 'General Area';
+      const tmpl = templates.find(t => t.id === tmplId);
+      if (tmpl) {
+        state.configuredSensors.push({
+          id: Date.now(),
+          templateId: tmpl.id,
+          name: tmpl.name,
+          pin: tmpl.pins[1] || 'GPIO 13',
+          type: tmpl.signalType,
+          room: targetRoom,
+          threshold: 'Nominal',
+          category: tmpl.category
+        });
+        renderPremiseZones();
+        renderDynamicSensorsGrid();
+        renderSensorsTable();
+        updateFacilityInfo();
+        showToast(`Added ${tmpl.model} to ${targetRoom}`, 'success');
+      }
+    });
+  });
+}
+
+function getSensorIconByCategory(cat) {
+  const map = {
+    climate: '🌡️',
+    gas: '💨',
+    power: '⚡',
+    motion: '🚶',
+    actuator: '🎛️',
+    liquid: '💧',
+    optical: '💡',
+    wireless: '📡',
+    mcu: '📷'
+  };
+  return map[cat] || '📟';
+}
+
+// =============================================================================
+// DYNAMIC RICH SENSOR WIDGETS WITH PROPER AVAILABLE CONTROLS
+// =============================================================================
+function renderDynamicSensorsGrid() {
+  const grid = document.getElementById('dynamicSensorsGrid');
+  if (!grid) return;
+
+  const roomFilter = document.getElementById('filterTelemetryRoom')?.value || 'all';
+  const sensors = state.configuredSensors.filter(s => {
+    if (roomFilter !== 'all' && s.room !== roomFilter) return false;
+    if (telemetryCategoryFilter !== 'all' && s.category !== telemetryCategoryFilter) return false;
+    return true;
+  });
+
+  if (sensors.length === 0) {
+    grid.innerHTML = `
+      <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--text-muted);">
+        <span style="font-size: 2.2rem;">🔍</span>
+        <p style="margin-top: 8px;">No sensors active in this filter. Drag sensors in the Premise Workspace or select All Channels.</p>
+      </div>`;
+    return;
+  }
+
+  grid.innerHTML = sensors.map(s => renderIndividualSensorWidget(s)).join('');
+  attachSensorWidgetControlsListeners();
+}
+
+function renderIndividualSensorWidget(sensor) {
+  const cat = sensor.category || 'climate';
+  const telem = state.telemetry;
+
+  let metricHtml = '';
+  let controlsHtml = '';
+
+  if (cat === 'climate') {
+    const temp = telem.temp !== null ? telem.temp : 24.2;
+    const hum = telem.hum !== null ? telem.hum : 58.0;
+    metricHtml = `
+      <div class="rich-sensor-metric">
+        <span class="rich-val">${temp.toFixed(1)}</span><span class="rich-unit">°C</span>
+        <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 4px;">
+          Relative Humidity: <strong>${hum.toFixed(0)}%</strong> &bull; Dew Point: <strong>15.4°C</strong>
+        </div>
+      </div>`;
+    controlsHtml = `
+      <div class="sensor-ctrl-box">
+        <div class="ctrl-label-row">
+          <span>Target Temperature</span>
+          <strong id="targetTempLabel_${sensor.id}">22°C</strong>
+        </div>
+        <input type="range" min="16" max="30" value="22" class="range-slider temp-target-slider" data-id="${sensor.id}">
+        <div style="display: flex; gap: 6px; margin-top: 8px;">
+          <button class="btn btn-secondary btn-xs btn-cooling-mode" data-id="${sensor.id}" style="flex: 1;">❄️ Cooling Mode</button>
+          <button class="btn btn-secondary btn-xs btn-heating-mode" data-id="${sensor.id}" style="flex: 1;">☀️ Heating Mode</button>
+        </div>
+      </div>`;
+  } else if (cat === 'gas') {
+    const gasVal = telem.gas !== null ? telem.gas : 185;
+    const isHazard = gasVal > 350;
+    metricHtml = `
+      <div class="rich-sensor-metric">
+        <span class="rich-val" style="color: ${isHazard ? '#ef4444' : '#10b981'};">${gasVal}</span><span class="rich-unit">ppm</span>
+        <div style="font-size: 0.8rem; margin-top: 4px;">
+          <span class="badge ${isHazard ? 'badge-danger' : 'badge-peaceful'}">${isHazard ? '⚠️ CRITICAL CONCENTRATION' : '🟢 AIR SAFE & CLEAN'}</span>
+        </div>
+      </div>`;
+    controlsHtml = `
+      <div class="sensor-ctrl-box">
+        <div class="ctrl-label-row">
+          <span>Alarm Threshold</span>
+          <strong id="gasThreshLabel_${sensor.id}">350 ppm</strong>
+        </div>
+        <input type="range" min="100" max="800" value="350" class="range-slider gas-thresh-slider" data-id="${sensor.id}">
+        <div style="display: flex; gap: 6px; margin-top: 8px;">
+          <button class="btn btn-secondary btn-xs btn-test-siren" data-id="${sensor.id}" style="flex: 1;">🔔 Test Siren</button>
+          <button class="btn btn-primary btn-xs btn-cutoff-valve" data-id="${sensor.id}" style="flex: 1;">🎛️ Trip Gas Valve</button>
+        </div>
+      </div>`;
+  } else if (cat === 'power') {
+    const volt = telem.volt !== null ? telem.volt : 238.4;
+    const current = telem.current !== null ? telem.current : 0.85;
+    const watts = (volt * current).toFixed(1);
+    metricHtml = `
+      <div class="rich-sensor-metric">
+        <span class="rich-val">${volt.toFixed(1)}</span><span class="rich-unit">V AC</span>
+        <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 4px;">
+          Current: <strong>${current.toFixed(2)} A</strong> &bull; Power: <strong>${watts} W</strong> (PF: 0.98)
+        </div>
+      </div>`;
+    controlsHtml = `
+      <div class="sensor-ctrl-box">
+        <div class="ctrl-label-row">
+          <span>Main Distribution Circuit Breaker</span>
+          <span class="badge badge-peaceful" id="breakerStatus_${sensor.id}">CLOSED (ACTIVE)</span>
+        </div>
+        <div style="display: flex; gap: 6px; margin-top: 8px;">
+          <button class="btn btn-secondary btn-xs btn-toggle-breaker" data-id="${sensor.id}" style="flex: 1;">⚡ Trip Circuit Breaker</button>
+          <button class="btn btn-secondary btn-xs btn-reset-kwh" data-id="${sensor.id}" style="flex: 1;">0.00 kWh Reset</button>
+        </div>
+      </div>`;
+  } else if (cat === 'motion') {
+    const isMotion = telem.pirActive || false;
+    metricHtml = `
+      <div class="rich-sensor-metric" style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <span class="rich-val" style="font-size: 1.5rem; color: ${isMotion ? '#ef4444' : '#10b981'};">${isMotion ? 'TARGET DETECTED' : 'CLEAR / SECURE'}</span>
+          <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">Zone Armed &bull; Microwave Doppler active</div>
+        </div>
+        <div class="radar-sweep-visual"></div>
+      </div>`;
+    controlsHtml = `
+      <div class="sensor-ctrl-box">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <span style="font-size: 0.76rem; font-weight: 600;">Armed Security Guard</span>
+          <label class="switch"><input type="checkbox" checked class="toggle-arm-sensor" data-id="${sensor.id}"><span class="slider round"></span></label>
+        </div>
+        <button class="btn btn-primary btn-xs btn-snap-camera" data-id="${sensor.id}" style="width: 100%;">📸 Capture Verified Photo</button>
+      </div>`;
+  } else if (cat === 'actuator') {
+    if (sensor.name.toLowerCase().includes('valve')) {
+      metricHtml = `
+        <div class="rich-sensor-metric">
+          <div class="valve-flow-indicator open" id="valveInd_${sensor.id}">🟢 PIPELINE VALVE OPEN (FLOW ACTIVE)</div>
+        </div>`;
+      controlsHtml = `
+        <div class="sensor-ctrl-box">
+          <div style="display: flex; gap: 6px;">
+            <button class="btn btn-secondary btn-xs btn-valve-open" data-id="${sensor.id}" style="flex: 1;">Open Valve</button>
+            <button class="btn btn-primary btn-xs btn-valve-shut" data-id="${sensor.id}" style="flex: 1;">Emergency Cutoff</button>
+          </div>
+        </div>`;
+    } else if (sensor.name.toLowerCase().includes('ac') || sensor.name.toLowerCase().includes('crac')) {
+      metricHtml = `
+        <div class="rich-sensor-metric">
+          <span class="rich-val">22</span><span class="rich-unit">°C Set</span>
+          <div style="font-size: 0.78rem; color: #38bdf8; margin-top: 4px;">Mode: COOL &bull; Compressor: 45Hz &bull; Fan: AUTO</div>
+        </div>`;
+      controlsHtml = `
+        <div class="ac-remote-console">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.74rem;">Smart AC Console</span>
+            <button class="btn btn-secondary btn-xs btn-ac-power" data-id="${sensor.id}">Power</button>
+          </div>
+          <div class="ac-remote-modes">
+            <button class="ac-mode-btn active">❄️ Cool</button>
+            <button class="ac-mode-btn">☀️ Heat</button>
+            <button class="ac-mode-btn">🌀 Fan</button>
+            <button class="ac-mode-btn">💧 Dry</button>
+          </div>
+        </div>`;
+    } else {
+      metricHtml = `
+        <div class="rich-sensor-metric">
+          <span class="rich-val">READY</span>
+          <div style="font-size: 0.78rem; color: var(--text-muted);">Relay Channel Energized</div>
+        </div>`;
+      controlsHtml = `
+        <div class="sensor-ctrl-box">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.78rem; font-weight: 600;">Power Switch</span>
+            <label class="switch"><input type="checkbox" class="toggle-actuator-relay" data-id="${sensor.id}"><span class="slider round"></span></label>
+          </div>
+        </div>`;
+    }
+  } else if (cat === 'liquid') {
+    metricHtml = `
+      <div class="rich-sensor-metric">
+        <span class="rich-val">76%</span><span class="rich-unit">Capacity</span>
+        <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">Volume: <strong>3,800 Liters</strong> &bull; Pressure: <strong>4.2 Bar</strong></div>
+      </div>`;
+    controlsHtml = `
+      <div class="sensor-ctrl-box">
+        <div style="display: flex; gap: 6px;">
+          <button class="btn btn-primary btn-xs btn-toggle-pump" data-id="${sensor.id}" style="flex: 1;">💧 Start Pump</button>
+          <button class="btn btn-secondary btn-xs btn-drain-tank" data-id="${sensor.id}" style="flex: 1;">Drain Valve</button>
+        </div>
+      </div>`;
+  } else if (cat === 'optical' && sensor.name.includes('MAX30102')) {
+    metricHtml = `
+      <div class="rich-sensor-metric">
+        <div style="display: flex; justify-content: space-between; align-items: baseline;">
+          <div><span class="rich-val">98.4</span><span class="rich-unit">% SpO2</span></div>
+          <div><span class="rich-val" style="font-size: 1.5rem; color: #ef4444;">72</span><span class="rich-unit">BPM</span></div>
+        </div>
+        <svg class="ecg-pulse-svg" viewBox="0 0 200 40"><path d="M0,20 L40,20 L50,5 L60,35 L70,10 L80,25 L90,20 L200,20" /></svg>
+      </div>`;
+    controlsHtml = `
+      <div class="sensor-ctrl-box">
+        <button class="btn btn-primary btn-xs btn-nurse-alert" data-id="${sensor.id}" style="width: 100%;">🚨 Dispatch Nurse Station Alert</button>
+      </div>`;
+  } else {
+    metricHtml = `
+      <div class="rich-sensor-metric">
+        <span class="rich-val">ACTIVE</span>
+        <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">${sensor.type} &bull; Pin: ${sensor.pin}</div>
+      </div>`;
+    controlsHtml = `
+      <div class="sensor-ctrl-box">
+        <button class="btn btn-secondary btn-xs btn-ping-channel" data-id="${sensor.id}" style="width: 100%;">⚡ Ping Channel Test</button>
+      </div>`;
+  }
+
+  return `
+    <div class="rich-sensor-card" data-sensor-id="${sensor.id}">
+      <div>
+        <div class="rich-card-head">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 1.3rem;">${getSensorIconByCategory(sensor.category)}</span>
+            <div>
+              <h3 style="margin: 0; font-size: 0.95rem; font-weight: 700; color: var(--text-main);">${sensor.name}</h3>
+              <span class="pin-tag">${sensor.pin}</span>
+            </div>
+          </div>
+          <span class="badge" style="background: #f1f5f9; color: #334155; font-size: 0.68rem; font-weight: 600;">${sensor.room}</span>
+        </div>
+        ${metricHtml}
+      </div>
+      ${controlsHtml}
+    </div>`;
+}
+
+function attachSensorWidgetControlsListeners() {
+  // Climate Target slider
+  document.querySelectorAll('.temp-target-slider').forEach(slider => {
+    slider.addEventListener('input', (e) => {
+      const lbl = document.getElementById('targetTempLabel_' + e.target.dataset.id);
+      if (lbl) lbl.textContent = e.target.value + '°C';
+    });
+  });
+
+  // Gas Threshold slider
+  document.querySelectorAll('.gas-thresh-slider').forEach(slider => {
+    slider.addEventListener('input', (e) => {
+      const lbl = document.getElementById('gasThreshLabel_' + e.target.dataset.id);
+      if (lbl) lbl.textContent = e.target.value + ' ppm';
+    });
+  });
+
+  // Test Siren
+  document.querySelectorAll('.btn-test-siren').forEach(btn => {
+    btn.addEventListener('click', () => {
+      showToast('🔊 High-decibel piezo siren sounding for 3 seconds!', 'warning');
+      logIncident('Hazard Audio Test', 'MQ-2 Gas', 'Manual siren audio verification conducted', 'Resolved');
+    });
+  });
+
+  // Cutoff Gas Valve
+  document.querySelectorAll('.btn-cutoff-valve, .btn-valve-shut').forEach(btn => {
+    btn.addEventListener('click', () => {
+      showToast('🎛️ 12V Solenoid Emergency Valve CUTOFF Engaged! Gas pipeline isolated.', 'danger');
+      const ind = document.getElementById('valveInd_' + btn.dataset.id);
+      if (ind) {
+        ind.className = 'valve-flow-indicator closed';
+        ind.textContent = '🔴 GAS PIPELINE ISOLATED (VALVE SHUT)';
+      }
+    });
+  });
+
+  // Open Valve
+  document.querySelectorAll('.btn-valve-open').forEach(btn => {
+    btn.addEventListener('click', () => {
+      showToast('🟢 12V Solenoid Valve Re-energized: Pipeline OPEN.', 'success');
+      const ind = document.getElementById('valveInd_' + btn.dataset.id);
+      if (ind) {
+        ind.className = 'valve-flow-indicator open';
+        ind.textContent = '🟢 PIPELINE VALVE OPEN (FLOW ACTIVE)';
+      }
+    });
+  });
+
+  // Circuit Breaker Toggle
+  document.querySelectorAll('.btn-toggle-breaker').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const statusPill = document.getElementById('breakerStatus_' + btn.dataset.id);
+      if (statusPill && statusPill.textContent.includes('CLOSED')) {
+        statusPill.textContent = 'OPEN (TRIPPED)';
+        statusPill.className = 'badge badge-danger';
+        showToast('⚡ Mains Circuit Breaker TRIPPED! Load isolated for safety.', 'warning');
+      } else if (statusPill) {
+        statusPill.textContent = 'CLOSED (ACTIVE)';
+        statusPill.className = 'badge badge-peaceful';
+        showToast('⚡ Mains Circuit Breaker RESET to closed.', 'success');
+      }
+    });
+  });
+
+  // Camera snap
+  document.querySelectorAll('.btn-snap-camera').forEach(btn => {
+    btn.addEventListener('click', () => {
+      triggerManualSnapshot();
+      showToast('📸 High-resolution security snapshot captured & logged.', 'info');
+    });
+  });
+
+  // Water pump toggle
+  document.querySelectorAll('.btn-toggle-pump').forEach(btn => {
+    btn.addEventListener('click', () => {
+      showToast('💧 Water Booster Pump Relay Activated.', 'info');
+    });
+  });
+
+  // Nurse station alert
+  document.querySelectorAll('.btn-nurse-alert').forEach(btn => {
+    btn.addEventListener('click', () => {
+      showToast('🚨 Code Alert Dispatched to Hospital Central Nurse Station!', 'danger');
+    });
+  });
+}
+
+// =============================================================================
 // 11. FACILITY, ROOMS & PINS
 // =============================================================================
 function initFacilityAndRooms() {
   updateFacilityInfo();
   populateRoomSelects();
   renderSensorsTable();
+  renderDynamicSensorsGrid();
+  renderPremiseZones();
+  renderSensorPalette();
+
+  // Premise Model Selector
+  const premiseSelect = document.getElementById('premiseModelSelect');
+  premiseSelect?.addEventListener('change', (e) => {
+    switchPremiseArchetype(e.target.value);
+  });
+
+  // Premise Archetype Chips
+  document.querySelectorAll('.premise-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      switchPremiseArchetype(chip.dataset.model);
+    });
+  });
+
+  // Telemetry Room Filter
+  const roomFilterSelect = document.getElementById('filterTelemetryRoom');
+  roomFilterSelect?.addEventListener('change', (e) => {
+    telemetryRoomFilter = e.target.value;
+    renderDynamicSensorsGrid();
+  });
+
+  // Telemetry Category Pills
+  const catPillsBar = document.getElementById('telemetryCategoryPills');
+  catPillsBar?.querySelectorAll('.cat-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      catPillsBar.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      telemetryCategoryFilter = pill.dataset.cat;
+      renderDynamicSensorsGrid();
+    });
+  });
+
+  // Header Add Area button
+  document.getElementById('btnHeaderAddArea')?.addEventListener('click', () => {
+    el.addRoomModal.classList.add('active');
+  });
+
+  // Reset Premise Defaults
+  document.getElementById('btnResetPremiseDefaults')?.addEventListener('click', () => {
+    switchPremiseArchetype(currentPremiseModel);
+  });
+
+  // Export Premise Layout JSON
+  document.getElementById('btnExportPremiseLayout')?.addEventListener('click', () => {
+    const layout = {
+      facility: state.facilityName,
+      archetype: currentPremiseModel,
+      rooms: state.rooms,
+      sensors: state.configuredSensors,
+      timestamp: new Date().toISOString()
+    };
+    const blob = new Blob([JSON.stringify(layout, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `premise_layout_${currentPremiseModel}_${Date.now()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Exported Premise Layout JSON', 'success');
+  });
+
+  // Palette Search Input
+  document.getElementById('paletteSearchInput')?.addEventListener('input', () => {
+    renderSensorPalette();
+  });
 
   el.btnEditFacility.addEventListener('click', () => {
     el.inputFacilityName.value = state.facilityName;
@@ -1835,12 +2646,15 @@ function initFacilityAndRooms() {
     e.preventDefault();
     const name = el.newRoomName.value.trim();
     const purpose = el.newRoomPurpose.value.trim();
-    state.rooms.push({ id: 'room-' + Date.now(), name, purpose });
+    const icon = document.getElementById('newRoomIcon')?.value || '📍';
+    const clearance = document.getElementById('newRoomClearance')?.value || 'General';
+    state.rooms.push({ id: 'room-' + Date.now(), name, purpose, icon, clearance });
     populateRoomSelects();
     updateFacilityInfo();
+    renderPremiseZones();
     el.addRoomModal.classList.remove('active');
     el.formAddRoom.reset();
-    showToast(`Added room: "${name}"`, 'info');
+    showToast(`Added area: "${icon} ${name}" (${clearance})`, 'success');
   });
 
   el.btnOpenAddSensorModal.addEventListener('click', () => el.addSensorModal.classList.add('active'));
@@ -1888,11 +2702,23 @@ function updateFacilityInfo() {
 
 function populateRoomSelects() {
   el.newSensorRoom.innerHTML = '';
+  const filterSelect = document.getElementById('filterTelemetryRoom');
+  if (filterSelect) {
+    filterSelect.innerHTML = '<option value="all">All Rooms & Areas</option>';
+  }
+
   state.rooms.forEach(r => {
     const opt = document.createElement('option');
     opt.value = r.name;
-    opt.textContent = `${r.name} (${r.purpose})`;
+    opt.textContent = `${r.icon || '📍'} ${r.name}`;
     el.newSensorRoom.appendChild(opt);
+
+    if (filterSelect) {
+      const optFilter = document.createElement('option');
+      optFilter.value = r.name;
+      optFilter.textContent = `${r.icon || '📍'} ${r.name}`;
+      filterSelect.appendChild(optFilter);
+    }
   });
 }
 
@@ -2354,6 +3180,36 @@ function handleExaminerLiveStream(line) {
     statusPill.className = 'badge badge-peaceful';
   }
   runExaminerAnalysis(line, true);
+
+  // Auto-Add Detected Sensor to Active Premise if confident match
+  if (window.serialOutputExaminer) {
+    const analysis = window.serialOutputExaminer.examine(line);
+    if (analysis && analysis.matches && analysis.matches.length > 0) {
+      const top = analysis.matches[0];
+      if (top.confidence >= 75) {
+        const alreadyExists = state.configuredSensors.some(s => s.templateId === top.template.id);
+        if (!alreadyExists) {
+          const targetRoom = state.rooms[0]?.name || 'Front Entrance';
+          const newAutoSensor = {
+            id: Date.now(),
+            templateId: top.template.id,
+            name: top.template.name,
+            pin: top.template.pins[1] || 'UART Serial',
+            type: top.template.signalType,
+            room: targetRoom,
+            threshold: 'Auto Ingested',
+            category: top.template.category
+          };
+          state.configuredSensors.push(newAutoSensor);
+          renderPremiseZones();
+          renderDynamicSensorsGrid();
+          renderSensorsTable();
+          updateFacilityInfo();
+          showToast(`✨ Auto-Added "${top.template.model}" to ${targetRoom} from live serial stream!`, 'success');
+        }
+      }
+    }
+  }
 }
 
 function runExaminerAnalysis(rawText, fromStream = false) {

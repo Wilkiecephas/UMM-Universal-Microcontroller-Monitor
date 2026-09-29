@@ -60,11 +60,21 @@
       </a>
     </nav>
 
-    <!-- Header Tools: 10 Themes, Connection Pill & Engineering IDE Link -->
+    <!-- Header Tools: Premise Model, 10 Themes, Connection Pill & Engineering IDE Link -->
     <div class="header-actions">
+      <!-- Premise Model Archetype Selector -->
+      <select class="premise-select" id="premiseModelSelect" title="Select Premise Model Architecture">
+        <option value="home" selected>🏡 Smart Residential Home</option>
+        <option value="telecom">📡 Telecom Site & Perimeter Fence</option>
+        <option value="hospital">🏥 Hospital & Medical Campus</option>
+        <option value="industrial">🏭 Industrial Chemical & Factory</option>
+        <option value="greenhouse">🌾 Smart Agriculture & Greenhouse</option>
+        <option value="datacenter">🏢 Enterprise Data Center</option>
+      </select>
+
       <!-- 10 Theme Environment Selector -->
       <select class="theme-select" id="themeSelect" title="Select Theme Environment">
-        <option value="home" selected>🏡 Home</option>
+        <option value="home" selected>🏡 Home Theme</option>
         <option value="office">💼 Office</option>
         <option value="workshop">🔨 Workshop</option>
         <option value="space">🚀 Space</option>
@@ -335,111 +345,48 @@
     <!-- ===================================================================== -->
     <!-- TAB 2: LIVE SENSORS & METRICS DASHBOARD                               -->
     <!-- ===================================================================== -->
+    <!-- ===================================================================== -->
+    <!-- TAB 2: LIVE SENSORS & METRICS DASHBOARD                               -->
+    <!-- ===================================================================== -->
     <section id="tab-telemetry" class="tab-content">
       <div class="section-header">
         <div>
-          <h2 class="section-title">Physical Sensors Telemetry</h2>
-          <p class="section-desc">Real-time signals ingested via Web Serial (Arduino / ESP32) or Wi-Fi</p>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <h2 class="section-title">Physical Sensors Telemetry & Controls</h2>
+            <span class="badge badge-peaceful" id="telemetryPremiseBadge">🏡 Smart Residential Home</span>
+          </div>
+          <p class="section-desc">Real-time signals ingested via Web Serial (ESP32 / Spark Core / Arduino) with rich dedicated interactive controls</p>
         </div>
-        <a href="#monitor" class="btn btn-secondary btn-sm">← Back to Monitor</a>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <a href="#universal" class="btn btn-secondary btn-sm">➕ Add from 124+ Library</a>
+          <a href="#monitor" class="btn btn-secondary btn-sm">← Back to Monitor</a>
+        </div>
       </div>
 
-      <div class="cards-grid">
-        <div class="card metric-card">
-          <div class="card-header">
-            <div class="card-icon-title">
-              <span class="card-icon">🌡️</span>
-              <div>
-                <h3 class="card-title">Temperature & Humidity</h3>
-                <span class="pin-tag">DHT22 (GPIO 13)</span>
-              </div>
-            </div>
-            <span class="badge badge-peaceful" id="badgeDht">Normal</span>
-          </div>
-          <div class="big-metric"><span class="val" id="cardTemp">--</span><span class="unit">°C</span></div>
-          <div class="sub-metric"><span>Humidity: <strong id="cardHum">--</strong>%</span>
-            <div class="mini-bar-track"><div class="mini-bar-fill" id="barHum" style="width: 0%;"></div></div>
-          </div>
+      <!-- Telemetry Filtering Toolbar -->
+      <div class="telemetry-filter-bar">
+        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+          <label style="font-size: 0.76rem; font-weight: 600; text-transform: uppercase; color: var(--text-muted);">Filter Area:</label>
+          <select id="filterTelemetryRoom" class="input-control" style="width: 200px; padding: 4px 8px; font-size: 0.8rem;">
+            <option value="all">All Rooms & Areas</option>
+          </select>
         </div>
 
-        <div class="card metric-card">
-          <div class="card-header">
-            <div class="card-icon-title">
-              <span class="card-icon">💨</span>
-              <div>
-                <h3 class="card-title">MQ-2 Gas / Smoke</h3>
-                <span class="pin-tag">ADC1_0 (GPIO 36 / A0)</span>
-              </div>
-            </div>
-            <span class="badge badge-peaceful" id="badgeGas">Clean</span>
-          </div>
-          <div class="big-metric"><span class="val" id="cardGas">--</span><span class="unit">ppm</span></div>
-          <div class="sub-metric"><span>Threshold: <strong>350 ppm</strong></span>
-            <div class="mini-bar-track"><div class="mini-bar-fill" id="barGas" style="width: 0%;"></div></div>
-          </div>
+        <div class="category-pills-bar" id="telemetryCategoryPills" style="margin: 0; padding: 0;">
+          <button class="cat-pill active" data-cat="all">🌐 All Channels</button>
+          <button class="cat-pill" data-cat="climate">🌡️ Climate & Temp</button>
+          <button class="cat-pill" data-cat="gas">💨 Gas & Smoke</button>
+          <button class="cat-pill" data-cat="power">⚡ Grid Power</button>
+          <button class="cat-pill" data-cat="actuator">🎛️ Valves & AC</button>
+          <button class="cat-pill" data-cat="motion">🚶 Security & Radar</button>
+          <button class="cat-pill" data-cat="liquid">💧 Liquid & Tanks</button>
+          <button class="cat-pill" data-cat="optical">💡 Optical & Bio</button>
         </div>
+      </div>
 
-        <div class="card metric-card">
-          <div class="card-header">
-            <div class="card-icon-title">
-              <span class="card-icon">⚡</span>
-              <div>
-                <h3 class="card-title">UEDCL Mains Voltage</h3>
-                <span class="pin-tag">ZMPT101B (GPIO 39 / A1)</span>
-              </div>
-            </div>
-            <span class="badge badge-peaceful" id="badgeVolt">Normal</span>
-          </div>
-          <div class="big-metric"><span class="val" id="cardVolt">--</span><span class="unit">V</span></div>
-          <div class="sub-metric"><span>Nominal Range: <strong>180V – 260V</strong></span>
-            <div class="mini-bar-track"><div class="mini-bar-fill" id="barVolt" style="width: 0%;"></div></div>
-          </div>
-        </div>
-
-        <div class="card metric-card">
-          <div class="card-header">
-            <div class="card-icon-title">
-              <span class="card-icon">🔌</span>
-              <div>
-                <h3 class="card-title">AC Current & Load Power</h3>
-                <span class="pin-tag">ACS712 (GPIO 34 / A2)</span>
-              </div>
-            </div>
-            <span class="badge badge-peaceful">Active</span>
-          </div>
-          <div class="big-metric"><span class="val" id="cardPower">--</span><span class="unit">W</span></div>
-          <div class="sub-metric"><span>Current: <strong id="cardCurrent">--</strong> A (Energy: <span id="cardKwh">0.00</span> kWh)</span></div>
-        </div>
-
-        <div class="card metric-card">
-          <div class="card-header">
-            <div class="card-icon-title">
-              <span class="card-icon">🚪</span>
-              <div>
-                <h3 class="card-title">Front Door Reed Switch</h3>
-                <span class="pin-tag">GPIO 14 / D2</span>
-              </div>
-            </div>
-            <span class="badge badge-peaceful" id="badgeReed">Closed</span>
-          </div>
-          <div class="big-metric"><span class="val" id="cardReed">CLOSED</span></div>
-          <div class="sub-metric"><span>Barrier: Circuit Intact (Pullup)</span></div>
-        </div>
-
-        <div class="card metric-card">
-          <div class="card-header">
-            <div class="card-icon-title">
-              <span class="card-icon">🚶</span>
-              <div>
-                <h3 class="card-title">PIR Motion & Proximity</h3>
-                <span class="pin-tag">GPIO 12 / GPIO 15</span>
-              </div>
-            </div>
-            <span class="badge badge-peaceful" id="badgePir">Quiet</span>
-          </div>
-          <div class="big-metric"><span class="val" id="cardDist">--</span><span class="unit">cm</span></div>
-          <div class="sub-metric"><span>Status: <strong id="cardPirText">No Movement</strong></span></div>
-        </div>
+      <!-- Dynamic Rich Sensors Grid with Dedicated Interactive Controls -->
+      <div class="cards-grid" id="dynamicSensorsGrid">
+        <!-- Dynamically rendered rich interactive sensor widgets -->
       </div>
     </section>
 
@@ -1109,6 +1056,58 @@
         <div class="facility-chip"><span class="chip-label">Sensors:</span><span id="chipSensorCount">10 Mapped</span></div>
       </div>
 
+      <!-- Interactive Drag & Drop Premise & Zone Canvas -->
+      <div class="card premise-editor-card" style="margin-bottom: 24px;">
+        <div class="card-header" style="flex-wrap: wrap; gap: 8px;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 1.25rem;">🖐️</span>
+              <h3 class="card-title" style="margin: 0;">Interactive Drag & Drop Premise & Area Layout Editor</h3>
+            </div>
+            <p class="section-desc" style="margin: 4px 0 0 0;">Drag sensors between rooms/zones to reallocate physical coverage, drag rooms to reorder, or drag new sensors from the 124+ catalog palette.</p>
+          </div>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
+            <button class="btn btn-secondary btn-xs" id="btnResetPremiseDefaults">🔄 Reset Archetype Defaults</button>
+            <button class="btn btn-secondary btn-xs" id="btnExportPremiseLayout">💾 Export Premise JSON</button>
+            <button class="btn btn-primary btn-xs" id="btnHeaderAddArea">➕ Add New Area / Zone</button>
+          </div>
+        </div>
+
+        <!-- Archetype Quick Switcher Chips -->
+        <div class="premise-archetype-bar" id="premiseArchetypeBar" style="padding: 10px 16px; background: var(--bg-secondary, #f8fafc); border-bottom: 1px solid var(--border-color); display: flex; gap: 6px; overflow-x: auto;">
+          <span style="font-size: 0.76rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); align-self: center; margin-right: 4px;">Premise Model:</span>
+          <button class="premise-chip active" data-model="home">🏡 Smart Home</button>
+          <button class="premise-chip" data-model="telecom">📡 Telecom Site & Perimeter</button>
+          <button class="premise-chip" data-model="hospital">🏥 Hospital & Medical Campus</button>
+          <button class="premise-chip" data-model="industrial">🏭 Industrial Chemical & Factory</button>
+          <button class="premise-chip" data-model="greenhouse">🌾 Smart Agriculture & Greenhouse</button>
+          <button class="premise-chip" data-model="datacenter">🏢 Enterprise Data Center</button>
+        </div>
+
+        <!-- Drag & Drop Layout Workspace -->
+        <div class="drag-drop-workspace">
+          <!-- Main Droppable Zones Canvas (Left) -->
+          <div class="premise-zones-column">
+            <div class="premise-zones-grid" id="premiseZonesGrid">
+              <!-- Dynamically populated room drop zones with draggable sensor cards -->
+            </div>
+          </div>
+
+          <!-- Quick Sensor Palette (Right) -->
+          <div class="sensor-palette-column">
+            <div class="palette-header">
+              <span style="font-weight: 700; font-size: 0.82rem;">📚 Drag-to-Add Sensor Palette</span>
+              <span class="badge" id="paletteBadgeCount">124 Models</span>
+            </div>
+            <p style="font-size: 0.72rem; color: var(--text-muted); margin: 0 0 6px 0;">Drag any sensor chip into a room zone to automatically instantiate it.</p>
+            <input type="text" id="paletteSearchInput" class="input-control" style="padding: 4px 8px; font-size: 0.76rem; margin-bottom: 8px;" placeholder="Search 124+ sensors to drag...">
+            <div class="palette-chips-scroll" id="paletteChipsScroll">
+              <!-- Dynamically populated draggable sensor templates -->
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="pins-layout">
         <!-- Interactive Board Pinout Graphic -->
         <div class="card pinout-card">
@@ -1381,21 +1380,60 @@
   <div class="modal-overlay" id="addRoomModal">
     <div class="modal-box">
       <div class="modal-header">
-        <h3 class="modal-title">Add Room / Zone</h3>
+        <h3 class="modal-title">Add Area / Room / Zone</h3>
         <button class="modal-close" id="btnCloseRoomModal">&times;</button>
       </div>
       <form id="formAddRoom" class="modal-body">
         <div class="form-group">
-          <label class="input-label">Room Name</label>
-          <input type="text" class="input-control" id="newRoomName" placeholder="e.g. Balcony, Server Room" required>
+          <label class="input-label">Zone Name</label>
+          <input type="text" class="input-control" id="newRoomName" placeholder="e.g. Perimeter Fence, Cryo Vault, Cold Aisle" required>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <div class="form-group" style="flex: 1;">
+            <label class="input-label">Zone Icon</label>
+            <select class="input-control" id="newRoomIcon">
+              <option value="🚪">🚪 Entrance / Door</option>
+              <option value="🛋️">🛋️ Living / Office</option>
+              <option value="🍳">🍳 Kitchen / Cooking</option>
+              <option value="🛏️">🛏️ Bedroom / Quarters</option>
+              <option value="⚡">⚡ Electrical Utility</option>
+              <option value="🛡️">🛡️ Perimeter Fence</option>
+              <option value="🖧">🖧 BTS Shelter / Rack</option>
+              <option value="🔋">🔋 Battery / UPS Bank</option>
+              <option value="🗼">🗼 Tower Mast / Mast</option>
+              <option value="⛽">⛽ Fuel / Genset Depot</option>
+              <option value="🩺">🩺 ICU / Medical</option>
+              <option value="❄️">❄️ Cryo / Freezer</option>
+              <option value="🥼">🥼 Operating Theater</option>
+              <option value="☣️">☣️ Isolation Ward</option>
+              <option value="🧪">🧪 Chemical Bay</option>
+              <option value="🔥">🔥 Boiler / Furnace</option>
+              <option value="⚙️">⚙️ Assembly / Machine</option>
+              <option value="💧">💧 Hydroponics Bay</option>
+              <option value="🌾">🌾 Agriculture Field</option>
+              <option value="🏢">🏢 Server Containment</option>
+            </select>
+          </div>
+          <div class="form-group" style="flex: 1;">
+            <label class="input-label">Security Clearance</label>
+            <select class="input-control" id="newRoomClearance">
+              <option value="General">General Access</option>
+              <option value="Public">Public Barrier</option>
+              <option value="Safety">Safety Critical</option>
+              <option value="Restricted">Restricted / Staff Only</option>
+              <option value="Hazardous">Hazardous / Hazmat</option>
+              <option value="Sterile">Sterile Medical</option>
+              <option value="Biohazard">Biohazard Level 3</option>
+            </select>
+          </div>
         </div>
         <div class="form-group">
-          <label class="input-label">Purpose</label>
-          <input type="text" class="input-control" id="newRoomPurpose" placeholder="e.g. Environmental Zone" required>
+          <label class="input-label">Operational Purpose</label>
+          <input type="text" class="input-control" id="newRoomPurpose" placeholder="e.g. Microwave Radar Barrier & Searchlight Alarm" required>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" id="btnCancelRoomModal">Cancel</button>
-          <button type="submit" class="btn btn-primary">Add Room</button>
+          <button type="submit" class="btn btn-primary">➕ Create Zone</button>
         </div>
       </form>
     </div>
@@ -1467,12 +1505,14 @@
             <span class="server-status-pill online" id="sparkCloudStatusPill">Ready</span>
           </div>
         </div>
-      </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" id="btnCancelSparkModal">Cancel</button>
         <button type="button" class="btn btn-primary" id="btnStartSparkCloudStream">⚡ Start Cloud Stream</button>
       </div>
     </div>
+  </div>
+
+
   <!-- Unified Firmware Generator Modal -->
   <div class="modal-overlay" id="firmwareGenModal">
     <div class="modal-box" style="max-width: 820px;">

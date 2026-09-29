@@ -311,6 +311,48 @@ Wireless BLE / RF & 2.4~GHz Radio Packets & Bluetooth Advertisements & 3.0~V (Ba
 }
 \end{table}
 
+\subsection{Multi-Premise Architectural Models and Interactive Drag-and-Drop Area Layout System}
+To accommodate diverse industrial, enterprise, and residential deployments, the platform implements a modular \textbf{Multi-Premise Architectural Engine} and an interactive zero-dependency HTML5 \textbf{Drag-and-Drop Facility Layout Canvas}. This architecture abstracts physical locations into secure spatial zones, providing purpose-built telemetry displays, dedicated actuator controls, and automatic sensor ingestion directly from serial streams.
+
+\begin{enumerate}
+    \item \textbf{Comprehensive Multi-Premise Archetype Engine:} The system provides six turnkey facility models with pre-configured spatial zones, operational clearance levels, and domain-specific sensor payloads:
+    \begin{itemize}
+        \item \textbf{Smart Residential Home:} Focuses on ambient indoor comfort, fire safety, and energy efficiency. Pre-configured zones include the \textit{Living Room} (DHT22 climate, MQ-2 smoke, Tuya AC thermostat), \textit{Kitchen \& Pantry} (MQ-4 methane, optical flame detector, 12~V emergency solenoid shutoff valve), \textit{Master Suite} (BMP280 barometric pressure, BH1750 ambient lux), \textit{Front Entrance \& Porch} (RCWL-0516 microwave radar, MC-38 magnetic door reed switch, piezo siren), and \textit{Electrical Utility Hub} (ZMPT101B AC voltage transformer, ACS712 current sensor, mains relay).
+        
+        \item \textbf{Telecom Base Station \& Perimeter Fence:} Engineered for mission-critical cellular towers and remote microwave repeater sites subject to physical tampering and extreme weather. Key operational zones comprise:
+        \begin{itemize}
+            \item \textit{Perimeter Security Fence:} Features HB100 X-band Doppler microwave radar barriers, SW-420 fence vibration sensors, infrared laser tripwires, and high-intensity 500~W strobe floodlight relays for immediate intrusion deterrence.
+            \item \textit{BTS Equipment Shelter:} Houses rack-mounted transceivers, monitored by BME280 precision climate transducers, smoke detectors, and redundant Computer Room Air Conditioning (CRAC) unit controllers.
+            \item \textit{Battery \& UPS Room:} Continuously monitors 48~V DC backup battery strings via INA219 current/power monitors, PZEM-016 DC energy meters, and MQ-8 hydrogen gas detectors to avert explosive outgassing during thermal runaway charging.
+            \item \textit{Tower Mast \& Antenna Array:} Instruments structural mast deflection using MPU-6050 6-axis accelerometers, cups-anemometer wind velocity meters, and aviation obstruction beacon monitoring circuits.
+            \item \textit{Diesel Generator \& Fuel Depot:} Tracks reserve diesel levels via TL-136 submersible hydrostatic pressure transducers (4--20~mA loop), engine block temperature probes (DS18B20), and automated backup genset starter interlocks.
+        \end{itemize}
+        
+        \item \textbf{Hospital \& Medical Campus:} Tailored for high-dependency clinical environments, sterile surgical suites, and biological cryo-chains. Zones encompass the \textit{Intensive Care Unit (ICU)} (AD8232 dynamic electrocardiogram ECG telemetry, MAX30102 pulse oximetry, MLX90614 non-contact infrared patient thermopiles), \textit{Vaccine \& Blood Cryo-Vault} (ultra-low $-80^\circ$C PT100 RTDs, audible cold-chain breach alarms), \textit{Surgical Operating Theater} (laminar positive differential air pressure transducers, NDIR CO$_2$, trace halogenated anesthetic gas detectors), \textit{Negative Pressure Isolation Ward} (airborne pathogen containment pressure monitoring, UV-C germicidal sterilization relays), and the \textit{Medical Oxygen Manifold} (cryogenic O$_2$ high-pressure transducers, ultrasonic mass flow meters, and emergency shutoff valves).
+        
+        \item \textbf{Industrial Chemical \& Manufacturing Plant:} Provisions heavy factory automation and hazmat safety. Encompasses the \textit{Chemical Synthesis Bay} (corrosive MQ-136 H$_2$S and MQ-137 ammonia monitors, motorized PTFE acid ball valves), \textit{High-Pressure Steam Boiler Room} (Wika industrial pressure transducers, PT100 boiler core probes, optical ultraviolet/infrared burner flame scanners), \textit{Automated Conveyor Line} (Omron inductive proximity part counters, bearing vibration sensors, hardwired Emergency Stop E-stop interlocks), and the \textit{Hazardous Solvent Depot} (Figaro TGS2610 explosive vapor detectors, deluge foam suppression relays).
+        
+        \item \textbf{Smart Agriculture \& Commercial Greenhouse:} Designed for precision agronomy and hydroponic automation. Zones include the \textit{Hydroponics Nutrient Bay} (analog pH glass probes, electrical conductivity / TDS sensors, Hall-effect recirculation flow meters), \textit{Greenhouse Canopy Climate} (Sensirion SCD30 photoacoustic CO$_2$, Apogee SQ-500 Photosynthetically Active Radiation PAR lux sensors, high-pressure misting fogger relays), and the \textit{Precision Drip Field} (multi-depth capacitive soil moisture probes, soil temperature probes, and Hunter 24~V AC solenoid irrigation valves).
+        
+        \item \textbf{Enterprise Data Center:} Safeguards high-density server racks through \textit{Cold Aisle Containment} (inlet temperature sensors, differential pressure gauges, electronically commutated variable-frequency fan speed controls), \textit{Hot Aisle Heat Exhaust} (exhaust damper servo actuators), \textit{Main Power Distribution (PDU)} (PZEM-016 3-phase metering, 500~A Hall-effect current transformers, remote substation breaker trip relays), and \textit{Subfloor Environmental Monitoring} (conductive sensing rope for fluid leak detection, sump pump evacuation).
+    \end{itemize}
+    
+    \item \textbf{Interactive Drag-and-Drop Facility Layout Canvas:} Built using native HTML5 drag-and-drop APIs without external UI dependencies. Operators can visually rearrange facility zones, drag sensor chips between zones to reallocate physical coverage, and drag new devices directly from a searchable 124+ sensor template palette into any room. A custom zone creation modal allows operators to provision new spatial areas with distinctive iconography, operational purpose notes, and multi-tier security clearance levels (\textit{Public, General, Safety Critical, Restricted, Hazardous, Sterile, Biohazard Level 3}).
+    
+    \item \textbf{Rich Visual Designs with Dedicated Interactive Controls:} Each sensor widget features custom animated visuals, calibrated metric scales, and operational hardware control trays:
+    \begin{itemize}
+        \item \textit{Climate Thermostats:} Display ambient vs. setpoint temperatures, a dual-direction slider bar, and mode selector buttons (\textit{Cool, Heat, Fan, Auto}).
+        \item \textit{Toxic \& Flammable Gas Gauges:} Incorporate animated circular SVG PPM gauges with color-coded safety thresholds, an audible siren test button, and a one-touch emergency gas solenoid trip interlock.
+        \item \textit{AC/DC Power Monitors:} Feature multi-parameter voltage, current, active power, and cumulative energy readouts paired with a simulated circuit breaker trip and reset switch.
+        \item \textit{Motorized Valves \& Solenoids:} Include animated fluid piping graphics with active flow particles, Open/Close toggle states, and 12~V 100~ms pulse triggering for pulse-latching valves.
+        \item \textit{Hydrostatic Liquid Columns:} Display animated tank fluid columns with dynamic wave surfaces, volumetric capacity percentages, and auto-fill pump toggles.
+        \item \textit{Perimeter Radar Sentinels:} Feature a real-time revolving radar beam sweep animation, detection sensitivity range controls, and perimeter strobe floodlight triggers.
+        \item \textit{Biometric Vital Signs:} Render a continuous SVG electrocardiogram (ECG) pulse waveform, live SpO$_2$ and heart rate metrics, and a direct nurse call alert station trigger.
+    \end{itemize}
+    
+    \item \textbf{Autonomous Serial Telemetry Detection \& Sensor Ingestion:} When serial devices stream data via Web Serial, USB COM ports, or wireless bridges, the heuristic examination engine matches the incoming packet signature against the 124+ catalog profiles. If an unmapped sensor signature is detected with confidence $\ge 60\%$, the system automatically instantiates a rich sensor widget in the appropriate facility zone without requiring manual configuration, broadcasting an operator toast notification and logging the hardware pairing.
+\end{enumerate}
+
 \subsection{Cost Analysis and Bill of Materials}
 A critical deliverable was the formulation of the Bill of Materials (BOM) for a scaled deployment of 100 units. The estimation assumes bulk purchasing discounts. 
 
