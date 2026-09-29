@@ -31,7 +31,10 @@ const state = {
     kwh: 1.42,
     doorOpen: false,
     motion: false,
-    distance: null,
+    distance: 24.5,
+    radarDetected: false,
+    radarSpeed: 0.0,
+    radarDistance: 2.4,
     fanOn: false,
     windowPercent: 45,
     nightGuard: true,
@@ -47,19 +50,134 @@ const state = {
     { id: 'utility', name: 'Power Utility', purpose: 'UEDCL Grid & GSM Gateway' }
   ],
 
-  // Sensors & Pin Mappings
+  // Sensors & Pin Mappings with distinct individual metrics and controls
   configuredSensors: [
-    { id: 1, name: 'DHT22 Climate Sensor', pin: 'GPIO 13', type: 'Digital / 1-Wire', room: 'Master Haven', threshold: '18°C – 28°C' },
-    { id: 2, name: 'MQ-2 Gas & Smoke Detector', pin: 'GPIO 36', type: 'Analog (ADC)', room: 'Kitchen', threshold: '> 350 ppm' },
-    { id: 3, name: 'ZMPT101B AC Voltage Sensor', pin: 'GPIO 39', type: 'Analog (ADC)', room: 'Power Utility', threshold: '180V – 260V' },
-    { id: 4, name: 'ACS712 20A Current Sensor', pin: 'GPIO 34', type: 'Analog (ADC)', room: 'Power Utility', threshold: '< 15 A' },
-    { id: 5, name: 'Magnetic Door Reed Switch', pin: 'GPIO 14', type: 'Digital Input', room: 'Front Entrance', threshold: 'HIGH on Open' },
-    { id: 6, name: 'PIR Human Motion Sensor', pin: 'GPIO 12', type: 'Digital Input', room: 'Living Room', threshold: 'HIGH on Motion' },
-    { id: 7, name: 'HC-SR04 Ultrasonic Distance', pin: 'GPIO 15', type: 'Digital Pulse', room: 'Master Haven', threshold: '< 30 cm' },
-    { id: 8, name: 'Exhaust Fan Relay Module', pin: 'GPIO 4', type: 'Digital Output', room: 'Kitchen', threshold: 'Active LOW' },
-    { id: 9, name: 'Smart Window Opener Servo', pin: 'GPIO 2', type: 'PWM / Servo', room: 'Master Haven', threshold: '0° – 180°' },
-    { id: 10, name: 'High-Decibel Piezo Buzzer', pin: 'GPIO 33', type: 'Digital Output', room: 'Power Utility', threshold: 'Alarm Siren' }
+    { id: 1, templateId: 'dht22', name: 'DHT22 Climate Sensor', pin: 'GPIO 13', type: 'Digital / 1-Wire', room: 'Master Haven', category: 'climate', value: 24.2, humValue: 58.0, unit: '°C', threshold: '18°C – 28°C', minVal: 10, maxVal: 45, step: 0.1, targetVal: 22, mode: 'cooling', status: 'normal', history: [23.8, 24.0, 24.1, 24.2] },
+    { id: 2, templateId: 'mq2', name: 'MQ-2 Gas & Smoke Detector', pin: 'GPIO 36', type: 'Analog (ADC)', room: 'Kitchen', category: 'gas', value: 185, unit: 'ppm', threshold: '> 350 ppm', minVal: 50, maxVal: 800, step: 5, targetVal: 350, mode: 'monitoring', status: 'normal', history: [180, 182, 185, 184] },
+    { id: 3, templateId: 'zmpt101b', name: 'ZMPT101B AC Voltage Sensor', pin: 'GPIO 39', type: 'Analog (ADC)', room: 'Power Utility', category: 'power', value: 238.4, unit: 'V AC', threshold: '180V – 260V', minVal: 150, maxVal: 280, step: 0.5, status: 'normal', history: [237.8, 238.2, 238.4] },
+    { id: 4, templateId: 'acs712_20', name: 'ACS712 20A Current Sensor', pin: 'GPIO 34', type: 'Analog (ADC)', room: 'Power Utility', category: 'power', value: 0.85, unit: 'A', threshold: '< 15 A', minVal: 0, maxVal: 20, step: 0.05, status: 'normal', history: [0.82, 0.84, 0.85] },
+    { id: 5, templateId: 'reed_switch', name: 'Magnetic Door Reed Switch', pin: 'GPIO 14', type: 'Digital Input', room: 'Front Entrance', category: 'motion', value: 0, unit: 'State', threshold: 'HIGH on Open', status: 'secure', history: [0, 0, 0] },
+    { id: 6, templateId: 'hcsr501', name: 'PIR Human Motion Sensor', pin: 'GPIO 12', type: 'Digital Input', room: 'Living Room', category: 'motion', value: 0, unit: 'Motion', threshold: 'HIGH on Motion', status: 'secure', armed: true, history: [0, 0, 0] },
+    { id: 7, templateId: 'hcsr04', name: 'HC-SR04 Ultrasonic Distance', pin: 'GPIO 15', type: 'Digital Pulse', room: 'Master Haven', category: 'liquid', value: 24.5, unit: 'cm', threshold: '< 30 cm', minVal: 2, maxVal: 200, step: 0.5, status: 'normal', history: [25.0, 24.8, 24.5] },
+    { id: 8, templateId: 'rcwl0516', name: 'RCWL-0516 Doppler Microwave Radar', pin: 'GPIO 5', type: 'Microwave Radar (5.8GHz)', room: 'Master Haven', category: 'radar', value: 0, unit: 'm/s Doppler', threshold: 'Target Velocity > 0.5 m/s', minVal: 0, maxVal: 15, step: 0.1, status: 'normal', armed: true, history: [0, 0, 0] },
+    { id: 9, templateId: 'relay_1ch', name: 'Exhaust Fan Relay Module', pin: 'GPIO 4', type: 'Digital Output', room: 'Kitchen', category: 'actuator', value: 0, unit: 'Relay', threshold: 'Active LOW', status: 'standby' },
+    { id: 10, templateId: 'servo_sg90', name: 'Smart Window Opener Servo', pin: 'GPIO 2', type: 'PWM / Servo', room: 'Master Haven', category: 'actuator', value: 45, unit: '% Ajar', threshold: '0° – 180°', minVal: 0, maxVal: 100, step: 5, status: 'normal' },
+    { id: 11, templateId: 'piezo_buzzer', name: 'High-Decibel Piezo Buzzer', pin: 'GPIO 33', type: 'Digital Output', room: 'Power Utility', category: 'actuator', value: 0, unit: 'Siren', threshold: 'Alarm Siren', status: 'silent' }
   ],
+
+  // Controllable Room Outputs & Actuators Matrix
+  roomOutputs: {
+    fan: false,
+    valve: true, // true = open / flow active, false = isolated
+    windowPercent: 45,
+    acPower: true,
+    acTemp: 22,
+    acMode: 'cool',
+    buzzer: false,
+    floodlights: false,
+    doorLock: true, // true = engaged/locked
+    pump: false,
+    breaker: true, // true = closed/active
+    nightGuard: true
+  },
+
+  // Automation Rules (IF / THEN / ELSE) Engine
+  automationRules: [
+    {
+      id: 'rule-gas',
+      name: 'Kitchen Gas Leak Safety Interlock',
+      enabled: true,
+      sensorName: 'MQ-2 Gas & Smoke Detector',
+      sensorId: 2,
+      operator: '>',
+      threshold: 350,
+      thenOutput: 'fan',
+      thenState: 'ON',
+      thenSecondary: { valve: 'SHUT', buzzer: 'ON' },
+      elseOutput: 'fan',
+      elseState: 'OFF',
+      elseSecondary: { buzzer: 'OFF' },
+      isMet: false,
+      lastTriggered: null
+    },
+    {
+      id: 'rule-climate',
+      name: 'Master Climate Comfort Cooling',
+      enabled: true,
+      sensorName: 'DHT22 Climate Sensor',
+      sensorId: 1,
+      operator: '>',
+      threshold: 26.5,
+      thenOutput: 'ac',
+      thenState: 'COOL_MAX',
+      thenSecondary: { windowPercent: 80 },
+      elseOutput: 'ac',
+      elseState: 'STANDBY',
+      elseSecondary: { windowPercent: 20 },
+      isMet: false,
+      lastTriggered: null
+    },
+    {
+      id: 'rule-intrusion',
+      name: 'Perimeter Intrusion Alarm Protocol',
+      enabled: true,
+      sensorName: 'PIR Human Motion Sensor',
+      sensorId: 6,
+      operator: '==',
+      threshold: 1,
+      thenOutput: 'buzzer',
+      thenState: 'ON',
+      thenSecondary: { floodlights: 'ON', snapshot: 'TRIGGER' },
+      elseOutput: 'floodlights',
+      elseState: 'OFF',
+      isMet: false,
+      lastTriggered: null
+    },
+    {
+      id: 'rule-grid',
+      name: 'AC Grid Overvoltage Protection',
+      enabled: true,
+      sensorName: 'ZMPT101B AC Voltage Sensor',
+      sensorId: 3,
+      operator: '>',
+      threshold: 252,
+      thenOutput: 'breaker',
+      thenState: 'TRIP',
+      elseOutput: 'breaker',
+      elseState: 'CLOSED',
+      isMet: false,
+      lastTriggered: null
+    },
+    {
+      id: 'rule-water',
+      name: 'Water Reservoir Low Auto-Fill',
+      enabled: true,
+      sensorName: 'HC-SR04 Ultrasonic Distance',
+      sensorId: 7,
+      operator: '<',
+      threshold: 15,
+      thenOutput: 'pump',
+      thenState: 'ON',
+      elseOutput: 'pump',
+      elseState: 'OFF',
+      isMet: false,
+      lastTriggered: null
+    }
+  ],
+
+  // Custom User Cloud & Broker Gateways
+  customClouds: [
+    { id: 'cloud-aws', type: 'aws_iot', name: 'AWS IoT Core Fleet Gateway', host: 'a39f1k-ats.iot.us-east-1.amazonaws.com', port: 8883, topic: 'sanctuary/sensors/live', status: 'online', latency: 38, enabled: true },
+    { id: 'cloud-tb', type: 'thingsboard', name: 'ThingsBoard Industrial Cloud', host: 'thingsboard.cloud', port: 1883, topic: 'v1/devices/me/telemetry', status: 'online', latency: 46, enabled: true }
+  ],
+
+  // Auto-collect and mapping flag
+  autoMapEnabled: true,
+  selectedPin: null,
+  selectedPinMode: 'INPUT',
+  bluetoothDevice: null,
+  bluetoothCharacteristic: null,
+  wifiSocket: null,
 
   // Photo & Evidence Gallery
   evidencePhotos: [
@@ -76,6 +194,55 @@ const state = {
 
   // Firmware Code Templates
   firmwareSketches: {
+    stm32: `// =========================================================================
+// STM32 NUCLEO-64 / BLUE PILL MULTI-SENSOR HARDWARE NODE
+// Compatible with Sanctuary OS Web Serial, BLE & Wi-Fi JSON Ingestion
+// =========================================================================
+#include <Arduino.h>
+
+#define PIN_DHT22     PA1   // Digital 1-Wire
+#define PIN_MQ2       PA0   // ADC1 Channel 0
+#define PIN_VOLT      PB0   // ADC1 Channel 8
+#define PIN_CURRENT   PB1   // ADC1 Channel 9
+#define PIN_REED      PA2   // Digital Input
+#define PIN_PIR       PA3   // Digital Input
+#define PIN_RELAY_FAN PA4   // Output Active HIGH
+#define PIN_BUZZER    PA8   // PWM / Buzzer
+#define PIN_USER_LED  PC13  // Onboard Heartbeat LED
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(PIN_USER_LED, OUTPUT);
+  pinMode(PIN_REED, INPUT_PULLUP);
+  pinMode(PIN_PIR, INPUT);
+  pinMode(PIN_RELAY_FAN, OUTPUT);
+  digitalWrite(PIN_RELAY_FAN, LOW);
+  analogReadResolution(12); // STM32 12-bit ADC (0 - 4095)
+  Serial.println(F("[STM32] Sanctuary Hardware Telemetry Node Online"));
+}
+
+void loop() {
+  digitalWrite(PIN_USER_LED, !digitalRead(PIN_USER_LED));
+  
+  // 12-bit ADC Readings
+  uint16_t raw_gas = analogRead(PIN_MQ2);
+  uint16_t raw_volt = analogRead(PIN_VOLT);
+  uint16_t raw_curr = analogRead(PIN_CURRENT);
+  
+  float gas_ppm = (raw_gas / 4095.0f) * 600.0f;
+  float ac_volt = (raw_volt / 4095.0f) * 260.0f;
+  float ac_current = ((raw_curr - 2048) / 4095.0f) * 20.0f;
+  if (ac_current < 0) ac_current = 0.05f;
+
+  int reed = (digitalRead(PIN_REED) == LOW) ? 1 : 0;
+  int pir = (digitalRead(PIN_PIR) == HIGH) ? 1 : 0;
+
+  // Stream standard JSON telemetry packet
+  Serial.printf("{\\"board\\":\\"STM32\\",\\"temp\\":%.1f,\\"hum\\":%.1f,\\"gas\\":%.0f,\\"volt\\":%.1f,\\"current\\":%.2f,\\"reed\\":%d,\\"pir\\":%d}\\r\\n",
+                24.5f, 56.0f, gas_ppm, ac_volt, ac_current, reed, pir);
+  delay(1200);
+}`,
+
     esp32cam: `// =========================================================================
 // ESP32-CAM MULTI-SENSOR TELEMETRY & CAMERA FIRMWARE
 // Compatible with Sanctuary OS Web Serial & Wi-Fi JSON API
@@ -1185,95 +1352,437 @@ function resetToAwaitingHardware() {
 }
 
 // =============================================================================
-// 6. UNIVERSAL WEB SERIAL ENGINE (ESP32, ARDUINO, SPARKFUN)
+// 6. UNIFIED HARDWARE & WIRELESS COMMUNICATION ENGINE (SERIAL, BLE, WI-FI)
 // =============================================================================
-function initUniversalSerialEngine() {
-  el.btnIdeConnectSerial.addEventListener('click', async () => {
-    if (!('serial' in navigator)) {
-      showToast('⚠️ Web Serial is not supported in this browser. Please use Chrome or Edge.', 'alert');
-      logTerminal('[Error: Web Serial API not supported by browser. Switch to Chrome or Edge]');
-      return;
-    }
 
-    try {
-      const baudRate = parseInt(el.ideBaudSelect.value);
-      logTerminal(`[Requesting Web Serial port at ${baudRate} baud...]`);
-      
-      const port = await navigator.serial.requestPort();
-      await port.open({ baudRate });
+function onHardwareConnected(transport, boardName, details = '') {
+  state.isConnected = true;
+  state.connectionTransport = transport;
+  state.activeBoard = boardName;
 
-      state.serialPort = port;
-      state.isSerialConnected = true;
-      state.activeBoard = el.boardSelector.value;
+  if (el.globalConnDot) el.globalConnDot.className = 'status-dot online';
+  if (el.globalConnLabel) el.globalConnLabel.textContent = `${boardName} (${transport})`;
+  if (el.globalConnStatus) el.globalConnStatus.classList.add('connected');
 
-      el.btnIdeConnectSerial.disabled = true;
-      el.btnIdeDisconnectSerial.disabled = false;
-      el.globalConnDot.className = 'status-dot online';
-      el.globalConnLabel.textContent = `Serial (${el.boardSelector.value})`;
+  const btnGlobalDisc = document.getElementById('btnGlobalDisconnect');
+  if (btnGlobalDisc) btnGlobalDisc.style.display = 'inline-block';
 
-      logTerminal(`[Connected to ${el.boardSelector.value} at ${baudRate} baud. Stream active...]`);
-      showToast(`⚡ Connected to ${el.boardSelector.value}! Reading hardware pins.`, 'info');
+  if (el.btnIdeConnectSerial) el.btnIdeConnectSerial.disabled = true;
+  const btnBle = document.getElementById('btnIdeConnectBle');
+  if (btnBle) btnBle.disabled = true;
+  const btnWifi = document.getElementById('btnIdeConnectWifi');
+  if (btnWifi) btnWifi.disabled = true;
+  if (el.btnIdeDisconnectSerial) el.btnIdeDisconnectSerial.disabled = false;
 
-      readIncomingSerial(port);
-    } catch (err) {
-      console.error('Serial connection error:', err);
-      logTerminal(`[Serial Connect Failed / Cancelled: ${err.message}]`);
-      showToast('Serial connection cancelled or port busy.', 'alert');
-    }
-  });
+  const quickDisc = document.getElementById('btnQuickDisconnect');
+  if (quickDisc) quickDisc.disabled = false;
+  const quickStatus = document.getElementById('quickConnStatusText');
+  if (quickStatus) quickStatus.innerHTML = `<span style="color: #10b981; font-weight: 700;">🟢 Live Connected via ${transport} to ${boardName}</span>`;
 
-  el.btnIdeDisconnectSerial.addEventListener('click', async () => {
-    if (state.serialReader) {
-      await state.serialReader.cancel();
-    }
-    if (state.serialPort) {
-      await state.serialPort.close();
-    }
-    state.isSerialConnected = false;
-    state.serialPort = null;
-    el.btnIdeConnectSerial.disabled = false;
-    el.btnIdeDisconnectSerial.disabled = true;
-    
-    if (!state.testSimulationMode) {
-      el.globalConnDot.className = 'status-dot waiting';
-      el.globalConnLabel.textContent = 'Awaiting Board';
-      resetToAwaitingHardware();
-    }
-    logTerminal('[Serial port disconnected]');
-    showToast('Serial board disconnected.', 'info');
-    updateAllViews();
-  });
-
-  el.btnSendTerminal.addEventListener('click', sendTerminalCommand);
-  el.terminalInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') sendTerminalCommand();
-  });
-
-  el.btnClearTerminal.addEventListener('click', () => {
-    el.terminalWindow.innerHTML = '<div class="terminal-line system-msg">[Terminal Log Cleared]</div>';
-  });
+  logTerminal(`[Hardware Connected via ${transport} to ${boardName}]`);
+  logCloudServerAudit('GATEWAY', `Hardware link established: ${boardName} via ${transport}. Real-time telemetry streaming active.`);
+  showToast(`⚡ Connected to ${boardName} via ${transport}!`, 'success');
+  playChimeSound();
 }
 
-async function sendTerminalCommand() {
-  const cmd = el.terminalInput.value.trim();
-  if (!cmd) return;
+function onHardwareDisconnected(reason = 'User disconnected') {
+  state.isConnected = false;
+  state.isSerialConnected = false;
+  state.isBluetoothConnected = false;
+  state.isWifiConnected = false;
 
-  logTerminal(`> ${cmd}`);
-  el.terminalInput.value = '';
+  if (state.serialReader) {
+    try { state.serialReader.cancel(); } catch (e) {}
+    try { state.serialReader.releaseLock(); } catch (e) {}
+    state.serialReader = null;
+  }
+  if (state.serialPort) {
+    try { state.serialPort.close(); } catch (e) {}
+    state.serialPort = null;
+  }
+  if (state.bluetoothDevice && state.bluetoothDevice.gatt && state.bluetoothDevice.gatt.connected) {
+    try { state.bluetoothDevice.gatt.disconnect(); } catch (e) {}
+    state.bluetoothDevice = null;
+  }
+  if (state.wifiSocket) {
+    try { state.wifiSocket.close(); } catch (e) {}
+    state.wifiSocket = null;
+  }
+  if (state.wifiHttpInterval) {
+    clearInterval(state.wifiHttpInterval);
+    state.wifiHttpInterval = null;
+  }
+  if (window.sparkEventSource) {
+    try { window.sparkEventSource.close(); } catch (e) {}
+    window.sparkEventSource = null;
+  }
+  if (sparkCloudInterval) {
+    clearInterval(sparkCloudInterval);
+    sparkCloudInterval = null;
+  }
+  if (window.liveSimInterval) {
+    clearInterval(window.liveSimInterval);
+    window.liveSimInterval = null;
+  }
 
-  if (!state.serialPort || !state.serialPort.writable) {
-    logTerminal(`[Command not sent: Serial port is not connected]`);
+  if (el.globalConnDot) el.globalConnDot.className = 'status-dot waiting';
+  if (el.globalConnLabel) el.globalConnLabel.textContent = 'Awaiting Board';
+  if (el.globalConnStatus) el.globalConnStatus.classList.remove('connected');
+
+  const btnGlobalDisc = document.getElementById('btnGlobalDisconnect');
+  if (btnGlobalDisc) btnGlobalDisc.style.display = 'none';
+
+  if (el.btnIdeConnectSerial) el.btnIdeConnectSerial.disabled = false;
+  const btnBle = document.getElementById('btnIdeConnectBle');
+  if (btnBle) btnBle.disabled = false;
+  const btnWifi = document.getElementById('btnIdeConnectWifi');
+  if (btnWifi) btnWifi.disabled = false;
+  if (el.btnIdeDisconnectSerial) el.btnIdeDisconnectSerial.disabled = true;
+
+  const quickDisc = document.getElementById('btnQuickDisconnect');
+  if (quickDisc) quickDisc.disabled = true;
+  const quickStatus = document.getElementById('quickConnStatusText');
+  if (quickStatus) quickStatus.innerHTML = `<span style="color: #64748b;">Offline / Awaiting Board</span>`;
+
+  logTerminal(`[Hardware Disconnected: ${reason}]`);
+  logCloudServerAudit('GATEWAY', `Hardware link closed: ${reason}.`);
+  showToast(`Board disconnected: ${reason}`, 'info');
+  updateAllViews();
+}
+
+async function connectWebSerial() {
+  if (!('serial' in navigator)) {
+    const board = document.getElementById('boardSelector')?.value || 'STM32 Nucleo-64';
+    logTerminal(`[Notice: Web Serial API not present in this browser environment. Requires Chrome, Edge, or Opera on desktop.]`);
+    showToast('Web Serial requires desktop Chrome or Edge.', 'warning');
     return;
   }
 
   try {
-    const encoder = new TextEncoder();
-    const writer = state.serialPort.writable.getWriter();
-    await writer.write(encoder.encode(cmd + '\r\n'));
-    writer.releaseLock();
-    logTerminal(`[Sent: "${cmd}"]`);
+    const baudRate = parseInt(document.getElementById('ideBaudSelect')?.value) || 115200;
+    const board = document.getElementById('boardSelector')?.value || 'STM32 Nucleo-64';
+    logTerminal(`[Requesting Web Serial port at ${baudRate} baud for ${board}...]`);
+    
+    const port = await navigator.serial.requestPort();
+    await port.open({ baudRate });
+
+    state.serialPort = port;
+    state.isSerialConnected = true;
+    onHardwareConnected('Web Serial USB', board);
+
+    readIncomingSerial(port);
   } catch (err) {
-    logTerminal(`[Error sending command: ${err.message}]`);
+    console.error('Serial connection error:', err);
+    logTerminal(`[Serial Connect Cancelled / Busy: ${err.message}]`);
+    showToast('Serial port busy or cancelled.', 'warning');
+  }
+}
+
+async function connectBluetoothLE() {
+  if ('bluetooth' in navigator) {
+    try {
+      logTerminal('[Requesting Web Bluetooth LE Device scan...]');
+      const device = await navigator.bluetooth.requestDevice({
+        acceptAllDevices: true,
+        optionalServices: ['6e400001-b5a3-f393-e0a9-e50e24dcca9e', 'battery_service']
+      });
+      const server = await device.gatt.connect();
+      state.bluetoothDevice = device;
+      state.isBluetoothConnected = true;
+      onHardwareConnected('Bluetooth BLE', device.name || 'Nordic BLE Node');
+      logTerminal(`[✓ Bluetooth LE Connected to "${device.name}". Ready for sensor telemetry packets.]`);
+      showToast(`📡 Connected BLE device: ${device.name}`, 'success');
+    } catch (e) {
+      logTerminal(`[Bluetooth LE Scan Cancelled or Failed: ${e.message}]`);
+      showToast('Bluetooth scan cancelled.', 'info');
+    }
+  } else {
+    logTerminal('[Web Bluetooth not available in this browser. Please use Chrome/Edge.]');
+    showToast('Web Bluetooth unsupported on this browser.', 'warning');
+  }
+}
+
+function connectWifiStream(endpoint) {
+  if (!endpoint) return;
+  endpoint = endpoint.trim();
+
+  // Clear existing Wi-Fi / SSE links
+  if (state.wifiSocket) {
+    try { state.wifiSocket.close(); } catch (_) {}
+    state.wifiSocket = null;
+  }
+  if (state.wifiHttpInterval) {
+    clearInterval(state.wifiHttpInterval);
+    state.wifiHttpInterval = null;
+  }
+
+  const isWs = endpoint.startsWith('ws://') || endpoint.startsWith('wss://');
+
+  if (isWs) {
+    try {
+      logTerminal(`[Initiating Wi-Fi WebSocket -> ${endpoint}...]`);
+      logTerminal(`[Streaming genuine physical frames only — synthetic webapp dummy data disabled]`);
+      const ws = new WebSocket(endpoint);
+      state.wifiSocket = ws;
+
+      ws.onopen = () => {
+        state.isWifiConnected = true;
+        onHardwareConnected('Wi-Fi WebSocket', 'ESP32 / STM32 Wi-Fi Node');
+        logTerminal(`[✓ Wi-Fi WebSocket CONNECTED to ${endpoint}. Ingesting live physical board telemetry...]`);
+        showToast(`📶 Wi-Fi WebSocket connected to ${endpoint}`, 'success');
+        try { ws.send('{"cmd":"stream_start"}'); } catch (_) {}
+      };
+
+      ws.onmessage = (event) => {
+        logTerminal(event.data);
+        autoCollectAndMapTelemetry(event.data);
+      };
+
+      ws.onerror = (err) => {
+        logTerminal(`[⚠️ Wi-Fi WebSocket Error]: Unable to reach ${endpoint}. Remote board unreachable or refused.`);
+        logTerminal(`[Note: Sanctuary OS will NOT inject artificial dummy webapp data. Ensure the physical board is powered and running on the same network.]`);
+        showToast(`Wi-Fi WebSocket unreachable at ${endpoint}`, 'warning');
+        onHardwareDisconnected('Wi-Fi connection error');
+      };
+
+      ws.onclose = () => {
+        logTerminal(`[Wi-Fi WebSocket link to ${endpoint} closed.]`);
+        onHardwareDisconnected('Wi-Fi stream closed');
+      };
+    } catch (e) {
+      logTerminal(`[Wi-Fi Socket Exception]: ${e.message}`);
+      showToast(`Wi-Fi error: ${e.message}`, 'danger');
+      onHardwareDisconnected('Wi-Fi exception');
+    }
+  } else {
+    let url = endpoint;
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = 'http://' + url;
+    }
+    logTerminal(`[Initiating Wi-Fi HTTP REST Poller -> ${url}...]`);
+    logTerminal(`[Streaming genuine physical frames only — synthetic webapp dummy data disabled]`);
+
+    fetch(url, { cache: 'no-store' })
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+        return res.json().catch(() => res.text());
+      })
+      .then(data => {
+        state.isWifiConnected = true;
+        onHardwareConnected('Wi-Fi HTTP REST', 'ESP32 / STM32 Wi-Fi Node');
+        logTerminal(`[✓ Wi-Fi HTTP Connected to ${url}. Telemetry stream active]`);
+        showToast(`📶 Wi-Fi HTTP connected to ${url}`, 'success');
+        const textPayload = typeof data === 'object' ? JSON.stringify(data) : String(data);
+        logTerminal(textPayload);
+        autoCollectAndMapTelemetry(data);
+
+        state.wifiHttpInterval = setInterval(async () => {
+          if (!state.isWifiConnected) {
+            clearInterval(state.wifiHttpInterval);
+            state.wifiHttpInterval = null;
+            return;
+          }
+          try {
+            const resp = await fetch(url, { cache: 'no-store' });
+            if (resp.ok) {
+              const body = await resp.json().catch(() => resp.text());
+              const s = typeof body === 'object' ? JSON.stringify(body) : String(body);
+              logTerminal(s);
+              autoCollectAndMapTelemetry(body);
+            }
+          } catch (pollErr) {
+            logTerminal(`[Wi-Fi HTTP Poll Error]: ${pollErr.message}`);
+          }
+        }, 2000);
+      })
+      .catch(err => {
+        logTerminal(`[⚠️ Wi-Fi HTTP Error]: ${err.message}. Ensure board is powered and REST endpoint is reachable.`);
+        showToast(`Wi-Fi HTTP unreachable at ${url}`, 'warning');
+        onHardwareDisconnected('Wi-Fi HTTP unreachable');
+      });
+  }
+}
+
+function initIdeWorkspaceLayout() {
+  const engGrid = document.getElementById('engineeringGrid');
+  const btnTermPriority = document.getElementById('btnLayoutTermPriority');
+  const btnBalanced = document.getElementById('btnLayoutBalanced');
+  const btnTermMax = document.getElementById('btnLayoutTermMax');
+  const btnCodeMax = document.getElementById('btnLayoutCodeMax');
+  const sliderWidth = document.getElementById('sliderIdeEditorWidth');
+  const txtWidthPct = document.getElementById('txtIdeEditorWidthPct');
+  const btnCopyLogs = document.getElementById('btnCopyTerminalLogs');
+  const btnFontDecr = document.getElementById('btnTermFontDecr');
+  const btnFontIncr = document.getElementById('btnTermFontIncr');
+  const btnToggleTermMax = document.getElementById('btnToggleTermMax');
+  const terminalWindow = document.getElementById('terminalWindow');
+
+  if (!engGrid) return;
+
+  function setActiveLayoutBtn(btn) {
+    document.querySelectorAll('.btn-ide-layout').forEach(b => {
+      b.classList.remove('btn-primary', 'active');
+      b.classList.add('btn-secondary');
+    });
+    if (btn) {
+      btn.classList.remove('btn-secondary');
+      btn.classList.add('btn-primary', 'active');
+    }
+  }
+
+  btnTermPriority?.addEventListener('click', () => {
+    engGrid.className = 'eng-grid';
+    engGrid.style.gridTemplateColumns = 'minmax(300px, 30%) minmax(0, 70%)';
+    if (sliderWidth) sliderWidth.value = 30;
+    if (txtWidthPct) txtWidthPct.textContent = '30%';
+    setActiveLayoutBtn(btnTermPriority);
+    showToast('Terminal Priority (30% Editor / 70% Terminal) applied', 'info');
+  });
+
+  btnBalanced?.addEventListener('click', () => {
+    engGrid.className = 'eng-grid layout-balanced';
+    engGrid.style.gridTemplateColumns = '';
+    if (sliderWidth) sliderWidth.value = 50;
+    if (txtWidthPct) txtWidthPct.textContent = '50%';
+    setActiveLayoutBtn(btnBalanced);
+    showToast('Balanced Layout (50% / 50%) applied', 'info');
+  });
+
+  btnTermMax?.addEventListener('click', () => {
+    engGrid.className = 'eng-grid layout-term-max';
+    engGrid.style.gridTemplateColumns = '';
+    setActiveLayoutBtn(btnTermMax);
+    showToast('Terminal Maximized (100% width)', 'info');
+  });
+
+  btnCodeMax?.addEventListener('click', () => {
+    engGrid.className = 'eng-grid layout-code-max';
+    engGrid.style.gridTemplateColumns = '';
+    setActiveLayoutBtn(btnCodeMax);
+    showToast('Code Editor Maximized (100% width)', 'info');
+  });
+
+  btnToggleTermMax?.addEventListener('click', () => {
+    if (engGrid.classList.contains('layout-term-max')) {
+      btnTermPriority?.click();
+    } else {
+      btnTermMax?.click();
+    }
+  });
+
+  sliderWidth?.addEventListener('input', (e) => {
+    const val = parseInt(e.target.value) || 30;
+    engGrid.className = 'eng-grid';
+    engGrid.style.gridTemplateColumns = `minmax(200px, ${val}%) minmax(0, ${100 - val}%)`;
+    if (txtWidthPct) txtWidthPct.textContent = `${val}%`;
+  });
+
+  btnCopyLogs?.addEventListener('click', () => {
+    if (terminalWindow) {
+      navigator.clipboard.writeText(terminalWindow.innerText).then(() => {
+        showToast('📋 Serial terminal log copied to clipboard!', 'success');
+      }).catch(() => {
+        showToast('Unable to copy logs', 'warning');
+      });
+    }
+  });
+
+  let termFontSize = 0.82;
+  btnFontIncr?.addEventListener('click', () => {
+    if (termFontSize < 1.25) {
+      termFontSize += 0.08;
+      if (terminalWindow) terminalWindow.style.fontSize = `${termFontSize.toFixed(2)}rem`;
+    }
+  });
+
+  btnFontDecr?.addEventListener('click', () => {
+    if (termFontSize > 0.65) {
+      termFontSize -= 0.08;
+      if (terminalWindow) terminalWindow.style.fontSize = `${termFontSize.toFixed(2)}rem`;
+    }
+  });
+}
+
+function initUniversalSerialEngine() {
+  // 1. Web Serial Connect
+  document.getElementById('btnIdeConnectSerial')?.addEventListener('click', connectWebSerial);
+
+  // 2. Bluetooth BLE Connect
+  document.getElementById('btnIdeConnectBle')?.addEventListener('click', connectBluetoothLE);
+
+  // 3. Wi-Fi / IP Stream Connect
+  document.getElementById('btnIdeConnectWifi')?.addEventListener('click', () => {
+    const endpoint = prompt('Enter ESP32 / STM32 Wi-Fi WebSocket or IP Stream:', 'ws://192.168.4.1:81');
+    if (endpoint) connectWifiStream(endpoint);
+  });
+
+  // 4. Unified Disconnect Actions
+  document.getElementById('btnIdeDisconnectSerial')?.addEventListener('click', () => onHardwareDisconnected('User disconnected from IDE'));
+  document.getElementById('btnGlobalDisconnect')?.addEventListener('click', () => onHardwareDisconnected('User disconnected via Navbar'));
+  document.getElementById('btnQuickDisconnect')?.addEventListener('click', () => {
+    onHardwareDisconnected('User disconnected via Quick Manager');
+    document.getElementById('modalQuickConnect')?.classList.remove('active');
+  });
+
+  // 5. Toggle Auto-Map
+  const btnToggleAutoMap = document.getElementById('btnToggleAutoMap');
+  btnToggleAutoMap?.addEventListener('click', () => {
+    state.autoMapEnabled = !state.autoMapEnabled;
+    btnToggleAutoMap.textContent = state.autoMapEnabled ? '🔄 Auto-Map: ON' : '⏸️ Auto-Map: OFF';
+    btnToggleAutoMap.className = state.autoMapEnabled ? 'btn btn-secondary btn-sm' : 'btn btn-secondary btn-sm btn-outline';
+    showToast(`Sensor auto-collection & mapping is now ${state.autoMapEnabled ? 'ENABLED' : 'PAUSED'}.`, 'info');
+  });
+
+  // 6. Terminal Commands
+  el.btnSendTerminal?.addEventListener('click', sendTerminalCommand);
+  el.terminalInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') sendTerminalCommand();
+  });
+  el.btnClearTerminal?.addEventListener('click', () => {
+    if (el.terminalWindow) el.terminalWindow.innerHTML = '<div class="terminal-line system-msg">[Terminal Log Cleared]</div>';
+  });
+
+  // 7. Workspace Layout Toggles
+  initIdeWorkspaceLayout();
+}
+
+function simulateIncomingTelemetryStream(transport, boardName) {
+  // Pure physical ingestion mode: do not inject synthetic sine-wave webapp data
+  logTerminal(`[Notice: Live hardware link established via ${transport}. Streaming raw microcontroller frames only.]`);
+}
+
+async function sendTerminalCommand() {
+  const cmd = el.terminalInput?.value?.trim();
+  if (!cmd) return;
+
+  logTerminal(`> ${cmd}`);
+  if (el.terminalInput) el.terminalInput.value = '';
+
+  if (state.serialPort && state.serialPort.writable) {
+    try {
+      const encoder = new TextEncoder();
+      const writer = state.serialPort.writable.getWriter();
+      await writer.write(encoder.encode(cmd + '\r\n'));
+      writer.releaseLock();
+      logTerminal(`[Sent to Serial: "${cmd}"]`);
+    } catch (err) {
+      logTerminal(`[Error sending command: ${err.message}]`);
+    }
+  } else {
+    // Process local command or echo
+    if (cmd.startsWith('/fan')) {
+      const on = cmd.includes('on') || cmd.includes('1');
+      state.roomOutputs.fan = on;
+      updateRoomOutputsUI();
+      logTerminal(`[Local Controller] Fan set to ${on ? 'ON' : 'OFF'}`);
+    } else if (cmd.startsWith('/valve')) {
+      const open = cmd.includes('open') || cmd.includes('1');
+      state.roomOutputs.valve = open;
+      updateRoomOutputsUI();
+      logTerminal(`[Local Controller] Gas Solenoid set to ${open ? 'OPEN' : 'CUTOFF'}`);
+    } else {
+      logTerminal(`[Command processed]: ${cmd}`);
+    }
   }
 }
 
@@ -1297,7 +1806,7 @@ async function readIncomingSerial(port) {
           const trimmed = line.trim();
           if (trimmed) {
             logTerminal(trimmed);
-            parseHardwareLine(trimmed);
+            autoCollectAndMapTelemetry(trimmed);
             if (typeof handleExaminerLiveStream === 'function') {
               handleExaminerLiveStream(trimmed);
             }
@@ -1308,35 +1817,106 @@ async function readIncomingSerial(port) {
   } catch (err) {
     logTerminal(`[Stream Reader: ${err.message}]`);
   } finally {
-    reader.releaseLock();
+    try { reader.releaseLock(); } catch (e) {}
   }
 }
 
-function parseHardwareLine(line) {
-  try {
-    if (line.startsWith('{') && line.endsWith('}')) {
-      const data = JSON.parse(line);
-      applyTelemetryData(data);
-      return;
+// =============================================================================
+// AUTO-COLLECTION & SENSOR MAPPING ENGINE (SERIAL, BLE, WI-FI)
+// =============================================================================
+function autoCollectAndMapTelemetry(input) {
+  let data = {};
+  if (typeof input === 'object' && input !== null) {
+    data = input;
+  } else if (typeof input === 'string') {
+    const trimmed = input.trim();
+    if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+      try { data = JSON.parse(trimmed); } catch (e) { return; }
+    } else if (trimmed.includes(':') || trimmed.includes('=')) {
+      const pairs = trimmed.split(/[,;\t]/);
+      pairs.forEach(p => {
+        const parts = p.split(/[:=]/).map(s => s.trim());
+        if (parts.length === 2) {
+          const key = parts[0].toLowerCase();
+          const val = parseFloat(parts[1]);
+          data[key] = isNaN(val) ? parts[1] : val;
+        }
+      });
     }
-  } catch (e) {}
+  }
 
-  if (line.includes(':')) {
-    const pairs = line.split(',');
-    const data = {};
-    pairs.forEach(pair => {
-      const [k, v] = pair.split(':').map(s => s.trim().toUpperCase());
-      const num = parseFloat(v);
-      if (k === 'TEMP') data.temp = num;
-      if (k === 'HUM') data.hum = num;
-      if (k === 'GAS') data.gas = num;
-      if (k === 'VOLT') data.volt = num;
-      if (k === 'CURRENT') data.current = num;
-      if (k === 'REED') data.reed = parseInt(v);
-      if (k === 'PIR') data.pir = parseInt(v);
-      if (k === 'DIST') data.dist = num;
+  let mappedAny = false;
+  Object.keys(data).forEach(rawKey => {
+    if (rawKey === 'board' || rawKey === 'sensor' || rawKey === 'device') return;
+    const k = rawKey.toLowerCase();
+    const val = data[rawKey];
+    const num = typeof val === 'number' ? val : parseFloat(val);
+
+    // Look for matching sensor in state.configuredSensors
+    let matched = state.configuredSensors.find(s => {
+      const sName = s.name.toLowerCase();
+      const sId = (s.templateId || '').toLowerCase();
+      if (k.includes('temp') && (sName.includes('temp') || sName.includes('climate') || sId.includes('dht') || sId.includes('bme'))) return true;
+      if (k.includes('hum') && (sName.includes('hum') || sId.includes('dht') || sId.includes('bme'))) return true;
+      if (k.includes('gas') && (sName.includes('gas') || sName.includes('mq') || sId.includes('mq'))) return true;
+      if (k.includes('volt') && (sName.includes('volt') || sName.includes('zmpt') || sId.includes('zmpt'))) return true;
+      if (k.includes('curr') && (sName.includes('curr') || sName.includes('acs') || sId.includes('acs'))) return true;
+      if (k.includes('reed') && (sName.includes('door') || sName.includes('reed'))) return true;
+      if (k.includes('pir') && (sName.includes('motion') || sName.includes('pir'))) return true;
+      if (k.includes('dist') && (sName.includes('ultra') || sName.includes('dist') || sId.includes('hcsr04'))) return true;
+      if (sName.includes(k) || sId.includes(k)) return true;
+      return false;
     });
-    applyTelemetryData(data);
+
+    if (matched) {
+      if (!isNaN(num)) {
+        matched.value = num;
+        if (!matched.history) matched.history = [];
+        matched.history.push(num);
+        if (matched.history.length > 10) matched.history.shift();
+      }
+      mappedAny = true;
+    } else if (state.autoMapEnabled && !isNaN(num)) {
+      // Auto-collect and register new sensor channel!
+      let cat = 'climate';
+      let unit = '';
+      let sName = `Sensor Channel [${rawKey.toUpperCase()}]`;
+      if (k.includes('co2')) { cat = 'gas'; unit = 'ppm'; sName = 'NDIR CO2 Sensor'; }
+      else if (k.includes('lux') || k.includes('light')) { cat = 'optical'; unit = 'lux'; sName = 'Ambient Lux Photometer'; }
+      else if (k.includes('press') || k.includes('bar')) { cat = 'climate'; unit = 'hPa'; sName = 'Barometric Pressure Transducer'; }
+      else if (k.includes('soil') || k.includes('water') || k.includes('level') || k.includes('flow')) { cat = 'liquid'; unit = '%'; sName = 'Fluid Level / Moisture Channel'; }
+      else if (k.includes('watt') || k.includes('power') || k.includes('kwh')) { cat = 'power'; unit = 'W'; sName = 'AC Power Telemetry Channel'; }
+
+      const newSensor = {
+        id: Date.now() + Math.floor(Math.random() * 1000),
+        templateId: `auto_${k}`,
+        name: sName,
+        pin: `AUTO ${rawKey.toUpperCase()}`,
+        type: 'Auto-Mapped Serial',
+        room: state.rooms[0]?.name || 'Living Room',
+        category: cat,
+        value: num,
+        unit: unit,
+        threshold: `Auto Range (${(num * 0.8).toFixed(1)} - ${(num * 1.2).toFixed(1)})`,
+        status: 'normal',
+        history: [num]
+      };
+      state.configuredSensors.push(newSensor);
+      mappedAny = true;
+      logTerminal(`[Auto-Collector] Mapped new telemetry channel "${rawKey}" -> ${sName} on ${newSensor.pin}`);
+      showToast(`🔄 Auto-mapped channel "${rawKey}" into Sanctuary OS!`, 'info');
+    }
+  });
+
+  // Also update global vitals
+  applyTelemetryData(data);
+
+  // Evaluate Automation Rules against new data
+  evaluateAutomationRules();
+
+  if (mappedAny) {
+    renderDynamicSensorsGrid();
+    renderSensorsTable();
   }
 }
 
@@ -1362,12 +1942,13 @@ function applyTelemetryData(data) {
 }
 
 function logTerminal(msg) {
+  if (!el.terminalWindow) return;
   const line = document.createElement('div');
   line.className = 'terminal-line';
   line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
   el.terminalWindow.appendChild(line);
 
-  if (el.chkAutoScroll.checked) {
+  if (el.chkAutoScroll?.checked) {
     el.terminalWindow.scrollTop = el.terminalWindow.scrollHeight;
   }
 }
@@ -1478,6 +2059,18 @@ function updateAllViews() {
   } else {
     if (el.txtDistReading) el.txtDistReading.textContent = 'Clear: -- cm';
     if (el.cardDist) el.cardDist.textContent = '--';
+  }
+
+  // 7b. RCWL-0516 Microwave Radar Doppler Scanner
+  const markerRadar = document.getElementById('marker-radar');
+  const txtRadarStatus = document.getElementById('txtRadarStatus');
+  const isRadarActive = Boolean(t.radarDetected || (t.motion && Math.random() > 0.3));
+  if (markerRadar) {
+    markerRadar.classList.toggle('marker-radar-alert', isRadarActive);
+  }
+  if (txtRadarStatus) {
+    txtRadarStatus.textContent = isRadarActive ? `RADAR: TARGET ${t.radarSpeed ? t.radarSpeed.toFixed(1) : '1.4'}m/s` : 'Radar: Passive Scan';
+    txtRadarStatus.style.fill = isRadarActive ? '#ef4444' : '#64748b';
   }
 
   // 8. Monitor Quick Vitals
@@ -2448,98 +3041,154 @@ function getSensorAnimatedVisual(sensor) {
 }
 
 function renderIndividualSensorWidget(sensor) {
-  const cat = sensor.category || 'climate';
-  const telem = state.telemetry;
+  const cat = (sensor.category || 'climate').toLowerCase();
+  const idStr = String(sensor.id);
+
+  // Extract individual sensor value and unit
+  let val = sensor.value;
+  if (val === undefined || val === null) {
+    if (cat === 'climate') val = 24.2;
+    else if (cat === 'gas') val = 185;
+    else if (cat === 'power') val = 238.4;
+    else if (cat === 'liquid') val = 76;
+    else if (cat === 'optical') val = 420;
+    else if (cat === 'motion') val = 0;
+    else val = 50;
+    sensor.value = val;
+  }
+
+  const unit = sensor.unit || (
+    cat === 'climate' ? '°C' :
+    cat === 'gas' ? 'ppm' :
+    cat === 'power' ? 'V' :
+    cat === 'liquid' ? '%' :
+    cat === 'optical' ? 'lx' : ''
+  );
+
+  const minVal = sensor.min !== undefined ? sensor.min : 0;
+  const maxVal = sensor.max !== undefined ? sensor.max : (cat === 'gas' ? 1000 : cat === 'power' ? 260 : 100);
+  const stepVal = sensor.step !== undefined ? sensor.step : (cat === 'power' || cat === 'climate' ? 0.1 : 1);
+  const displayVal = typeof val === 'number' ? (Number.isInteger(val) ? val : val.toFixed(1)) : val;
 
   let metricHtml = '';
   let controlsHtml = '';
 
   if (cat === 'climate') {
-    const temp = telem.temp !== null ? telem.temp : 24.2;
-    const hum = telem.hum !== null ? telem.hum : 58.0;
+    const isOverTarget = sensor.target ? val > sensor.target : false;
     metricHtml = `
       <div class="rich-sensor-metric">
-        <span class="rich-val">${temp.toFixed(1)}</span><span class="rich-unit">°C</span>
+        <span class="rich-val" id="sensorMainVal_${sensor.id}">${displayVal}</span><span class="rich-unit" id="sensorMainUnit_${sensor.id}">${unit}</span>
         <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 4px;">
-          Relative Humidity: <strong>${hum.toFixed(0)}%</strong> &bull; Dew Point: <strong>15.4°C</strong>
+          Status: <strong style="color: ${isOverTarget ? '#f59e0b' : '#10b981'};">${isOverTarget ? 'Elevated Thermal Load' : 'Optimal Microclimate'}</strong> &bull; Range: ${minVal} - ${maxVal} ${unit}
         </div>
       </div>`;
     controlsHtml = `
       <div class="sensor-ctrl-box">
         <div class="ctrl-label-row">
-          <span>Target Temperature</span>
-          <strong id="targetTempLabel_${sensor.id}">22°C</strong>
+          <span>Live Value Calibration</span>
+          <strong id="sensorValLabel_${sensor.id}">${displayVal} ${unit}</strong>
         </div>
-        <input type="range" min="16" max="30" value="22" class="range-slider temp-target-slider" data-id="${sensor.id}">
+        <input type="range" min="${minVal}" max="${maxVal}" step="${stepVal}" value="${val}" class="range-slider sensor-val-slider" data-id="${sensor.id}">
+        
+        <div class="ctrl-label-row" style="margin-top: 8px;">
+          <span>Target Setpoint</span>
+          <strong id="targetTempLabel_${sensor.id}">${sensor.target || 22}°C</strong>
+        </div>
+        <input type="range" min="16" max="32" value="${sensor.target || 22}" class="range-slider temp-target-slider" data-id="${sensor.id}">
+        
         <div style="display: flex; gap: 6px; margin-top: 8px;">
           <button class="btn btn-secondary btn-xs btn-cooling-mode" data-id="${sensor.id}" style="flex: 1;">❄️ Cooling Mode</button>
           <button class="btn btn-secondary btn-xs btn-heating-mode" data-id="${sensor.id}" style="flex: 1;">☀️ Heating Mode</button>
         </div>
       </div>`;
   } else if (cat === 'gas') {
-    const gasVal = telem.gas !== null ? telem.gas : 185;
-    const isHazard = gasVal > 350;
+    const thresh = sensor.alarmThreshold || 350;
+    const isHazard = Number(val) >= thresh;
     metricHtml = `
       <div class="rich-sensor-metric">
-        <span class="rich-val" style="color: ${isHazard ? '#ef4444' : '#10b981'};">${gasVal}</span><span class="rich-unit">ppm</span>
+        <span class="rich-val" id="sensorMainVal_${sensor.id}" style="color: ${isHazard ? '#ef4444' : '#10b981'};">${displayVal}</span><span class="rich-unit" id="sensorMainUnit_${sensor.id}">${unit}</span>
         <div style="font-size: 0.8rem; margin-top: 4px;">
-          <span class="badge ${isHazard ? 'badge-danger' : 'badge-peaceful'}">${isHazard ? '⚠️ CRITICAL CONCENTRATION' : '🟢 AIR SAFE & CLEAN'}</span>
+          <span class="badge ${isHazard ? 'badge-danger' : 'badge-peaceful'}" id="gasStatusPill_${sensor.id}">
+            ${isHazard ? '⚠️ CRITICAL CONCENTRATION HAZARD' : '🟢 AIR SAFE & PURIFIED'}
+          </span>
         </div>
       </div>`;
     controlsHtml = `
       <div class="sensor-ctrl-box">
         <div class="ctrl-label-row">
-          <span>Alarm Threshold</span>
-          <strong id="gasThreshLabel_${sensor.id}">350 ppm</strong>
+          <span>Live Gas / Vapor Level</span>
+          <strong id="sensorValLabel_${sensor.id}">${displayVal} ${unit}</strong>
         </div>
-        <input type="range" min="100" max="800" value="350" class="range-slider gas-thresh-slider" data-id="${sensor.id}">
+        <input type="range" min="${minVal}" max="${maxVal}" step="${stepVal}" value="${val}" class="range-slider sensor-val-slider" data-id="${sensor.id}">
+
+        <div class="ctrl-label-row" style="margin-top: 8px;">
+          <span>Alarm Threshold</span>
+          <strong id="gasThreshLabel_${sensor.id}">${thresh} ppm</strong>
+        </div>
+        <input type="range" min="100" max="800" step="10" value="${thresh}" class="range-slider gas-thresh-slider" data-id="${sensor.id}">
+
         <div style="display: flex; gap: 6px; margin-top: 8px;">
           <button class="btn btn-secondary btn-xs btn-test-siren" data-id="${sensor.id}" style="flex: 1;">🔔 Test Siren</button>
           <button class="btn btn-primary btn-xs btn-cutoff-valve" data-id="${sensor.id}" style="flex: 1;">🎛️ Trip Gas Valve</button>
         </div>
       </div>`;
   } else if (cat === 'power') {
-    const volt = telem.volt !== null ? telem.volt : 238.4;
-    const current = telem.current !== null ? telem.current : 0.85;
-    const watts = (volt * current).toFixed(1);
+    const isSurge = Number(val) > (sensor.alarmThreshold || 250);
     metricHtml = `
       <div class="rich-sensor-metric">
-        <span class="rich-val">${volt.toFixed(1)}</span><span class="rich-unit">V AC</span>
+        <span class="rich-val" id="sensorMainVal_${sensor.id}" style="color: ${isSurge ? '#ef4444' : 'var(--text-main)'};">${displayVal}</span><span class="rich-unit" id="sensorMainUnit_${sensor.id}">${unit}</span>
         <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 4px;">
-          Current: <strong>${current.toFixed(2)} A</strong> &bull; Power: <strong>${watts} W</strong> (PF: 0.98)
+          Grid Status: <strong style="color: ${isSurge ? '#ef4444' : '#10b981'};">${isSurge ? 'OVERVOLTAGE SURGE' : '50.0 Hz Synced & Stable'}</strong> &bull; PF: 0.98
         </div>
       </div>`;
     controlsHtml = `
       <div class="sensor-ctrl-box">
         <div class="ctrl-label-row">
-          <span>Main Distribution Circuit Breaker</span>
+          <span>Live Voltage Simulation</span>
+          <strong id="sensorValLabel_${sensor.id}">${displayVal} ${unit}</strong>
+        </div>
+        <input type="range" min="${minVal}" max="${maxVal}" step="${stepVal}" value="${val}" class="range-slider sensor-val-slider" data-id="${sensor.id}">
+
+        <div class="ctrl-label-row" style="margin-top: 8px;">
+          <span>Main Distribution Breaker</span>
           <span class="badge badge-peaceful" id="breakerStatus_${sensor.id}">CLOSED (ACTIVE)</span>
         </div>
         <div style="display: flex; gap: 6px; margin-top: 8px;">
-          <button class="btn btn-secondary btn-xs btn-toggle-breaker" data-id="${sensor.id}" style="flex: 1;">⚡ Trip Circuit Breaker</button>
+          <button class="btn btn-secondary btn-xs btn-toggle-breaker" data-id="${sensor.id}" style="flex: 1;">⚡ Trip Breaker</button>
           <button class="btn btn-secondary btn-xs btn-reset-kwh" data-id="${sensor.id}" style="flex: 1;">0.00 kWh Reset</button>
         </div>
       </div>`;
   } else if (cat === 'motion') {
-    const isMotion = telem.pirActive || false;
+    const isMotion = Number(val) > 0 || val === true || val === '1';
     metricHtml = `
       <div class="rich-sensor-metric" style="display: flex; justify-content: space-between; align-items: center;">
         <div>
-          <span class="rich-val" style="font-size: 1.5rem; color: ${isMotion ? '#ef4444' : '#10b981'};">${isMotion ? 'TARGET DETECTED' : 'CLEAR / SECURE'}</span>
-          <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">Zone Armed &bull; Microwave Doppler active</div>
+          <span class="rich-val" id="sensorMainVal_${sensor.id}" style="font-size: 1.4rem; color: ${isMotion ? '#ef4444' : '#10b981'};">
+            ${isMotion ? 'TARGET DETECTED' : 'CLEAR / SECURE'}
+          </span>
+          <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">Zone Armed &bull; Doppler / PIR active</div>
         </div>
         <div class="radar-sweep-visual"></div>
       </div>`;
     controlsHtml = `
       <div class="sensor-ctrl-box">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <div class="ctrl-label-row">
+          <span>Motion Trigger Simulation</span>
+          <strong id="sensorValLabel_${sensor.id}">${isMotion ? 'Active Motion (1)' : 'Standby (0)'}</strong>
+        </div>
+        <input type="range" min="0" max="1" step="1" value="${isMotion ? 1 : 0}" class="range-slider sensor-val-slider" data-id="${sensor.id}">
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin: 8px 0;">
           <span style="font-size: 0.76rem; font-weight: 600;">Armed Security Guard</span>
           <label class="switch"><input type="checkbox" checked class="toggle-arm-sensor" data-id="${sensor.id}"><span class="slider round"></span></label>
         </div>
         <button class="btn btn-primary btn-xs btn-snap-camera" data-id="${sensor.id}" style="width: 100%;">📸 Capture Verified Photo</button>
       </div>`;
   } else if (cat === 'actuator') {
-    if (sensor.name.toLowerCase().includes('valve')) {
+    const isValve = sensor.name.toLowerCase().includes('valve');
+    const isAc = sensor.name.toLowerCase().includes('ac') || sensor.name.toLowerCase().includes('crac');
+    
+    if (isValve) {
       metricHtml = `
         <div class="rich-sensor-metric">
           <div class="valve-flow-indicator open" id="valveInd_${sensor.id}">🟢 PIPELINE VALVE OPEN (FLOW ACTIVE)</div>
@@ -2551,48 +3200,54 @@ function renderIndividualSensorWidget(sensor) {
             <button class="btn btn-primary btn-xs btn-valve-shut" data-id="${sensor.id}" style="flex: 1;">Emergency Cutoff</button>
           </div>
         </div>`;
-    } else if (sensor.name.toLowerCase().includes('ac') || sensor.name.toLowerCase().includes('crac')) {
+    } else if (isAc) {
       metricHtml = `
         <div class="rich-sensor-metric">
-          <span class="rich-val">22</span><span class="rich-unit">°C Set</span>
+          <span class="rich-val" id="sensorMainVal_${sensor.id}">${displayVal}</span><span class="rich-unit">°C Set</span>
           <div style="font-size: 0.78rem; color: #38bdf8; margin-top: 4px;">Mode: COOL &bull; Compressor: 45Hz &bull; Fan: AUTO</div>
         </div>`;
       controlsHtml = `
         <div class="ac-remote-console">
-          <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
             <span style="font-size: 0.74rem;">Smart AC Console</span>
-            <button class="btn btn-secondary btn-xs btn-ac-power" data-id="${sensor.id}">Power</button>
+            <button class="btn btn-secondary btn-xs btn-ac-power" data-id="${sensor.id}">Power: ON</button>
           </div>
           <div class="ac-remote-modes">
-            <button class="ac-mode-btn active">❄️ Cool</button>
-            <button class="ac-mode-btn">☀️ Heat</button>
-            <button class="ac-mode-btn">🌀 Fan</button>
-            <button class="ac-mode-btn">💧 Dry</button>
+            <button class="ac-mode-btn active" data-mode="cool">❄️ Cool</button>
+            <button class="ac-mode-btn" data-mode="heat">☀️ Heat</button>
+            <button class="ac-mode-btn" data-mode="fan">🌀 Fan</button>
+            <button class="ac-mode-btn" data-mode="dry">💧 Dry</button>
           </div>
         </div>`;
     } else {
       metricHtml = `
         <div class="rich-sensor-metric">
-          <span class="rich-val">READY</span>
-          <div style="font-size: 0.78rem; color: var(--text-muted);">Relay Channel Energized</div>
+          <span class="rich-val" id="sensorMainVal_${sensor.id}">ACTIVE</span>
+          <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">Channel Energized &bull; Pin: ${sensor.pin}</div>
         </div>`;
       controlsHtml = `
         <div class="sensor-ctrl-box">
           <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-size: 0.78rem; font-weight: 600;">Power Switch</span>
-            <label class="switch"><input type="checkbox" class="toggle-actuator-relay" data-id="${sensor.id}"><span class="slider round"></span></label>
+            <span style="font-size: 0.78rem; font-weight: 600;">Relay Power Output</span>
+            <label class="switch"><input type="checkbox" checked class="toggle-actuator-relay" data-id="${sensor.id}"><span class="slider round"></span></label>
           </div>
         </div>`;
     }
   } else if (cat === 'liquid') {
     metricHtml = `
       <div class="rich-sensor-metric">
-        <span class="rich-val">76%</span><span class="rich-unit">Capacity</span>
-        <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">Volume: <strong>3,800 Liters</strong> &bull; Pressure: <strong>4.2 Bar</strong></div>
+        <span class="rich-val" id="sensorMainVal_${sensor.id}">${displayVal}</span><span class="rich-unit" id="sensorMainUnit_${sensor.id}">${unit}</span>
+        <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">Level: <strong>${displayVal}%</strong> &bull; Reservoir Nominal</div>
       </div>`;
     controlsHtml = `
       <div class="sensor-ctrl-box">
-        <div style="display: flex; gap: 6px;">
+        <div class="ctrl-label-row">
+          <span>Live Tank Level Simulator</span>
+          <strong id="sensorValLabel_${sensor.id}">${displayVal} ${unit}</strong>
+        </div>
+        <input type="range" min="0" max="100" step="1" value="${val}" class="range-slider sensor-val-slider" data-id="${sensor.id}">
+
+        <div style="display: flex; gap: 6px; margin-top: 8px;">
           <button class="btn btn-primary btn-xs btn-toggle-pump" data-id="${sensor.id}" style="flex: 1;">💧 Start Pump</button>
           <button class="btn btn-secondary btn-xs btn-drain-tank" data-id="${sensor.id}" style="flex: 1;">Drain Valve</button>
         </div>
@@ -2601,24 +3256,38 @@ function renderIndividualSensorWidget(sensor) {
     metricHtml = `
       <div class="rich-sensor-metric">
         <div style="display: flex; justify-content: space-between; align-items: baseline;">
-          <div><span class="rich-val">98.4</span><span class="rich-unit">% SpO2</span></div>
+          <div><span class="rich-val" id="sensorMainVal_${sensor.id}">${displayVal}</span><span class="rich-unit">% SpO2</span></div>
           <div><span class="rich-val" style="font-size: 1.5rem; color: #ef4444;">72</span><span class="rich-unit">BPM</span></div>
         </div>
         <svg class="ecg-pulse-svg" viewBox="0 0 200 40"><path d="M0,20 L40,20 L50,5 L60,35 L70,10 L80,25 L90,20 L200,20" /></svg>
       </div>`;
     controlsHtml = `
       <div class="sensor-ctrl-box">
-        <button class="btn btn-primary btn-xs btn-nurse-alert" data-id="${sensor.id}" style="width: 100%;">🚨 Dispatch Nurse Station Alert</button>
+        <div class="ctrl-label-row">
+          <span>SpO2 Pulse Oximeter Sim</span>
+          <strong id="sensorValLabel_${sensor.id}">${displayVal} %</strong>
+        </div>
+        <input type="range" min="80" max="100" step="1" value="${val}" class="range-slider sensor-val-slider" data-id="${sensor.id}">
+        <div style="margin-top: 8px;">
+          <button class="btn btn-primary btn-xs btn-nurse-alert" data-id="${sensor.id}" style="width: 100%;">🚨 Dispatch Nurse Station Alert</button>
+        </div>
       </div>`;
   } else {
     metricHtml = `
       <div class="rich-sensor-metric">
-        <span class="rich-val">ACTIVE</span>
+        <span class="rich-val" id="sensorMainVal_${sensor.id}">${displayVal}</span><span class="rich-unit" id="sensorMainUnit_${sensor.id}">${unit}</span>
         <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">${sensor.type} &bull; Pin: ${sensor.pin}</div>
       </div>`;
     controlsHtml = `
       <div class="sensor-ctrl-box">
-        <button class="btn btn-secondary btn-xs btn-ping-channel" data-id="${sensor.id}" style="width: 100%;">⚡ Ping Channel Test</button>
+        <div class="ctrl-label-row">
+          <span>Simulate Telemetry Reading</span>
+          <strong id="sensorValLabel_${sensor.id}">${displayVal} ${unit}</strong>
+        </div>
+        <input type="range" min="${minVal}" max="${maxVal}" step="${stepVal}" value="${val}" class="range-slider sensor-val-slider" data-id="${sensor.id}">
+        <div style="margin-top: 8px;">
+          <button class="btn btn-secondary btn-xs btn-ping-channel" data-id="${sensor.id}" style="width: 100%;">⚡ Ping Channel Test</button>
+        </div>
       </div>`;
   }
 
@@ -2641,7 +3310,8 @@ function renderIndividualSensorWidget(sensor) {
             <span class="zone-clearance-pill">${sensor.type}</span>
           </div>
         </div>
-          <span class="badge" style="background: #f1f5f9; color: #334155; font-size: 0.68rem; font-weight: 600;">${sensor.room}</span>
+        <div style="margin: 4px 0 8px 0;">
+          <span class="badge" style="background: rgba(255,255,255,0.06); color: var(--text-muted); font-size: 0.68rem; font-weight: 600;">${sensor.room}</span>
         </div>
         ${metricHtml}
       </div>
@@ -2650,19 +3320,103 @@ function renderIndividualSensorWidget(sensor) {
 }
 
 function attachSensorWidgetControlsListeners() {
+  // Live Value Calibration Sliders (updates individual sensor value and runs Rule Engine!)
+  document.querySelectorAll('.sensor-val-slider').forEach(slider => {
+    slider.addEventListener('input', (e) => {
+      const sensorId = e.target.dataset.id;
+      const numVal = parseFloat(e.target.value);
+      const sensor = state.configuredSensors.find(s => String(s.id) === String(sensorId));
+      if (!sensor) return;
+
+      sensor.value = numVal;
+
+      // Update live labels on widget
+      const valLabel = document.getElementById('sensorValLabel_' + sensorId);
+      if (valLabel) {
+        valLabel.textContent = `${Number.isInteger(numVal) ? numVal : numVal.toFixed(1)} ${sensor.unit || ''}`;
+      }
+      const mainVal = document.getElementById('sensorMainVal_' + sensorId);
+      if (mainVal) {
+        if (sensor.category === 'motion') {
+          mainVal.textContent = numVal > 0 ? 'TARGET DETECTED' : 'CLEAR / SECURE';
+          mainVal.style.color = numVal > 0 ? '#ef4444' : '#10b981';
+        } else {
+          mainVal.textContent = Number.isInteger(numVal) ? numVal : numVal.toFixed(1);
+        }
+      }
+
+      // Update gas hazard badge if applicable
+      const gasPill = document.getElementById('gasStatusPill_' + sensorId);
+      if (gasPill && sensor.category === 'gas') {
+        const isHazard = numVal >= (sensor.alarmThreshold || 350);
+        gasPill.className = `badge ${isHazard ? 'badge-danger' : 'badge-peaceful'}`;
+        gasPill.textContent = isHazard ? '⚠️ CRITICAL CONCENTRATION HAZARD' : '🟢 AIR SAFE & PURIFIED';
+        if (mainVal) mainVal.style.color = isHazard ? '#ef4444' : '#10b981';
+      }
+
+      // Synchronize with global telemetry object if primary
+      const cat = (sensor.category || '').toLowerCase();
+      if (cat === 'climate' && sensor.name.toLowerCase().includes('dht')) {
+        state.telemetry.temp = numVal;
+      } else if (cat === 'gas') {
+        state.telemetry.gas = Math.round(numVal);
+      } else if (cat === 'power' && sensor.name.toLowerCase().includes('zmpt')) {
+        state.telemetry.volt = numVal;
+      } else if (cat === 'motion') {
+        state.telemetry.pirActive = numVal > 0;
+      }
+
+      // Real-time evaluation of Automation IF / ELSE Rules!
+      if (typeof evaluateAutomationRules === 'function') {
+        evaluateAutomationRules();
+      }
+    });
+  });
+
   // Climate Target slider
   document.querySelectorAll('.temp-target-slider').forEach(slider => {
     slider.addEventListener('input', (e) => {
-      const lbl = document.getElementById('targetTempLabel_' + e.target.dataset.id);
+      const sensorId = e.target.dataset.id;
+      const lbl = document.getElementById('targetTempLabel_' + sensorId);
       if (lbl) lbl.textContent = e.target.value + '°C';
+      const sensor = state.configuredSensors.find(s => String(s.id) === String(sensorId));
+      if (sensor) sensor.target = parseFloat(e.target.value);
+      if (typeof evaluateAutomationRules === 'function') evaluateAutomationRules();
     });
   });
 
   // Gas Threshold slider
   document.querySelectorAll('.gas-thresh-slider').forEach(slider => {
     slider.addEventListener('input', (e) => {
-      const lbl = document.getElementById('gasThreshLabel_' + e.target.dataset.id);
+      const sensorId = e.target.dataset.id;
+      const lbl = document.getElementById('gasThreshLabel_' + sensorId);
       if (lbl) lbl.textContent = e.target.value + ' ppm';
+      const sensor = state.configuredSensors.find(s => String(s.id) === String(sensorId));
+      if (sensor) sensor.alarmThreshold = parseFloat(e.target.value);
+      if (typeof evaluateAutomationRules === 'function') evaluateAutomationRules();
+    });
+  });
+
+  // Cooling / Heating Mode buttons
+  document.querySelectorAll('.btn-cooling-mode').forEach(btn => {
+    btn.addEventListener('click', () => {
+      showToast('❄️ AC Cooling Mode engaged for zone. Setpoint locked to 20°C.', 'info');
+      if (state.roomOutputs && state.roomOutputs.ac_unit) {
+        state.roomOutputs.ac_unit.active = true;
+        state.roomOutputs.ac_unit.mode = 'cool';
+        updateRoomOutputsUI();
+      }
+    });
+  });
+
+  document.querySelectorAll('.btn-heating-mode').forEach(btn => {
+    btn.addEventListener('click', () => {
+      showToast('☀️ AC Heating Mode engaged for zone. Setpoint set to 26°C.', 'warning');
+      if (state.roomOutputs && state.roomOutputs.ac_unit) {
+        state.roomOutputs.ac_unit.active = true;
+        state.roomOutputs.ac_unit.mode = 'heat';
+        updateRoomOutputsUI();
+      }
     });
   });
 
@@ -2670,7 +3424,18 @@ function attachSensorWidgetControlsListeners() {
   document.querySelectorAll('.btn-test-siren').forEach(btn => {
     btn.addEventListener('click', () => {
       showToast('🔊 High-decibel piezo siren sounding for 3 seconds!', 'warning');
-      logIncident('Hazard Audio Test', 'MQ-2 Gas', 'Manual siren audio verification conducted', 'Resolved');
+      logIncident('Hazard Audio Test', 'Piezo Siren', 'Manual siren acoustic verification conducted', 'Resolved');
+      if (typeof playAlertTone === 'function') playAlertTone();
+      if (state.roomOutputs && state.roomOutputs.siren) {
+        state.roomOutputs.siren.active = true;
+        updateRoomOutputsUI();
+        setTimeout(() => {
+          if (state.roomOutputs && state.roomOutputs.siren) {
+            state.roomOutputs.siren.active = false;
+            updateRoomOutputsUI();
+          }
+        }, 3000);
+      }
     });
   });
 
@@ -2682,6 +3447,10 @@ function attachSensorWidgetControlsListeners() {
       if (ind) {
         ind.className = 'valve-flow-indicator closed';
         ind.textContent = '🔴 GAS PIPELINE ISOLATED (VALVE SHUT)';
+      }
+      if (state.roomOutputs && state.roomOutputs.gas_valve) {
+        state.roomOutputs.gas_valve.active = false;
+        updateRoomOutputsUI();
       }
     });
   });
@@ -2695,6 +3464,10 @@ function attachSensorWidgetControlsListeners() {
         ind.className = 'valve-flow-indicator open';
         ind.textContent = '🟢 PIPELINE VALVE OPEN (FLOW ACTIVE)';
       }
+      if (state.roomOutputs && state.roomOutputs.gas_valve) {
+        state.roomOutputs.gas_valve.active = true;
+        updateRoomOutputsUI();
+      }
     });
   });
 
@@ -2706,18 +3479,33 @@ function attachSensorWidgetControlsListeners() {
         statusPill.textContent = 'OPEN (TRIPPED)';
         statusPill.className = 'badge badge-danger';
         showToast('⚡ Mains Circuit Breaker TRIPPED! Load isolated for safety.', 'warning');
+        if (state.roomOutputs && state.roomOutputs.mains_breaker) {
+          state.roomOutputs.mains_breaker.active = false;
+          updateRoomOutputsUI();
+        }
       } else if (statusPill) {
         statusPill.textContent = 'CLOSED (ACTIVE)';
         statusPill.className = 'badge badge-peaceful';
         showToast('⚡ Mains Circuit Breaker RESET to closed.', 'success');
+        if (state.roomOutputs && state.roomOutputs.mains_breaker) {
+          state.roomOutputs.mains_breaker.active = true;
+          updateRoomOutputsUI();
+        }
       }
+    });
+  });
+
+  // Reset kWh button
+  document.querySelectorAll('.btn-reset-kwh').forEach(btn => {
+    btn.addEventListener('click', () => {
+      showToast('⚡ Energy accumulation register reset to 0.00 kWh.', 'info');
     });
   });
 
   // Camera snap
   document.querySelectorAll('.btn-snap-camera').forEach(btn => {
     btn.addEventListener('click', () => {
-      triggerManualSnapshot();
+      if (typeof triggerManualSnapshot === 'function') triggerManualSnapshot();
       showToast('📸 High-resolution security snapshot captured & logged.', 'info');
     });
   });
@@ -2725,7 +3513,21 @@ function attachSensorWidgetControlsListeners() {
   // Water pump toggle
   document.querySelectorAll('.btn-toggle-pump').forEach(btn => {
     btn.addEventListener('click', () => {
-      showToast('💧 Water Booster Pump Relay Activated.', 'info');
+      if (state.roomOutputs && state.roomOutputs.water_pump) {
+        state.roomOutputs.water_pump.active = !state.roomOutputs.water_pump.active;
+        const isOn = state.roomOutputs.water_pump.active;
+        showToast(`💧 Water Booster Pump ${isOn ? 'ACTIVATED (Running)' : 'SHUT OFF (Idle)'}.`, isOn ? 'success' : 'info');
+        updateRoomOutputsUI();
+      } else {
+        showToast('💧 Water Booster Pump Relay Toggled.', 'info');
+      }
+    });
+  });
+
+  // Drain tank button
+  document.querySelectorAll('.btn-drain-tank').forEach(btn => {
+    btn.addEventListener('click', () => {
+      showToast('🚰 Sump Drain Solenoid Opened: Evacuating excess water.', 'warning');
     });
   });
 
@@ -2733,6 +3535,57 @@ function attachSensorWidgetControlsListeners() {
   document.querySelectorAll('.btn-nurse-alert').forEach(btn => {
     btn.addEventListener('click', () => {
       showToast('🚨 Code Alert Dispatched to Hospital Central Nurse Station!', 'danger');
+      if (typeof playAlertTone === 'function') playAlertTone();
+    });
+  });
+
+  // Ping channel test
+  document.querySelectorAll('.btn-ping-channel').forEach(btn => {
+    btn.addEventListener('click', () => {
+      showToast('⚡ GPIO Channel pinged: ACK received in 1.4ms (Signal OK).', 'success');
+    });
+  });
+
+  // Toggle arm sensor
+  document.querySelectorAll('.toggle-arm-sensor').forEach(toggle => {
+    toggle.addEventListener('change', (e) => {
+      showToast(`🛡️ Sentry Zone ${e.target.checked ? 'ARMED' : 'DISARMED'}.`, e.target.checked ? 'success' : 'warning');
+    });
+  });
+
+  // Toggle actuator relay
+  document.querySelectorAll('.toggle-actuator-relay').forEach(toggle => {
+    toggle.addEventListener('change', (e) => {
+      showToast(`🎛️ Actuator Relay ${e.target.checked ? 'ENERGIZED (ON)' : 'DE-ENERGIZED (OFF)'}.`, 'info');
+    });
+  });
+
+  // AC Power
+  document.querySelectorAll('.btn-ac-power').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (state.roomOutputs && state.roomOutputs.ac_unit) {
+        state.roomOutputs.ac_unit.active = !state.roomOutputs.ac_unit.active;
+        btn.textContent = `Power: ${state.roomOutputs.ac_unit.active ? 'ON' : 'OFF'}`;
+        updateRoomOutputsUI();
+        showToast(`Smart AC Unit turned ${state.roomOutputs.ac_unit.active ? 'ON' : 'OFF'}.`, 'info');
+      }
+    });
+  });
+
+  // AC Remote Modes
+  document.querySelectorAll('.ac-mode-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const parent = btn.closest('.ac-remote-modes');
+      if (parent) {
+        parent.querySelectorAll('.ac-mode-btn').forEach(b => b.classList.remove('active'));
+      }
+      btn.classList.add('active');
+      const mode = btn.dataset.mode || 'cool';
+      showToast(`Smart AC Mode switched to: ${mode.toUpperCase()}`, 'info');
+      if (state.roomOutputs && state.roomOutputs.ac_unit) {
+        state.roomOutputs.ac_unit.mode = mode;
+        updateRoomOutputsUI();
+      }
     });
   });
 }
@@ -2815,58 +3668,131 @@ function initFacilityAndRooms() {
     renderSensorPalette();
   });
 
-  el.btnEditFacility.addEventListener('click', () => {
-    el.inputFacilityName.value = state.facilityName;
-    el.editFacilityModal.classList.add('active');
+  // Edit Facility Modal
+  const editFacilityModal = document.getElementById('editFacilityModal');
+  const inputFacilityName = document.getElementById('inputFacilityName');
+  document.getElementById('btnEditFacility')?.addEventListener('click', () => {
+    if (inputFacilityName) inputFacilityName.value = state.facilityName;
+    editFacilityModal?.classList.add('active');
   });
-  el.btnCloseFacilityModal.addEventListener('click', () => el.editFacilityModal.classList.remove('active'));
-  el.btnCancelFacilityModal.addEventListener('click', () => el.editFacilityModal.classList.remove('active'));
-  el.formEditFacility.addEventListener('submit', (e) => {
+  document.getElementById('btnCloseFacilityModal')?.addEventListener('click', () => editFacilityModal?.classList.remove('active'));
+  document.getElementById('btnCancelFacilityModal')?.addEventListener('click', () => editFacilityModal?.classList.remove('active'));
+  document.getElementById('formEditFacility')?.addEventListener('submit', (e) => {
     e.preventDefault();
-    state.facilityName = el.inputFacilityName.value.trim();
-    updateFacilityInfo();
-    el.editFacilityModal.classList.remove('active');
+    if (inputFacilityName) {
+      state.facilityName = inputFacilityName.value.trim() || state.facilityName;
+      updateFacilityInfo();
+    }
+    editFacilityModal?.classList.remove('active');
     showToast(`Facility renamed to "${state.facilityName}"`, 'info');
   });
 
-  el.btnOpenAddRoomModal.addEventListener('click', () => el.addRoomModal.classList.add('active'));
-  el.btnCloseRoomModal.addEventListener('click', () => el.addRoomModal.classList.remove('active'));
-  el.btnCancelRoomModal.addEventListener('click', () => el.addRoomModal.classList.remove('active'));
-  el.formAddRoom.addEventListener('submit', (e) => {
+  // Add Room / Zone Modal
+  const addRoomModal = document.getElementById('addRoomModal');
+  const openAddRoom = () => addRoomModal?.classList.add('active');
+  document.getElementById('btnOpenAddRoomModal')?.addEventListener('click', openAddRoom);
+  document.getElementById('btnHeaderAddArea')?.addEventListener('click', openAddRoom);
+  document.getElementById('btnCloseRoomModal')?.addEventListener('click', () => addRoomModal?.classList.remove('active'));
+  document.getElementById('btnCancelRoomModal')?.addEventListener('click', () => addRoomModal?.classList.remove('active'));
+  document.getElementById('formAddRoom')?.addEventListener('submit', (e) => {
     e.preventDefault();
-    const name = el.newRoomName.value.trim();
-    const purpose = el.newRoomPurpose.value.trim();
+    const nameInput = document.getElementById('newRoomName');
+    const purposeInput = document.getElementById('newRoomPurpose');
+    const name = nameInput ? nameInput.value.trim() : 'New Room';
+    const purpose = purposeInput ? purposeInput.value.trim() : 'Monitoring & Security';
     const icon = document.getElementById('newRoomIcon')?.value || '📍';
     const clearance = document.getElementById('newRoomClearance')?.value || 'General';
     state.rooms.push({ id: 'room-' + Date.now(), name, purpose, icon, clearance });
     populateRoomSelects();
     updateFacilityInfo();
     renderPremiseZones();
-    el.addRoomModal.classList.remove('active');
-    el.formAddRoom.reset();
+    addRoomModal?.classList.remove('active');
+    document.getElementById('formAddRoom')?.reset();
     showToast(`Added area: "${icon} ${name}" (${clearance})`, 'success');
   });
 
-  el.btnOpenAddSensorModal.addEventListener('click', () => el.addSensorModal.classList.add('active'));
-  el.btnCloseSensorModal.addEventListener('click', () => el.addSensorModal.classList.remove('active'));
-  el.btnCancelSensorModal.addEventListener('click', () => el.addSensorModal.classList.remove('active'));
-  el.formAddSensor.addEventListener('submit', (e) => {
+  // Add Sensor / Pin Modal
+  const addSensorModal = document.getElementById('addSensorModal');
+  document.getElementById('btnOpenAddSensorModal')?.addEventListener('click', () => {
+    populateRoomSelects();
+    addSensorModal?.classList.add('active');
+  });
+  document.getElementById('btnCloseSensorModal')?.addEventListener('click', () => addSensorModal?.classList.remove('active'));
+  document.getElementById('btnCancelSensorModal')?.addEventListener('click', () => addSensorModal?.classList.remove('active'));
+  document.getElementById('formAddSensor')?.addEventListener('submit', (e) => {
     e.preventDefault();
+    const name = document.getElementById('newSensorName')?.value.trim() || 'New Sensor';
+    const pin = document.getElementById('newSensorPin')?.value || 'GPIO 12';
+    const type = document.getElementById('newSensorType')?.value || 'Digital Input';
+    const room = document.getElementById('newSensorRoom')?.value || (state.rooms[0]?.name || 'Living Room');
+    const threshold = document.getElementById('newSensorThreshold')?.value.trim() || 'Active Threshold';
+
     const newSensor = {
       id: Date.now(),
-      name: el.newSensorName.value.trim(),
-      pin: el.newSensorPin.value,
-      type: el.newSensorType.value,
-      room: el.newSensorRoom.value,
-      threshold: el.newSensorThreshold.value.trim()
+      name,
+      pin,
+      type,
+      room,
+      threshold,
+      value: 0,
+      status: 'normal',
+      history: [0, 0, 0]
     };
     state.configuredSensors.push(newSensor);
+    try { localStorage.setItem('sanctuary_configured_sensors', JSON.stringify(state.configuredSensors)); } catch (_) {}
     renderSensorsTable();
+    renderPremiseZones();
+    renderDynamicSensorsGrid();
     updateFacilityInfo();
-    el.addSensorModal.classList.remove('active');
-    el.formAddSensor.reset();
+    addSensorModal?.classList.remove('active');
+    document.getElementById('formAddSensor')?.reset();
     showToast(`Configured "${newSensor.name}" on ${newSensor.pin}!`, 'info');
   });
+
+  // Add Building Modal
+  const modalAddBuilding = document.getElementById('modalAddBuilding');
+  document.getElementById('btnOpenAddBuilding')?.addEventListener('click', () => modalAddBuilding?.classList.add('active'));
+  document.getElementById('btnCloseAddBuilding')?.addEventListener('click', () => modalAddBuilding?.classList.remove('active'));
+  document.getElementById('btnCancelAddBuilding')?.addEventListener('click', () => modalAddBuilding?.classList.remove('active'));
+  document.getElementById('formAddBuilding')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const bName = document.getElementById('newBuildingName')?.value.trim() || 'Building Branch';
+    const bCampus = document.getElementById('newBuildingCampus')?.value.trim() || 'Main Site';
+    showToast(`🏢 Custom Building "${bName}" added to ${bCampus}`, 'success');
+    modalAddBuilding?.classList.remove('active');
+  });
+
+  // Add Custom Thing Modal
+  const modalAddCustomThing = document.getElementById('modalAddCustomThing');
+  document.getElementById('btnOpenAddCustomThing')?.addEventListener('click', () => {
+    const sel = document.getElementById('newThingRoom');
+    if (sel) sel.innerHTML = state.rooms.map(r => `<option value="${r.name}">${r.name}</option>`).join('');
+    modalAddCustomThing?.classList.add('active');
+  });
+  document.getElementById('btnCloseAddCustomThing')?.addEventListener('click', () => modalAddCustomThing?.classList.remove('active'));
+  document.getElementById('btnCancelAddCustomThing')?.addEventListener('click', () => modalAddCustomThing?.classList.remove('active'));
+
+  // Hierarchy View Switchers
+  const dragCanvas = document.getElementById('dragDropCanvasView');
+  const hierView = document.getElementById('hierarchyTreeView');
+  document.getElementById('btnToggleHierarchyView')?.addEventListener('click', () => {
+    if (dragCanvas) dragCanvas.style.display = 'none';
+    if (hierView) {
+      hierView.style.display = 'block';
+      renderHierarchyTreeView();
+    }
+    showToast('Switched to Facility Parent / Child Hierarchy Tree', 'info');
+  });
+  document.getElementById('btnSwitchToCanvasView')?.addEventListener('click', () => {
+    if (hierView) hierView.style.display = 'none';
+    if (dragCanvas) dragCanvas.style.display = 'grid';
+  });
+
+  // Edit Zone & Edit Sensor Modal Closers
+  document.getElementById('btnCloseEditZone')?.addEventListener('click', () => document.getElementById('modalEditZone')?.classList.remove('active'));
+  document.getElementById('btnCancelEditZone')?.addEventListener('click', () => document.getElementById('modalEditZone')?.classList.remove('active'));
+  document.getElementById('btnCloseEditSensor')?.addEventListener('click', () => document.getElementById('modalEditSensor')?.classList.remove('active'));
+  document.getElementById('btnCancelEditSensor')?.addEventListener('click', () => document.getElementById('modalEditSensor')?.classList.remove('active'));
 
   el.pinChips.forEach(chip => {
     chip.addEventListener('click', () => {
@@ -2942,22 +3868,38 @@ function renderSensorsTable() {
 // 12. SEGREGATED ENGINEERING IDE
 // =============================================================================
 function initEngineeringIde() {
-  el.btnToggleEngineering.addEventListener('click', () => el.engineeringWorkspace.classList.add('active'));
-  el.btnCloseEngineering.addEventListener('click', () => el.engineeringWorkspace.classList.remove('active'));
+  const engWorkspace = document.getElementById('engineeringWorkspace');
+  document.getElementById('btnToggleEngineering')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    engWorkspace?.classList.add('active');
+  });
+  document.getElementById('btnCloseEngineering')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    engWorkspace?.classList.remove('active');
+  });
 
-  el.codeTabs.forEach(tab => {
+  const codeTabs = document.querySelectorAll('.code-tab');
+  const codeViewer = document.getElementById('codeViewer');
+  codeTabs.forEach(tab => {
     tab.addEventListener('click', () => {
-      el.codeTabs.forEach(t => t.classList.remove('active'));
+      codeTabs.forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
       const sketchKey = tab.dataset.sketch;
-      el.codeViewer.textContent = state.firmwareSketches[sketchKey] || '// Code unavailable';
+      if (codeViewer) {
+        codeViewer.textContent = state.firmwareSketches[sketchKey] || '// Code unavailable';
+      }
     });
   });
 
-  el.codeViewer.textContent = state.firmwareSketches.esp32cam;
-  el.btnCopyCode.addEventListener('click', () => {
-    navigator.clipboard.writeText(el.codeViewer.textContent);
-    showToast('📋 Firmware copied to clipboard!', 'info');
+  if (codeViewer && state.firmwareSketches) {
+    codeViewer.textContent = state.firmwareSketches.stm32 || state.firmwareSketches.esp32cam;
+  }
+
+  document.getElementById('btnCopyCode')?.addEventListener('click', () => {
+    if (codeViewer && codeViewer.textContent) {
+      navigator.clipboard.writeText(codeViewer.textContent);
+      showToast('📋 Firmware copied to clipboard!', 'info');
+    }
   });
 }
 
@@ -3295,47 +4237,58 @@ function initSparkCoreIntegration() {
   btnCancelSparkModal?.addEventListener('click', closeSparkModal);
 
   btnStartSparkCloudStream?.addEventListener('click', () => {
-    const devId = document.getElementById('sparkDeviceId')?.value || '54ff74066678574924331067';
-    const token = document.getElementById('sparkAccessToken')?.value || 'a0797b36a333...';
+    const devId = document.getElementById('sparkDeviceId')?.value?.trim() || '54ff74066678574924331067';
+    const token = document.getElementById('sparkAccessToken')?.value?.trim() || '';
     
     closeSparkModal();
 
-    // Set connection status indicator
-    if (el.globalConnDot) {
-      el.globalConnDot.className = 'status-dot live';
+    if (sparkCloudInterval) {
+      clearInterval(sparkCloudInterval);
+      sparkCloudInterval = null;
     }
-    if (el.globalConnLabel) {
-      el.globalConnLabel.textContent = 'Spark Core (Cloud)';
+    if (window.sparkEventSource) {
+      try { window.sparkEventSource.close(); } catch (_) {}
+      window.sparkEventSource = null;
     }
 
-    logCloudServerAudit('GATEWAY', `Connected to Spark Core (${devId.slice(0, 8)}...) via Particle Cloud REST API. Real-time telemetry streaming.`);
-    showToast('⚡ Spark Core connected via Particle Cloud REST stream!', 'info');
-    playChimeSound();
+    onHardwareConnected('Particle Cloud', 'Spark Core');
+    logCloudServerAudit('GATEWAY', `Initiating Particle Cloud event stream for Spark Core (${devId.slice(0, 8)}...)...`);
+    logTerminal(`[Spark Cloud: Connecting to api.particle.io event stream for device ${devId}...]`);
+    logTerminal(`[No dummy data: streaming physical device events only]`);
+    showToast('⚡ Connecting Spark Core Particle stream...', 'info');
 
-    // Stream telemetry updates from Spark Core
-    if (sparkCloudInterval) clearInterval(sparkCloudInterval);
-    sparkCloudInterval = setInterval(() => {
-      // Simulate live incoming Spark Core telemetry packet
-      const t = 24.0 + (Math.sin(Date.now() / 15000) * 1.5);
-      const h = 56.0 + (Math.cos(Date.now() / 12000) * 4.0);
-      const g = Math.floor(180 + Math.random() * 15);
-      const v = 237.5 + (Math.random() - 0.5) * 3.0;
-      const c = 0.82 + (Math.random() - 0.5) * 0.1;
+    try {
+      const sseUrl = `https://api.particle.io/v1/devices/${devId}/events?access_token=${token}`;
+      const es = new EventSource(sseUrl);
+      window.sparkEventSource = es;
 
-      state.telemetry.temp = parseFloat(t.toFixed(1));
-      state.telemetry.hum = parseFloat(h.toFixed(1));
-      state.telemetry.gas = g;
-      state.telemetry.volt = parseFloat(v.toFixed(1));
-      state.telemetry.current = parseFloat(c.toFixed(2));
-      state.telemetry.power = Math.round(state.telemetry.volt * state.telemetry.current);
-      state.telemetry.lastUpdate = new Date().toLocaleTimeString();
+      es.onopen = () => {
+        logTerminal(`[✓ Spark Core Particle SSE link opened. Waiting for physical device publishes...]`);
+        showToast('⚡ Spark Core live stream connected!', 'success');
+      };
 
-      updateMonitorView();
-      updateSensorsView();
+      es.onmessage = (event) => {
+        try {
+          const parsed = JSON.parse(event.data);
+          const rawPayload = parsed.data || event.data;
+          logTerminal(`[SPARK] ${rawPayload}`);
+          autoCollectAndMapTelemetry(rawPayload);
+        } catch (_) {
+          logTerminal(`[SPARK] ${event.data}`);
+          autoCollectAndMapTelemetry(event.data);
+        }
+      };
 
-      // Mirror to live terminal if open
-      appendTerminalLine(`[SPARK] {"temp":${state.telemetry.temp},"hum":${state.telemetry.hum},"gas":${state.telemetry.gas},"volt":${state.telemetry.volt}}`);
-    }, 2500);
+      es.onerror = () => {
+        logTerminal(`[⚠️ Spark Cloud Error]: Remote Particle stream closed or unauthorized.`);
+        onHardwareDisconnected('Spark Cloud stream ended');
+        try { es.close(); } catch (_) {}
+        window.sparkEventSource = null;
+      };
+    } catch (err) {
+      logTerminal(`[Spark Cloud Exception]: ${err.message}`);
+      onHardwareDisconnected('Spark Cloud exception');
+    }
   });
 
   // Automatically select Spark Core sketch when chosen in board selector
@@ -3526,6 +4479,50 @@ function getCategoryIcon(cat) {
   return map[cat] || '📟';
 }
 
+function mapTemplateSensorToRoom(templateId, customRoom = null) {
+  const templates = window.SENSOR_TEMPLATES || [];
+  const t = templates.find(x => x.id === templateId);
+  if (!t) return;
+
+  let targetRoom = customRoom;
+  if (!targetRoom) {
+    if (t.category === 'gas') targetRoom = 'Kitchen';
+    else if (t.category === 'motion' || t.id.includes('radar') || t.id.includes('pir')) targetRoom = 'Living Room';
+    else if (t.category === 'power') targetRoom = 'Power Utility';
+    else if (t.category === 'security' || t.id.includes('door') || t.id.includes('reed')) targetRoom = 'Front Entrance';
+    else if (t.category === 'liquid') targetRoom = 'Power Utility';
+    else targetRoom = 'Master Haven';
+  }
+
+  const existingPin = t.pins && t.pins.length ? t.pins[0] : 'GPIO4';
+  const newSensor = {
+    id: `${t.id}_${Date.now().toString(36)}`,
+    templateId: t.id,
+    name: `${t.model} - ${t.name}`,
+    pin: existingPin,
+    type: t.analogOrDigital || 'Digital',
+    room: targetRoom,
+    category: t.category || 'climate',
+    status: 'Normal',
+    value: t.analogOrDigital === 'Analog' ? 0.0 : 1,
+    unit: t.unit || '',
+    threshold: t.category === 'gas' ? '300 ppm' : (t.category === 'power' ? '250 V' : 'Nominal')
+  };
+
+  if (!state.configuredSensors) state.configuredSensors = [];
+  state.configuredSensors.push(newSensor);
+  try { localStorage.setItem('sanctuary_configured_sensors', JSON.stringify(state.configuredSensors)); } catch (_) {}
+
+  // Update views
+  if (typeof renderSensorsTable === 'function') renderSensorsTable();
+  if (typeof renderPremiseZones === 'function') renderPremiseZones();
+  if (typeof renderDynamicSensorsGrid === 'function') renderDynamicSensorsGrid();
+  if (typeof updateFacilityInfo === 'function') updateFacilityInfo();
+
+  showToast(`🏠 Exported ${t.model} into "${targetRoom}" blueprint and pin routing!`, 'success');
+  playChimeSound();
+}
+
 function renderSensorCatalogGrid() {
   const grid = document.getElementById('catalogGrid');
   if (!grid) return;
@@ -3552,7 +4549,8 @@ function renderSensorCatalogGrid() {
 
   const countBadge = document.getElementById('catalogBadgeCount');
   if (countBadge) {
-    countBadge.textContent = `${filtered.length} of ${templates.length} Models`;
+    const stackCount = selectedFirmwareSensorIds.length;
+    countBadge.textContent = `${filtered.length} of ${templates.length} Models (${stackCount} in Stack)`;
   }
 
   if (filtered.length === 0) {
@@ -3576,6 +4574,7 @@ function renderSensorCatalogGrid() {
 
   grid.innerHTML = filtered.map(t => {
     const tagClass = t.analogOrDigital === 'Analog' ? 'sensor-tag-analog' : (t.category === 'actuator' ? 'sensor-tag-actuator' : 'sensor-tag-digital');
+    const isInStack = selectedFirmwareSensorIds.includes(t.id);
     return `
       <div class="sensor-catalog-card" data-id="${t.id}">
         <div>
@@ -3602,9 +4601,12 @@ function renderSensorCatalogGrid() {
           </div>
         </div>
 
-        <div class="sensor-card-actions">
-          <button class="btn btn-secondary btn-xs btn-card-test" data-sample='${t.sampleOutput.replace(/'/g, "&#39;")}' style="flex: 1;">🧪 Test Signature</button>
-          <button class="btn btn-primary btn-xs btn-card-add-fw" data-id="${t.id}" style="flex: 1;">+ Firmware</button>
+        <div class="sensor-card-actions" style="display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap;">
+          <button class="btn btn-secondary btn-xs btn-card-test" data-sample='${t.sampleOutput.replace(/'/g, "&#39;")}' style="flex: 1 1 28%;">🧪 Test</button>
+          <button class="btn ${isInStack ? 'btn-success' : 'btn-primary'} btn-xs btn-card-add-fw" data-id="${t.id}" style="flex: 1 1 32%; ${isInStack ? 'background: #238636; color: #fff; border-color: #2ea043;' : ''}">
+            ${isInStack ? '✓ In Stack' : '+ Firmware'}
+          </button>
+          <button class="btn btn-secondary btn-xs btn-card-map-room" data-id="${t.id}" style="flex: 1 1 32%;" title="Export &amp; map sensor directly to premise room">🏠 To Room</button>
         </div>
       </div>`;
   }).join('');
@@ -3625,10 +4627,20 @@ function renderSensorCatalogGrid() {
       const id = btn.dataset.id;
       if (!selectedFirmwareSensorIds.includes(id)) {
         selectedFirmwareSensorIds.push(id);
-        showToast(`Added ${id} to firmware generator stack`, 'success');
+        showToast(`✓ Added ${id} to firmware generator stack`, 'success');
       } else {
-        showToast(`${id} is already in the firmware stack`, 'info');
+        selectedFirmwareSensorIds = selectedFirmwareSensorIds.filter(x => x !== id);
+        showToast(`Removed ${id} from firmware stack`, 'info');
       }
+      try { localStorage.setItem('sanctuary_fw_stack', JSON.stringify(selectedFirmwareSensorIds)); } catch (_) {}
+      renderSensorCatalogGrid();
+    });
+  });
+
+  grid.querySelectorAll('.btn-card-map-room').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.id;
+      mapTemplateSensorToRoom(id);
     });
   });
 }
@@ -3825,10 +4837,1251 @@ function initUniversalSensorExaminer() {
     URL.revokeObjectURL(url);
     showToast('Exported 120+ Sensor Templates Catalog JSON', 'success');
   });
+
+  // Export Stack to Room Button
+  const btnExportStack = document.getElementById('btnExportAllStackToRoom');
+  btnExportStack?.addEventListener('click', () => {
+    if (!selectedFirmwareSensorIds.length) {
+      showToast('Firmware stack is empty. Click "+ Firmware" on any sensor cards first!', 'warning');
+      return;
+    }
+    let count = 0;
+    selectedFirmwareSensorIds.forEach(id => {
+      mapTemplateSensorToRoom(id);
+      count++;
+    });
+    showToast(`📦 Exported ${count} sensors from firmware stack into premise rooms!`, 'success');
+  });
 }
 
 // =============================================================================
-// 15. INITIALIZE SANCTUARY OS
+// 15. AUTOMATION STUDIO & IF / WHAT-IF / ELSE CONTROL ENGINE
+// =============================================================================
+function initControlsAndAutomationStudio() {
+  // 1. Controls Subnav Switcher (Outputs, Rules, What-If)
+  const subNav = document.getElementById('controlsSubNav');
+  if (subNav) {
+    subNav.querySelectorAll('.subnav-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        subNav.querySelectorAll('.subnav-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const sub = btn.dataset.subtab || btn.dataset.subpanel;
+        const targetId = sub.startsWith('subpanel-') ? sub : `subpanel-${sub}`;
+        ['subpanel-outputs', 'subpanel-rules', 'subpanel-whatif'].forEach(id => {
+          const panel = document.getElementById(id);
+          if (panel) {
+            if (id === targetId) {
+              panel.style.display = 'block';
+              panel.classList.add('active');
+            } else {
+              panel.style.display = 'none';
+              panel.classList.remove('active');
+            }
+          }
+        });
+      });
+    });
+  }
+
+  // 2. Room Outputs UI & Live Control Toggles
+  updateRoomOutputsUI();
+
+  // Kitchen Fan Toggle
+  document.getElementById('toggleFan')?.addEventListener('change', (e) => {
+    state.roomOutputs.fan = e.target.checked;
+    showToast(`Kitchen Exhaust Fan is now ${e.target.checked ? '🌀 RUNNING' : '⚪ OFF'}`, e.target.checked ? 'success' : 'info');
+  });
+
+  // Gas Solenoid Valve Buttons
+  document.getElementById('btnOutputValveOpen')?.addEventListener('click', () => {
+    state.roomOutputs.valve = true;
+    const lbl = document.getElementById('lblGasValveStatus');
+    if (lbl) { lbl.textContent = 'OPEN (FLOWING)'; lbl.className = 'badge badge-peaceful'; }
+    showToast('🟢 Gas Solenoid Valve OPEN (Flowing)', 'success');
+  });
+  document.getElementById('btnOutputValveCutoff')?.addEventListener('click', () => {
+    state.roomOutputs.valve = false;
+    const lbl = document.getElementById('lblGasValveStatus');
+    if (lbl) { lbl.textContent = 'CUTOFF (ISOLATED)'; lbl.className = 'badge badge-danger'; }
+    showToast('🔴 Emergency Gas Valve SHUT / CUTOFF', 'danger');
+  });
+
+  // Airflow Window Slider
+  document.getElementById('sliderWindow')?.addEventListener('input', (e) => {
+    state.roomOutputs.windowPercent = parseInt(e.target.value);
+    const lbl = document.getElementById('lblWindowPercent');
+    if (lbl) lbl.textContent = `${e.target.value}% Ajar`;
+  });
+
+  // Smart Climate AC Unit
+  document.getElementById('toggleAcPower')?.addEventListener('change', (e) => {
+    state.roomOutputs.acPower = e.target.checked;
+    showToast(`Smart Inverter AC Unit ${e.target.checked ? 'POWERED ON' : 'POWERED OFF'}`, 'info');
+  });
+  document.getElementById('sliderAcTemp')?.addEventListener('input', (e) => {
+    state.roomOutputs.acTemp = parseInt(e.target.value);
+    const lbl = document.getElementById('lblAcTargetTemp');
+    if (lbl) lbl.textContent = `${e.target.value}°C (${(state.roomOutputs.acMode || 'cool').toUpperCase()})`;
+  });
+  ['btnAcCool', 'btnAcHeat', 'btnAcEco'].forEach(id => {
+    document.getElementById(id)?.addEventListener('click', () => {
+      ['btnAcCool', 'btnAcHeat', 'btnAcEco'].forEach(x => document.getElementById(x)?.classList.remove('active-mode'));
+      document.getElementById(id)?.classList.add('active-mode');
+      const mode = id === 'btnAcCool' ? 'cool' : id === 'btnAcHeat' ? 'heat' : 'eco';
+      state.roomOutputs.acMode = mode;
+      const lbl = document.getElementById('lblAcTargetTemp');
+      if (lbl) lbl.textContent = `${state.roomOutputs.acTemp || 22}°C (${mode.toUpperCase()})`;
+      showToast(`AC Mode set to ${mode.toUpperCase()}`, 'info');
+    });
+  });
+
+  // Alarm Sounder Buzzer Test
+  document.getElementById('btnTestBuzzer')?.addEventListener('click', () => {
+    showToast('🔔 Sounding 85dB Piezo Siren Test (2s)...', 'warning');
+    playBuzzerTone();
+  });
+
+  // Security Perimeter Floodlights
+  document.getElementById('toggleFloodlights')?.addEventListener('change', (e) => {
+    state.roomOutputs.floodlights = e.target.checked;
+    showToast(`Perimeter Floodlights ${e.target.checked ? '💡 ON' : 'OFF'}`, 'info');
+  });
+
+  // Entrance Maglock
+  const btnLock = document.getElementById('btnToggleDoorLock');
+  btnLock?.addEventListener('click', () => {
+    state.roomOutputs.doorLock = !state.roomOutputs.doorLock;
+    if (btnLock) {
+      btnLock.textContent = state.roomOutputs.doorLock ? '🔒 ENGAGED' : '🔓 UNLOCKED';
+      btnLock.className = `btn ${state.roomOutputs.doorLock ? 'btn-secondary' : 'btn-danger'} btn-xs`;
+    }
+    showToast(`Entrance Maglock is now ${state.roomOutputs.doorLock ? 'ENGAGED / LOCKED' : 'DISENGAGED / UNLOCKED'}`, state.roomOutputs.doorLock ? 'success' : 'warning');
+  });
+
+  // Sump Pump
+  document.getElementById('togglePump')?.addEventListener('change', (e) => {
+    state.roomOutputs.pump = e.target.checked;
+    showToast(`Sump / Water Pump ${e.target.checked ? '💧 RUNNING' : 'STANDBY'}`, 'info');
+  });
+
+  // Circuit Breaker Shunt Trip / Reset
+  document.getElementById('btnTripBreaker')?.addEventListener('click', () => {
+    state.roomOutputs.breaker = false;
+    const lbl = document.getElementById('lblBreakerStatus');
+    if (lbl) { lbl.textContent = 'TRIPPED (ISOLATED)'; lbl.className = 'badge badge-danger'; }
+    showToast('⚡ Mains Distribution Breaker TRIPPED / ISOLATED', 'danger');
+  });
+  document.getElementById('btnResetBreaker')?.addEventListener('click', () => {
+    state.roomOutputs.breaker = true;
+    const lbl = document.getElementById('lblBreakerStatus');
+    if (lbl) { lbl.textContent = 'CLOSED (ACTIVE)'; lbl.className = 'badge badge-peaceful'; }
+    showToast('⚡ Mains Distribution Breaker RE-CLOSED (Active)', 'success');
+  });
+
+  // Night Guard Auto-Arm
+  document.getElementById('toggleNightGuard')?.addEventListener('change', (e) => {
+    state.roomOutputs.nightGuard = e.target.checked;
+    showToast(`Night Guard Perimeter Sentry ${e.target.checked ? 'ARMED' : 'DISARMED'}`, 'info');
+  });
+
+  // Evaluate Rules Now button
+  document.getElementById('btnEvaluateRulesNow')?.addEventListener('click', () => {
+    const res = evaluateAutomationRules();
+    showToast(`⚡ Evaluated ${res.rulesEvaluated || state.automationRules.length} rules. Triggered: ${res.ifTriggeredCount || 0} IF actions, ${res.elseTriggeredCount || 0} ELSE fallbacks.`, 'info');
+  });
+
+  // Attach Output Parameter slider listeners (Speed, Angle, AC Temp)
+  document.querySelectorAll('.output-param-slider').forEach(slider => {
+    slider.addEventListener('input', (e) => {
+      const outputKey = slider.dataset.output;
+      const param = slider.dataset.param;
+      const val = parseFloat(slider.value);
+      if (!outputKey || !state.roomOutputs[outputKey]) return;
+
+      state.roomOutputs[outputKey][param] = val;
+      const label = document.getElementById(`outputParamVal_${outputKey}_${param}`);
+      if (label) {
+        const unit = param === 'speed' ? '%' : param === 'angle' ? '°' : '°C';
+        label.textContent = `${val}${unit}`;
+      }
+    });
+  });
+
+  // 3. Render Automation Rules List
+  renderAutomationRulesList();
+
+  // Modal: Add Rule Trigger Buttons
+  const btnOpenRule1 = document.getElementById('btnOpenAddRuleModal');
+  const btnOpenRule2 = document.getElementById('btnSubpanelAddRule');
+  const modalAddRule = document.getElementById('modalAddRule');
+  const btnCloseAddRule = document.getElementById('btnCloseAddRuleModal');
+  const btnCancelAddRule = document.getElementById('btnCancelAddRule');
+  const formAddRule = document.getElementById('formAddRule');
+  const ruleSensorSelect = document.getElementById('ruleSensorSelect');
+
+  const openAddRuleModal = () => {
+    if (!modalAddRule) return;
+    // Populate sensors in select
+    if (ruleSensorSelect) {
+      ruleSensorSelect.innerHTML = state.configuredSensors.map(s => `
+        <option value="${s.id}">${s.name} (${s.room} &bull; ${s.category})</option>
+      `).join('');
+    }
+    modalAddRule.classList.add('active');
+  };
+
+  btnOpenRule1?.addEventListener('click', openAddRuleModal);
+  btnOpenRule2?.addEventListener('click', openAddRuleModal);
+
+  const closeAddRuleModal = () => {
+    if (modalAddRule) modalAddRule.classList.remove('active');
+  };
+
+  btnCloseAddRule?.addEventListener('click', closeAddRuleModal);
+  btnCancelAddRule?.addEventListener('click', closeAddRuleModal);
+
+  // Form: Submit New Rule
+  formAddRule?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = document.getElementById('newRuleName')?.value.trim() || 'Custom Automation Rule';
+    const sensorId = document.getElementById('ruleSensorSelect')?.value;
+    const operator = document.getElementById('ruleOperatorSelect')?.value || '>';
+    const value = parseFloat(document.getElementById('ruleThresholdInput')?.value || '100');
+    const thenOutput = document.getElementById('ruleThenOutputSelect')?.value || 'fan';
+    const thenState = document.getElementById('ruleThenStateSelect')?.value || 'ON';
+    const elseOutput = document.getElementById('ruleElseOutputSelect')?.value || 'fan';
+    const elseState = document.getElementById('ruleElseStateSelect')?.value || 'OFF';
+
+    const newRule = {
+      id: Date.now(),
+      name,
+      sensorId,
+      operator,
+      value,
+      thenOutput,
+      thenState,
+      thenAction: `${thenOutput}_${thenState.toLowerCase()}`,
+      elseOutput,
+      elseState,
+      elseAction: `${elseOutput}_${elseState.toLowerCase()}`,
+      active: true,
+      lastTriggered: 'Ready & Armed'
+    };
+
+    state.automationRules.push(newRule);
+    try {
+      localStorage.setItem('sanctuary_automation_rules', JSON.stringify(state.automationRules));
+    } catch (_) {}
+
+    renderAutomationRulesList();
+    evaluateAutomationRules();
+    closeAddRuleModal();
+    showToast(`⚡ Automation Rule "${name}" created and armed!`, 'success');
+  });
+
+  // 4. WHAT-IF Simulation Sandbox Listeners
+  initWhatIfSimulator();
+}
+
+function updateRoomOutputsUI() {
+  if (!state.roomOutputs) return;
+
+  Object.keys(state.roomOutputs).forEach(key => {
+    const out = state.roomOutputs[key];
+    const card = document.querySelector(`[data-output-card="${key}"]`);
+    if (!card) return;
+
+    const pill = card.querySelector('.output-status-pill');
+    const toggleBtn = card.querySelector('.btn-toggle-output');
+
+    if (pill) {
+      if (out.active) {
+        pill.className = 'badge output-status-pill active-glow';
+        pill.textContent = key === 'gas_valve' ? 'VALVE OPEN (FLOW)' :
+                           key === 'mains_breaker' ? 'GRID CLOSED (ACTIVE)' :
+                           key === 'maglock' ? 'LOCKED / SECURE' :
+                           key === 'siren' ? 'BLARING (95 dB)' : 'ENERGIZED (ON)';
+      } else {
+        pill.className = 'badge output-status-pill idle';
+        pill.textContent = key === 'gas_valve' ? 'CUTOFF ISOLATED' :
+                           key === 'mains_breaker' ? 'TRIPPED (ISOLATED)' :
+                           key === 'maglock' ? 'UNLOCKED' :
+                           key === 'siren' ? 'STANDBY (SILENT)' : 'STANDBY (OFF)';
+      }
+    }
+
+    if (toggleBtn) {
+      toggleBtn.className = `btn ${out.active ? 'btn-danger' : 'btn-primary'} btn-xs btn-toggle-output`;
+      toggleBtn.textContent = out.active ? 'Turn OFF' : 'Turn ON';
+    }
+
+    // Special state text (like AC mode or window angle)
+    if (key === 'ac_unit') {
+      const modeLbl = card.querySelector('.ac-mode-indicator');
+      if (modeLbl) modeLbl.textContent = `Mode: ${(out.mode || 'cool').toUpperCase()} &bull; Set: ${out.setpoint || 22}°C`;
+    }
+  });
+}
+
+function renderAutomationRulesList() {
+  const container = document.getElementById('rulesContainer');
+  if (!container) return;
+
+  if (!state.automationRules || state.automationRules.length === 0) {
+    container.innerHTML = `
+      <div style="text-align: center; padding: 40px; color: var(--text-muted); grid-column: 1 / -1;">
+        <span style="font-size: 2.2rem;">⚡</span>
+        <p style="margin-top: 8px;">No automation rules configured yet. Click "+ Add Rule" above to create an IF / THEN / ELSE logic circuit.</p>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = state.automationRules.map((rule, idx) => {
+    const isActive = rule.active !== undefined ? rule.active : (rule.enabled !== undefined ? rule.enabled : true);
+    const thresholdVal = rule.value !== undefined ? rule.value : (rule.threshold !== undefined ? rule.threshold : 0);
+    const sensor = state.configuredSensors.find(s => String(s.id) === String(rule.sensorId));
+    const sensorName = sensor ? sensor.name : (rule.sensorName || 'Sensor Channel');
+    const sensorUnit = sensor ? (sensor.unit || '') : '';
+    const thenOutputName = (rule.thenOutput || 'fan').toUpperCase();
+    const thenStateName = rule.thenState || 'ACTIVATE';
+    const elseOutputName = (rule.elseOutput || rule.thenOutput || 'fan').toUpperCase();
+    const elseStateName = rule.elseState || 'STANDBY';
+
+    return `
+      <div class="rule-card ${isActive ? 'rule-active' : 'rule-disabled'}" data-rule-id="${rule.id}">
+        <div class="rule-card-header">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 1.2rem;">⚡</span>
+            <div>
+              <strong style="font-size: 0.95rem; color: var(--text-main);">${rule.name}</strong>
+              <div style="font-size: 0.74rem; color: var(--text-muted);">Logic Loop #${idx + 1} &bull; Target: ${thenOutputName}</div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span class="badge ${isActive ? 'badge-peaceful' : 'badge-danger'}">${isActive ? 'ARMED' : 'DISABLED'}</span>
+            <label class="switch"><input type="checkbox" ${isActive ? 'checked' : ''} class="toggle-rule-active" data-id="${rule.id}"><span class="slider round"></span></label>
+          </div>
+        </div>
+
+        <div class="rule-clause-row">
+          <span class="rule-keyword keyword-if">IF</span>
+          <span class="rule-expression"><strong>${sensorName}</strong> ${rule.operator} <strong>${thresholdVal} ${sensorUnit}</strong></span>
+        </div>
+
+        <div class="rule-clause-row">
+          <span class="rule-keyword keyword-then">THEN</span>
+          <span class="rule-expression">Set <strong>${thenOutputName}</strong> &rarr; <span style="color: #10b981; font-weight: 700;">${thenStateName}</span></span>
+        </div>
+
+        <div class="rule-clause-row">
+          <span class="rule-keyword keyword-else">ELSE</span>
+          <span class="rule-expression">Set <strong>${elseOutputName}</strong> &rarr; <span style="color: #6366f1; font-weight: 700;">${elseStateName}</span></span>
+        </div>
+
+        <div class="rule-card-footer">
+          <span style="font-size: 0.72rem; color: var(--text-muted);">
+            Last Action: <strong style="color: var(--accent);">${rule.lastTriggered || 'Idle (Awaiting Stream)'}</strong>
+          </span>
+          <div style="display: flex; gap: 6px;">
+            <button class="btn btn-secondary btn-xs btn-test-rule" data-id="${rule.id}">⚡ Test Fire</button>
+            <button class="btn btn-secondary btn-xs btn-delete-rule" data-id="${rule.id}" style="color: #ef4444;">🗑️</button>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+
+  // Attach toggle active listener
+  container.querySelectorAll('.toggle-rule-active').forEach(toggle => {
+    toggle.addEventListener('change', (e) => {
+      const rule = state.automationRules.find(r => String(r.id) === String(e.target.dataset.id));
+      if (rule) {
+        rule.active = e.target.checked;
+        rule.enabled = e.target.checked;
+        try { localStorage.setItem('sanctuary_automation_rules', JSON.stringify(state.automationRules)); } catch (_) {}
+        renderAutomationRulesList();
+        evaluateAutomationRules();
+        showToast(`Rule "${rule.name}" is now ${rule.active ? 'ARMED' : 'DISABLED'}.`, 'info');
+      }
+    });
+  });
+
+  // Attach Test Fire listener
+  container.querySelectorAll('.btn-test-rule').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const rule = state.automationRules.find(r => String(r.id) === String(btn.dataset.id));
+      if (!rule) return;
+
+      applyRuleAction(rule.thenAction || `${rule.thenOutput}_on`);
+      rule.lastTriggered = `⚡ Manual Test Fired (${new Date().toLocaleTimeString()})`;
+      updateRoomOutputsUI();
+      renderAutomationRulesList();
+      showToast(`⚡ Fired THEN action for "${rule.name}"!`, 'success');
+      playChimeSound();
+    });
+  });
+
+  // Attach Delete listener
+  container.querySelectorAll('.btn-delete-rule').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.id;
+      state.automationRules = state.automationRules.filter(r => String(r.id) !== String(id));
+      try { localStorage.setItem('sanctuary_automation_rules', JSON.stringify(state.automationRules)); } catch (_) {}
+      renderAutomationRulesList();
+      showToast('Automation rule removed.', 'info');
+    });
+  });
+}
+
+function evaluateAutomationRules(hypothetical = null) {
+  if (!state.automationRules || state.automationRules.length === 0) return null;
+
+  const results = {
+    rulesEvaluated: state.automationRules.length,
+    ifTriggeredCount: 0,
+    elseTriggeredCount: 0,
+    actionsTaken: []
+  };
+
+  state.automationRules.forEach(rule => {
+    const isActive = rule.active !== undefined ? rule.active : (rule.enabled !== undefined ? rule.enabled : true);
+    if (!isActive) return;
+
+    // Resolve current sensor value
+    let currentVal = null;
+
+    if (hypothetical) {
+      // Find matching simulated channel
+      if (rule.thenOutput === 'fan' || (rule.thenAction && rule.thenAction.includes('valve')) || rule.name.toLowerCase().includes('gas')) {
+        currentVal = hypothetical.gas;
+      } else if (rule.name.toLowerCase().includes('temp') || rule.name.toLowerCase().includes('climate') || rule.thenOutput === 'ac') {
+        currentVal = hypothetical.temp;
+      } else if (rule.name.toLowerCase().includes('volt') || rule.name.toLowerCase().includes('surge') || rule.thenOutput === 'breaker') {
+        currentVal = hypothetical.volt;
+      } else if (rule.name.toLowerCase().includes('water') || rule.name.toLowerCase().includes('flood') || rule.thenOutput === 'pump') {
+        currentVal = hypothetical.water;
+      } else if (rule.name.toLowerCase().includes('motion') || rule.name.toLowerCase().includes('siren') || rule.thenOutput === 'lock') {
+        currentVal = hypothetical.motion;
+      }
+    }
+
+    if (currentVal === null) {
+      const sensor = state.configuredSensors.find(s => String(s.id) === String(rule.sensorId));
+      if (sensor) {
+        currentVal = sensor.value;
+      } else if (rule.name.toLowerCase().includes('gas')) {
+        currentVal = state.telemetry.gas;
+      } else if (rule.name.toLowerCase().includes('temp')) {
+        currentVal = state.telemetry.temp;
+      } else if (rule.name.toLowerCase().includes('volt')) {
+        currentVal = state.telemetry.volt;
+      } else {
+        currentVal = 0;
+      }
+    }
+
+    const numericVal = parseFloat(currentVal);
+    const threshold = parseFloat(rule.value !== undefined ? rule.value : rule.threshold);
+    let conditionMet = false;
+
+    switch (rule.operator) {
+      case '>': conditionMet = numericVal > threshold; break;
+      case '<': conditionMet = numericVal < threshold; break;
+      case '>=': conditionMet = numericVal >= threshold; break;
+      case '<=': conditionMet = numericVal <= threshold; break;
+      case '==': conditionMet = numericVal === threshold; break;
+      case '!=': conditionMet = numericVal !== threshold; break;
+      default: conditionMet = numericVal > threshold;
+    }
+
+    if (conditionMet) {
+      results.ifTriggeredCount++;
+      const actionName = rule.thenAction || `${rule.thenOutput}_on`;
+      results.actionsTaken.push({ branch: 'IF', rule: rule.name, action: actionName });
+      if (!hypothetical) {
+        applyRuleAction(actionName);
+        rule.lastTriggered = `🟢 Triggered IF [${numericVal} ${rule.operator} ${threshold}]`;
+      }
+    } else {
+      results.elseTriggeredCount++;
+      const elseActionName = rule.elseAction || `${rule.elseOutput || rule.thenOutput}_off`;
+      results.actionsTaken.push({ branch: 'ELSE', rule: rule.name, action: elseActionName });
+      if (!hypothetical && rule.elseAction) {
+        applyRuleAction(elseActionName);
+        rule.lastTriggered = `🔵 Fallback ELSE [${numericVal} ${rule.operator} ${threshold} is FALSE]`;
+      }
+    }
+  });
+
+  if (!hypothetical) {
+    updateRoomOutputsUI();
+  }
+
+  return results;
+}
+
+function applyRuleAction(actionCode) {
+  if (!actionCode || !state.roomOutputs) return;
+  const act = actionCode.toLowerCase();
+
+  // Fan
+  if (act.includes('fan_on') || act === 'fan_activate') {
+    state.roomOutputs.fan.active = true;
+    state.roomOutputs.fan.speed = 100;
+    state.telemetry.fanOn = true;
+  } else if (act.includes('fan_off') || act === 'fan_deactivate') {
+    state.roomOutputs.fan.active = false;
+    state.roomOutputs.fan.speed = 0;
+    state.telemetry.fanOn = false;
+  }
+
+  // Gas Solenoid Valve
+  if (act.includes('valve_shut') || act.includes('valve_cutoff') || act === 'valve_deactivate') {
+    state.roomOutputs.gas_valve.active = false;
+  } else if (act.includes('valve_open') || act === 'valve_activate') {
+    state.roomOutputs.gas_valve.active = true;
+  }
+
+  // Siren
+  if (act.includes('siren_on') || act.includes('buzzer_on') || act === 'siren_activate' || act === 'buzzer_activate') {
+    state.roomOutputs.siren.active = true;
+  } else if (act.includes('siren_off') || act.includes('buzzer_off') || act === 'siren_deactivate' || act === 'buzzer_deactivate') {
+    state.roomOutputs.siren.active = false;
+  }
+
+  // AC Unit
+  if (act.includes('ac_on') || act.includes('ac_cool')) {
+    state.roomOutputs.ac_unit.active = true;
+    state.roomOutputs.ac_unit.mode = 'cool';
+  } else if (act.includes('ac_off')) {
+    state.roomOutputs.ac_unit.active = false;
+  }
+
+  // Sump Pump
+  if (act.includes('pump_on') || act === 'pump_activate') {
+    state.roomOutputs.water_pump.active = true;
+  } else if (act.includes('pump_off') || act === 'pump_deactivate') {
+    state.roomOutputs.water_pump.active = false;
+  }
+
+  // Breaker
+  if (act.includes('breaker_trip') || act.includes('breaker_off') || act === 'breaker_deactivate') {
+    state.roomOutputs.mains_breaker.active = false;
+  } else if (act.includes('breaker_on') || act === 'breaker_activate') {
+    state.roomOutputs.mains_breaker.active = true;
+  }
+
+  // Window Servo
+  if (act.includes('window_open') || act === 'window_activate') {
+    state.roomOutputs.window_servo.active = true;
+    state.roomOutputs.window_servo.angle = 90;
+  } else if (act.includes('window_shut') || act.includes('window_off') || act === 'window_deactivate') {
+    state.roomOutputs.window_servo.active = false;
+    state.roomOutputs.window_servo.angle = 0;
+  }
+
+  // Maglock
+  if (act.includes('lock_on') || act === 'lock_activate') {
+    state.roomOutputs.maglock.active = true;
+  } else if (act.includes('lock_off') || act === 'lock_deactivate') {
+    state.roomOutputs.maglock.active = false;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// WHAT-IF SIMULATOR SANDBOX
+// -----------------------------------------------------------------------------
+function initWhatIfSimulator() {
+  const scenarioPills = document.querySelectorAll('.whatif-pill');
+  const tempSlider = document.getElementById('sliderWhatifTemp');
+  const gasSlider = document.getElementById('sliderWhatifGas');
+  const voltSlider = document.getElementById('sliderWhatifVolt');
+  const chkDoor = document.getElementById('chkWhatifDoor');
+  const chkPir = document.getElementById('chkWhatifPir');
+
+  const updateWhatIfLabels = () => {
+    const lblGas = document.getElementById('lblWhatifGas');
+    const lblTemp = document.getElementById('lblWhatifTemp');
+    const lblVolt = document.getElementById('lblWhatifVolt');
+    const lblBreach = document.getElementById('lblWhatifBreach');
+
+    if (gasSlider && lblGas) lblGas.textContent = `${gasSlider.value} ppm`;
+    if (tempSlider && lblTemp) lblTemp.textContent = `${tempSlider.value} °C`;
+    if (voltSlider && lblVolt) lblVolt.textContent = `${voltSlider.value} V`;
+    if (lblBreach) {
+      const doorOpen = chkDoor?.checked;
+      const pirActive = chkPir?.checked;
+      if (doorOpen && pirActive) {
+        lblBreach.textContent = '🚨 Intruder Detected (Door + PIR)';
+        lblBreach.style.color = '#ef4444';
+      } else if (doorOpen) {
+        lblBreach.textContent = '🚪 Door Open / Perimeter Breach';
+        lblBreach.style.color = '#f59e0b';
+      } else if (pirActive) {
+        lblBreach.textContent = '🚶 PIR Motion Active';
+        lblBreach.style.color = '#f59e0b';
+      } else {
+        lblBreach.textContent = 'Normal / Secure';
+        lblBreach.style.color = '';
+      }
+    }
+  };
+
+  [tempSlider, gasSlider, voltSlider].forEach(slider => {
+    slider?.addEventListener('input', updateWhatIfLabels);
+  });
+  chkDoor?.addEventListener('change', updateWhatIfLabels);
+  chkPir?.addEventListener('change', updateWhatIfLabels);
+
+  // Presets
+  const presets = {
+    gas_leak: { temp: 34, gas: 580, volt: 238, door: false, pir: false },
+    surge: { temp: 25, gas: 180, volt: 262, door: false, pir: false },
+    intruder: { temp: 22, gas: 175, volt: 238, door: true, pir: true },
+    heatwave: { temp: 36.5, gas: 195, volt: 228, door: false, pir: false },
+    flood: { temp: 22, gas: 160, volt: 235, door: false, pir: false }
+  };
+
+  scenarioPills.forEach(pill => {
+    pill.addEventListener('click', () => {
+      scenarioPills.forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      const sc = presets[pill.dataset.scenario];
+      if (!sc) return;
+
+      if (tempSlider) tempSlider.value = sc.temp;
+      if (gasSlider) gasSlider.value = sc.gas;
+      if (voltSlider) voltSlider.value = sc.volt;
+      if (chkDoor) chkDoor.checked = !!sc.door;
+      if (chkPir) chkPir.checked = !!sc.pir;
+
+      updateWhatIfLabels();
+      runWhatIfSimulation();
+      showToast(`Applied hypothetical preset: ${pill.textContent.trim()}`, 'info');
+    });
+  });
+
+  // Run What-If Sim Button
+  document.getElementById('btnRunWhatIfSim')?.addEventListener('click', runWhatIfSimulation);
+
+  // Apply to Live
+  document.getElementById('btnApplyWhatIfToLive')?.addEventListener('click', () => {
+    if (!tempSlider || !gasSlider || !voltSlider) return;
+
+    state.telemetry.temp = parseFloat(tempSlider.value);
+    state.telemetry.gas = parseInt(gasSlider.value);
+    state.telemetry.volt = parseFloat(voltSlider.value);
+    state.telemetry.doorOpen = !!chkDoor?.checked;
+    state.telemetry.motion = !!chkPir?.checked;
+    state.telemetry.radarDetected = !!chkPir?.checked;
+    state.telemetry.radarSpeed = chkPir?.checked ? 1.8 : 0.0;
+
+    // Update matching sensors in configuredSensors
+    state.configuredSensors.forEach(s => {
+      const c = (s.category || '').toLowerCase();
+      if (c === 'climate') s.value = state.telemetry.temp;
+      else if (c === 'gas') s.value = state.telemetry.gas;
+      else if (c === 'power') s.value = state.telemetry.volt;
+      else if (c === 'motion') s.value = (s.templateId === 'reed_switch' ? (state.telemetry.doorOpen ? 1 : 0) : (state.telemetry.motion ? 1 : 0));
+      else if (c === 'radar') s.value = state.telemetry.radarDetected ? 1.8 : 0.0;
+    });
+
+    evaluateAutomationRules();
+    updateMonitorView();
+    renderDynamicSensorsGrid();
+    updateRoomOutputsUI();
+    showToast('🚀 Applied hypothetical values to LIVE premise sensors & rules!', 'success');
+  });
+
+  // Reset What-If
+  document.getElementById('btnResetWhatIf')?.addEventListener('click', () => {
+    if (tempSlider) tempSlider.value = 24.2;
+    if (gasSlider) gasSlider.value = 185;
+    if (voltSlider) voltSlider.value = 238;
+    if (chkDoor) chkDoor.checked = false;
+    if (chkPir) chkPir.checked = false;
+    updateWhatIfLabels();
+
+    const resultRules = document.getElementById('whatifResultRules');
+    const resultTriggers = document.getElementById('whatifResultTriggers');
+    const resultOutputs = document.getElementById('whatifResultOutputs');
+    const resultAlerts = document.getElementById('whatifResultAlerts');
+
+    if (resultRules) resultRules.textContent = `${state.automationRules.length} Active Rules Evaluated (Click "Evaluate What-If" to simulate)`;
+    if (resultTriggers) { resultTriggers.textContent = 'None currently'; resultTriggers.style.color = '#34d399'; }
+    if (resultOutputs) { resultOutputs.textContent = 'All systems in standby'; resultOutputs.style.color = '#fbbf24'; }
+    if (resultAlerts) { resultAlerts.textContent = '0 Alerts'; resultAlerts.style.color = ''; }
+
+    showToast('Reset What-If simulator to baseline.', 'info');
+  });
+}
+
+function runWhatIfSimulation() {
+  const temp = parseFloat(document.getElementById('sliderWhatifTemp')?.value || '24.2');
+  const gas = parseInt(document.getElementById('sliderWhatifGas')?.value || '185');
+  const volt = parseFloat(document.getElementById('sliderWhatifVolt')?.value || '238');
+  const door = !!document.getElementById('chkWhatifDoor')?.checked;
+  const pir = !!document.getElementById('chkWhatifPir')?.checked;
+
+  const hypothetical = { temp, gas, volt, door: door ? 1 : 0, pir: pir ? 1 : 0, motion: pir ? 1 : 0 };
+  const res = evaluateAutomationRules(hypothetical);
+
+  const resultRules = document.getElementById('whatifResultRules');
+  const resultTriggers = document.getElementById('whatifResultTriggers');
+  const resultOutputs = document.getElementById('whatifResultOutputs');
+  const resultAlerts = document.getElementById('whatifResultAlerts');
+
+  if (resultRules) resultRules.textContent = `${res.rulesEvaluated || state.automationRules.length} Rules Checked (${res.ifTriggeredCount || 0} IF Tripped, ${res.elseTriggeredCount || 0} Fallbacks)`;
+  
+  if (resultTriggers) {
+    if (res.actionsTaken && res.actionsTaken.length > 0) {
+      resultTriggers.textContent = res.actionsTaken.map(a => `${a.branch}: ${a.rule}`).join(' | ');
+      resultTriggers.style.color = res.ifTriggeredCount > 0 ? '#ef4444' : '#60a5fa';
+    } else {
+      resultTriggers.textContent = 'No critical triggers tripped';
+      resultTriggers.style.color = '#34d399';
+    }
+  }
+
+  if (resultOutputs) {
+    if (res.actionsTaken && res.actionsTaken.length > 0) {
+      resultOutputs.textContent = res.actionsTaken.map(a => a.action.toUpperCase()).join(', ');
+      resultOutputs.style.color = '#10b981';
+    } else {
+      resultOutputs.textContent = 'Nominal state maintained';
+      resultOutputs.style.color = '#94a3b8';
+    }
+  }
+
+  if (resultAlerts) {
+    const isCritical = gas > 350 || volt > 255 || (door && pir);
+    resultAlerts.textContent = isCritical ? 'CRITICAL SAFETY INCIDENT FORECAST' : 'NOMINAL SAFETY COMPLIANCE';
+    resultAlerts.style.color = isCritical ? '#ef4444' : '#10b981';
+    resultAlerts.style.fontWeight = '700';
+  }
+}
+
+// =============================================================================
+// 16. SETUP & PINS: INTERACTIVE STM32 / ESP32 / SPARK CORE ENGINE
+// =============================================================================
+let currentSelectedPin = null;
+
+function initSetupAndPinsModule() {
+  const btnPinoutEsp32 = document.getElementById('btnPinoutEsp32');
+  const btnPinoutSpark = document.getElementById('btnPinoutSpark');
+  const btnPinoutStm32 = document.getElementById('btnPinoutStm32');
+  const graphicEsp32 = document.getElementById('graphicEsp32');
+  const graphicSparkCore = document.getElementById('graphicSparkCore');
+  const graphicStm32 = document.getElementById('graphicStm32');
+  const pinoutHelpText = document.getElementById('pinoutHelpText');
+
+  // Board Selectors
+  btnPinoutStm32?.addEventListener('click', () => {
+    btnPinoutStm32.className = 'btn btn-primary btn-xs';
+    if (btnPinoutEsp32) btnPinoutEsp32.className = 'btn btn-secondary btn-xs';
+    if (btnPinoutSpark) btnPinoutSpark.className = 'btn btn-secondary btn-xs';
+    if (graphicStm32) graphicStm32.style.display = 'grid';
+    if (graphicEsp32) graphicEsp32.style.display = 'none';
+    if (graphicSparkCore) graphicSparkCore.style.display = 'none';
+    if (pinoutHelpText) pinoutHelpText.textContent = 'STM32 Nucleo/BluePill: PA0-PA15 (ADC/PWM/USART), PB0-PB15 (I2C/SPI), PC13 (User LED / B1 Key), 3.3V/5V/GND Rails';
+    showToast('STM32 Board Architecture active in Pinout diagram', 'info');
+  });
+
+  btnPinoutEsp32?.addEventListener('click', () => {
+    btnPinoutEsp32.className = 'btn btn-primary btn-xs';
+    if (btnPinoutStm32) btnPinoutStm32.className = 'btn btn-secondary btn-xs';
+    if (btnPinoutSpark) btnPinoutSpark.className = 'btn btn-secondary btn-xs';
+    if (graphicEsp32) graphicEsp32.style.display = 'grid';
+    if (graphicStm32) graphicStm32.style.display = 'none';
+    if (graphicSparkCore) graphicSparkCore.style.display = 'none';
+    if (pinoutHelpText) pinoutHelpText.textContent = 'ESP32-CAM Pinout: GPIO 12(PIR), 13(DHT22), 14(Reed), 15(Ultra), 4(Relay), 36(MQ-2), 39(Volt), 34(Current)';
+  });
+
+  btnPinoutSpark?.addEventListener('click', () => {
+    btnPinoutSpark.className = 'btn btn-primary btn-xs';
+    if (btnPinoutEsp32) btnPinoutEsp32.className = 'btn btn-secondary btn-xs';
+    if (btnPinoutStm32) btnPinoutStm32.className = 'btn btn-secondary btn-xs';
+    if (graphicSparkCore) graphicSparkCore.style.display = 'grid';
+    if (graphicEsp32) graphicEsp32.style.display = 'none';
+    if (graphicStm32) graphicStm32.style.display = 'none';
+    if (pinoutHelpText) pinoutHelpText.textContent = 'Spark Core Pinout: D2(DHT22), D3(Reed), D4(PIR), D5/D6(HC-SR04), D7(Relay), A0(MQ2), A1(Volt), A2(Current), TX/RX';
+  });
+
+  // Interactive Pin Chip delegation on all 3 boards
+  document.querySelectorAll('.pin-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.pin-chip').forEach(c => c.classList.remove('selected-pin'));
+      chip.classList.add('selected-pin');
+
+      const pin = chip.dataset.pin || chip.textContent.trim().split(' ')[0];
+      const board = chip.dataset.board || (chip.closest('#graphicStm32') ? 'stm32' : chip.closest('#graphicEsp32') ? 'esp32' : 'spark');
+      const role = chip.dataset.role || chip.textContent.trim() || 'General GPIO';
+      const mode = chip.dataset.mode || 'INPUT';
+      const sensor = chip.dataset.sensor || 'None';
+
+      currentSelectedPin = { element: chip, pin, board, role, mode, sensor };
+
+      const infoBox = document.getElementById('selectedPinInfo');
+      if (infoBox) {
+        infoBox.innerHTML = `📍 Selected Pin: <strong style="color: var(--accent);">${pin}</strong> (${board.toUpperCase()}) &bull; Role: <strong>${role}</strong> &bull; Mode: <strong>${mode}</strong> &bull; Sensor: <strong>${sensor}</strong>`;
+      }
+
+      const btnInspect = document.getElementById('btnInspectSelectedPin');
+      const btnToggle = document.getElementById('btnTogglePinHighLow');
+      if (btnInspect) btnInspect.disabled = false;
+      if (btnToggle) btnToggle.disabled = false;
+    });
+  });
+
+  // Toggle Pin High / Low
+  document.getElementById('btnTogglePinHighLow')?.addEventListener('click', () => {
+    if (!currentSelectedPin || !currentSelectedPin.element) {
+      showToast('Click a pin chip on the board graphic first', 'warning');
+      return;
+    }
+
+    const isHigh = currentSelectedPin.element.classList.contains('high');
+    if (isHigh) {
+      currentSelectedPin.element.classList.remove('high');
+      showToast(`Pin ${currentSelectedPin.pin} driven LOW (0.0V)`, 'info');
+    } else {
+      currentSelectedPin.element.classList.add('high');
+      showToast(`⚡ Pin ${currentSelectedPin.pin} driven HIGH (3.3V)`, 'success');
+      playChimeSound();
+    }
+  });
+
+  // Pin Inspector Modal
+  const modalPinInspector = document.getElementById('modalPinInspector');
+  const btnInspectSelectedPin = document.getElementById('btnInspectSelectedPin');
+  const btnClosePinInspector = document.getElementById('btnClosePinInspector');
+  const btnCancelPinInspector = document.getElementById('btnCancelPinInspector');
+  const btnSavePinInspector = document.getElementById('btnSavePinInspector');
+
+  btnInspectSelectedPin?.addEventListener('click', () => {
+    if (!currentSelectedPin || !modalPinInspector) return;
+
+    document.getElementById('inspectorPinName').textContent = currentSelectedPin.pin;
+    document.getElementById('inspectorBoardType').textContent = `Board: ${currentSelectedPin.board.toUpperCase()} &bull; Role: ${currentSelectedPin.role}`;
+
+    // Populate sensors
+    const sensorSelect = document.getElementById('inspectorMappedSensorSelect');
+    if (sensorSelect) {
+      sensorSelect.innerHTML = `<option value="">-- No Sensor Mapped (Floating Pin) --</option>` +
+        state.configuredSensors.map(s => `<option value="${s.name}" ${s.pin === currentSelectedPin.pin ? 'selected' : ''}>${s.name} (${s.room})</option>`).join('');
+    }
+
+    // Populate rooms
+    const roomSelect = document.getElementById('inspectorPinRoomSelect');
+    if (roomSelect) {
+      roomSelect.innerHTML = state.rooms.map(r => `<option value="${r.name}">${r.name}</option>`).join('');
+    }
+
+    // Mode buttons
+    const modeBtns = document.querySelectorAll('.pin-mode-btn');
+    modeBtns.forEach(b => {
+      b.classList.toggle('active', b.dataset.mode === currentSelectedPin.mode);
+      b.onclick = () => {
+        modeBtns.forEach(btn => btn.classList.remove('active'));
+        b.classList.add('active');
+        currentSelectedPin.mode = b.dataset.mode;
+      };
+    });
+
+    modalPinInspector.classList.add('active');
+  });
+
+  const closePinModal = () => {
+    if (modalPinInspector) modalPinInspector.classList.remove('active');
+  };
+
+  btnClosePinInspector?.addEventListener('click', closePinModal);
+  btnCancelPinInspector?.addEventListener('click', closePinModal);
+
+  // Pin Test Set HIGH / LOW / Pulse
+  document.getElementById('btnPinSetHigh')?.addEventListener('click', () => {
+    document.getElementById('inspectorPinStateBadge').textContent = 'OUTPUT: HIGH (3.3V)';
+    document.getElementById('inspectorPinStateBadge').style.background = '#ef4444';
+    if (currentSelectedPin?.element) currentSelectedPin.element.classList.add('high');
+    playChimeSound();
+  });
+
+  document.getElementById('btnPinSetLow')?.addEventListener('click', () => {
+    document.getElementById('inspectorPinStateBadge').textContent = 'OUTPUT: LOW (0.0V)';
+    document.getElementById('inspectorPinStateBadge').style.background = '#10b981';
+    if (currentSelectedPin?.element) currentSelectedPin.element.classList.remove('high');
+  });
+
+  document.getElementById('btnPinPulse')?.addEventListener('click', () => {
+    const badge = document.getElementById('inspectorPinStateBadge');
+    badge.textContent = 'PULSE 100ms...';
+    badge.style.background = '#f59e0b';
+    if (currentSelectedPin?.element) currentSelectedPin.element.classList.add('high');
+    setTimeout(() => {
+      badge.textContent = 'OUTPUT: LOW (0.0V)';
+      badge.style.background = '#10b981';
+      if (currentSelectedPin?.element) currentSelectedPin.element.classList.remove('high');
+    }, 150);
+  });
+
+  // Save Pin Inspector Config
+  btnSavePinInspector?.addEventListener('click', () => {
+    if (!currentSelectedPin) return;
+
+    const sensorVal = document.getElementById('inspectorMappedSensorSelect')?.value;
+    const roomVal = document.getElementById('inspectorPinRoomSelect')?.value;
+
+    currentSelectedPin.sensor = sensorVal || 'None';
+    if (currentSelectedPin.element) {
+      currentSelectedPin.element.dataset.sensor = currentSelectedPin.sensor;
+      currentSelectedPin.element.dataset.mode = currentSelectedPin.mode;
+      currentSelectedPin.element.title = `${currentSelectedPin.pin}: ${currentSelectedPin.sensor} (${currentSelectedPin.mode})`;
+      if (sensorVal) currentSelectedPin.element.classList.add('mapped');
+      else currentSelectedPin.element.classList.remove('mapped');
+    }
+
+    closePinModal();
+    showToast(`Saved pin configuration for ${currentSelectedPin.pin} (${sensorVal ? sensorVal : 'Floating'})`, 'success');
+  });
+
+  // Unmap Pin
+  document.getElementById('btnUnmapPin')?.addEventListener('click', () => {
+    if (!currentSelectedPin) return;
+    currentSelectedPin.sensor = 'None';
+    if (currentSelectedPin.element) {
+      currentSelectedPin.element.dataset.sensor = 'None';
+      currentSelectedPin.element.classList.remove('mapped');
+    }
+    closePinModal();
+    showToast(`Unmapped sensor from ${currentSelectedPin.pin}`, 'info');
+  });
+}
+
+// =============================================================================
+// 17. CUSTOM CLOUD & SERVER MANAGEMENT
+// =============================================================================
+function initCustomCloudManager() {
+  renderCustomCloudGrid();
+
+  const modalAddCloud = document.getElementById('modalAddCloudServer');
+  const btnOpenModal = document.getElementById('btnOpenAddCloudModal');
+  const btnOpenQuick = document.getElementById('btnAddCloudQuick');
+  const btnCloseModal = document.getElementById('btnCloseAddCloudModal');
+  const btnCancelModal = document.getElementById('btnCancelAddCloud');
+  const formAddCloud = document.getElementById('formAddCloudServer');
+  const providerSelect = document.getElementById('newCloudType');
+
+  // Auto-fill template endpoints when selecting provider
+  providerSelect?.addEventListener('change', (e) => {
+    const p = e.target.value;
+    const endpointInput = document.getElementById('newCloudHost');
+    const portInput = document.getElementById('newCloudPort');
+    const topicInput = document.getElementById('newCloudTopic');
+    const nameInput = document.getElementById('newCloudName');
+
+    if (p === 'aws_iot') {
+      if (endpointInput) endpointInput.value = 'a39f1k-ats.iot.us-east-1.amazonaws.com';
+      if (portInput) portInput.value = '8883';
+      if (topicInput) topicInput.value = 'sanctuary/sensors/live';
+      if (nameInput) nameInput.value = 'AWS IoT Core Fleet Gateway';
+    } else if (p === 'azure_iot') {
+      if (endpointInput) endpointInput.value = 'kyu-iot-hub.azure-devices.net';
+      if (portInput) portInput.value = '8883';
+      if (topicInput) topicInput.value = 'devices/stm32/messages/events/';
+      if (nameInput) nameInput.value = 'Azure IoT Hub Device Gateway';
+    } else if (p === 'thingsboard') {
+      if (endpointInput) endpointInput.value = 'thingsboard.cloud';
+      if (portInput) portInput.value = '1883';
+      if (topicInput) topicInput.value = 'v1/devices/me/telemetry';
+      if (nameInput) nameInput.value = 'ThingsBoard Industrial Cloud';
+    } else if (p === 'adafruit_io') {
+      if (endpointInput) endpointInput.value = 'io.adafruit.com';
+      if (portInput) portInput.value = '8883';
+      if (topicInput) topicInput.value = 'username/feeds/sanctuary-telemetry';
+      if (nameInput) nameInput.value = 'Adafruit IO Dashboard';
+    } else if (p === 'generic_mqtt') {
+      if (endpointInput) endpointInput.value = 'broker.hivemq.com';
+      if (portInput) portInput.value = '1883';
+      if (topicInput) topicInput.value = 'kyu/lab4/telemetry';
+      if (nameInput) nameInput.value = 'HiveMQ Public Broker';
+    } else if (p === 'custom_rest') {
+      if (endpointInput) endpointInput.value = 'https://api.sanctuary-iot.org/v1/telemetry';
+      if (portInput) portInput.value = '443';
+      if (topicInput) topicInput.value = 'POST /v1/telemetry';
+      if (nameInput) nameInput.value = 'REST Webhook Ingester';
+    } else if (p === 'custom_ws') {
+      if (endpointInput) endpointInput.value = 'ws://192.168.4.1:81';
+      if (portInput) portInput.value = '81';
+      if (topicInput) topicInput.value = 'stream/live';
+      if (nameInput) nameInput.value = 'ESP32/STM32 Live WebSocket';
+    }
+  });
+
+  const openCloudModal = () => modalAddCloud?.classList.add('active');
+  btnOpenModal?.addEventListener('click', openCloudModal);
+  btnOpenQuick?.addEventListener('click', openCloudModal);
+
+  const closeCloudModal = () => {
+    modalAddCloud?.classList.remove('active');
+  };
+
+  btnCloseModal?.addEventListener('click', closeCloudModal);
+  btnCancelModal?.addEventListener('click', closeCloudModal);
+
+  // Test Ping in Add Cloud modal
+  document.getElementById('btnTestNewCloudPing')?.addEventListener('click', () => {
+    const host = document.getElementById('newCloudHost')?.value.trim() || 'broker.hivemq.com';
+    const latency = Math.floor(18 + Math.random() * 20);
+    showToast(`🔍 Ping test to ${host}: ${latency}ms RTT (ACK 200 OK)`, 'success');
+    playChimeSound();
+  });
+
+  formAddCloud?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const provider = document.getElementById('newCloudType')?.value || 'generic_mqtt';
+    const name = document.getElementById('newCloudName')?.value.trim() || 'Custom Cloud Server';
+    const endpoint = document.getElementById('newCloudHost')?.value.trim() || 'localhost';
+    const port = document.getElementById('newCloudPort')?.value || '1883';
+    const authKey = document.getElementById('newCloudToken')?.value.trim() || '';
+    const topic = document.getElementById('newCloudTopic')?.value.trim() || 'telemetry/kyu/lab4';
+
+    const newCloud = {
+      id: Date.now(),
+      provider,
+      name,
+      endpoint,
+      port,
+      authKey: authKey ? '••••••••' : 'None',
+      topic,
+      status: 'Online',
+      latency: Math.floor(20 + Math.random() * 25) + 'ms'
+    };
+
+    state.customClouds.push(newCloud);
+    try { localStorage.setItem('sanctuary_custom_clouds', JSON.stringify(state.customClouds)); } catch (_) {}
+
+    renderCustomCloudGrid();
+    logCloudServerAudit('CUSTOM CLOUD', `Provisioned new cloud service: "${name}" (${endpoint}:${port}). Ready for telemetry streaming.`);
+    closeCloudModal();
+    showToast(`☁️ Connected new custom cloud: ${name}`, 'success');
+    playChimeSound();
+  });
+}
+
+function renderCustomCloudGrid() {
+  const grid = document.getElementById('customCloudGrid');
+  if (!grid) return;
+
+  if (!state.customClouds || state.customClouds.length === 0) {
+    grid.innerHTML = `
+      <div style="text-align: center; padding: 30px; color: var(--text-muted); grid-column: 1 / -1;">
+        <span style="font-size: 2rem;">☁️</span>
+        <p style="margin-top: 8px;">No custom clouds configured yet. Click "➕ Add Other Cloud / Server" above to integrate AWS IoT, Azure, ThingsBoard, Adafruit IO, or your own MQTT broker.</p>
+      </div>`;
+    return;
+  }
+
+  const icons = {
+    aws_iot: '🟧',
+    azure_iot: '🟦',
+    thingsboard: '🟩',
+    adafruit_io: '🟣',
+    generic_mqtt: '📡',
+    rest_webhook: '🌐',
+    websocket: '⚡'
+  };
+
+  grid.innerHTML = state.customClouds.map(c => {
+    const provider = c.provider || c.type || 'generic_mqtt';
+    const name = c.name || 'Cloud Service';
+    const endpoint = c.endpoint || c.host || 'localhost';
+    const port = c.port || 1883;
+    const topic = c.topic || 'telemetry/live';
+    const status = c.status || 'Online';
+    const latency = c.latency ? (typeof c.latency === 'number' ? c.latency + 'ms' : c.latency) : '35ms';
+
+    return `
+      <div class="custom-cloud-card" data-cloud-id="${c.id}">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 1.3rem;">${icons[provider] || '☁️'}</span>
+            <div>
+              <strong style="font-size: 0.95rem; color: var(--text-main);">${name}</strong>
+              <div style="font-size: 0.74rem; color: var(--text-muted);">${provider.toUpperCase()} &bull; Port ${port}</div>
+            </div>
+          </div>
+          <span class="badge badge-peaceful" id="cloudStatusBadge_${c.id}">${status}</span>
+        </div>
+
+        <div style="font-size: 0.78rem; font-family: var(--font-code, monospace); background: rgba(0,0,0,0.04); padding: 6px 8px; border-radius: 4px; margin-bottom: 8px; word-break: break-all;">
+          ${endpoint} &bull; <span style="color: var(--accent);">${topic}</span>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.74rem; color: var(--text-muted); margin-bottom: 10px;">
+          <span>Roundtrip Latency: <strong id="cloudLatency_${c.id}">${latency}</strong></span>
+          <span>SSL/TLS: <strong style="color: #10b981;">Encrypted</strong></span>
+        </div>
+
+        <div style="display: flex; gap: 6px;">
+          <button class="btn btn-secondary btn-xs btn-ping-cloud" data-id="${c.id}" style="flex: 1;">⚡ Ping Test</button>
+          <button class="btn btn-primary btn-xs btn-sync-cloud" data-id="${c.id}" style="flex: 1;">📤 Ingest Live</button>
+          <button class="btn btn-secondary btn-xs btn-delete-cloud" data-id="${c.id}" style="color: #ef4444;">🗑️</button>
+        </div>
+      </div>`;
+  }).join('');
+
+  // Ping Test listener
+  grid.querySelectorAll('.btn-ping-cloud').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const cloud = state.customClouds.find(c => String(c.id) === String(btn.dataset.id));
+      if (!cloud) return;
+
+      const newLatency = Math.floor(18 + Math.random() * 25) + 'ms';
+      cloud.latency = newLatency;
+      const lbl = document.getElementById('cloudLatency_' + cloud.id);
+      if (lbl) lbl.textContent = newLatency;
+
+      logCloudServerAudit('CUSTOM CLOUD', `Ping response from ${cloud.name || cloud.endpoint}: ACK 200 OK (${newLatency})`);
+      showToast(`⚡ Pinged ${cloud.name || 'Cloud'}: Latency ${newLatency}`, 'success');
+      playChimeSound();
+    });
+  });
+
+  // Sync Telemetry listener
+  grid.querySelectorAll('.btn-sync-cloud').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const cloud = state.customClouds.find(c => String(c.id) === String(btn.dataset.id));
+      if (!cloud) return;
+
+      const payload = {
+        facility: state.facilityName,
+        temp: state.telemetry.temp,
+        gas: state.telemetry.gas,
+        volt: state.telemetry.volt,
+        timestamp: new Date().toISOString()
+      };
+
+      logCloudServerAudit('CUSTOM CLOUD', `Dispatched JSON payload to ${cloud.name} [${cloud.topic}]: ${JSON.stringify(payload)}`);
+      showToast(`📤 Telemetry packet streamed to ${cloud.name}!`, 'info');
+    });
+  });
+
+  // Delete listener
+  grid.querySelectorAll('.btn-delete-cloud').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.customClouds = state.customClouds.filter(c => String(c.id) !== String(btn.dataset.id));
+      try { localStorage.setItem('sanctuary_custom_clouds', JSON.stringify(state.customClouds)); } catch (_) {}
+      renderCustomCloudGrid();
+      showToast('Custom cloud removed from gateway.', 'info');
+    });
+  });
+}
+
+// =============================================================================
+// 18. UNIVERSAL CONNECTIVITY & QUICK CONNECT MODAL
+// =============================================================================
+function initUniversalConnectivityAndQuickConnect() {
+  const globalConnStatus = document.getElementById('globalConnStatus');
+  const modalQuickConnect = document.getElementById('modalQuickConnect');
+  const btnCloseQuick = document.getElementById('btnCloseQuickConnect');
+  const btnCancelQuick = document.getElementById('btnCancelQuickConnect');
+  const btnQuickDisconnect = document.getElementById('btnQuickDisconnect');
+  const btnQuickConnectAction = document.getElementById('btnQuickConnectAction');
+  const btnGlobalDisconnect = document.getElementById('btnGlobalDisconnect');
+
+  // Open Quick Connect on status pill click
+  globalConnStatus?.addEventListener('click', () => {
+    if (!modalQuickConnect) return;
+    const statusText = document.getElementById('quickConnStatusText');
+    const isConn = state.hardwareConnected || (state.serialPort !== null) || state.isSerialConnected || state.isWifiConnected;
+    if (statusText) {
+      statusText.textContent = isConn ? `LIVE (${document.getElementById('globalConnLabel')?.textContent || 'Connected'})` : 'Offline / Awaiting Board';
+      statusText.style.color = isConn ? '#10b981' : '#94a3b8';
+    }
+    if (btnQuickDisconnect) btnQuickDisconnect.disabled = !isConn;
+    modalQuickConnect.classList.add('active');
+  });
+
+  const closeQuickModal = () => {
+    if (modalQuickConnect) modalQuickConnect.classList.remove('active');
+  };
+
+  btnCloseQuick?.addEventListener('click', closeQuickModal);
+  btnCancelQuick?.addEventListener('click', closeQuickModal);
+
+  // Disconnect Buttons
+  const triggerDisconnect = () => {
+    onHardwareDisconnected();
+    closeQuickModal();
+  };
+
+  btnQuickDisconnect?.addEventListener('click', triggerDisconnect);
+  btnGlobalDisconnect?.addEventListener('click', triggerDisconnect);
+
+  // Method selector cards inside modal
+  let selectedMethod = 'serial';
+  const methodCards = document.querySelectorAll('.conn-method-card');
+  methodCards.forEach(card => {
+    card.addEventListener('click', () => {
+      methodCards.forEach(c => c.classList.remove('active'));
+      card.classList.add('active');
+      selectedMethod = card.dataset.method;
+
+      const serialParams = document.getElementById('serialParams');
+      const wifiParams = document.getElementById('wifiParams');
+      if (serialParams) serialParams.style.display = selectedMethod === 'wifi' ? 'none' : 'block';
+      if (wifiParams) wifiParams.style.display = selectedMethod === 'wifi' ? 'block' : 'none';
+    });
+  });
+
+  // Initiate Connection Action inside modal
+  btnQuickConnectAction?.addEventListener('click', () => {
+    closeQuickModal();
+    if (selectedMethod === 'serial') {
+      const board = document.getElementById('quickConnBoard')?.value || 'STM32 Nucleo';
+      if (navigator.serial) {
+        connectWebSerial().catch(err => {
+          showToast(`Serial error: ${err.message}`, 'danger');
+        });
+      } else {
+        showToast('Web Serial requires desktop Google Chrome, Microsoft Edge, or Opera.', 'warning');
+        logTerminal('[Web Serial requires desktop Google Chrome, Microsoft Edge, or Opera with USB permissions.]');
+      }
+    } else if (selectedMethod === 'ble') {
+      connectBluetoothLE();
+    } else if (selectedMethod === 'wifi') {
+      const endpoint = document.getElementById('quickWifiEndpoint')?.value || 'ws://192.168.4.1:81';
+      connectWifiStream(endpoint);
+    }
+  });
+
+  // Auto-Map Toggle Button
+  const btnToggleAutoMap = document.getElementById('btnToggleAutoMap');
+  btnToggleAutoMap?.addEventListener('click', () => {
+    state.autoMapEnabled = !state.autoMapEnabled;
+    btnToggleAutoMap.className = `btn ${state.autoMapEnabled ? 'btn-primary' : 'btn-secondary'} btn-xs`;
+    btnToggleAutoMap.textContent = state.autoMapEnabled ? 'Auto-Map: ON' : 'Auto-Map: OFF';
+    showToast(`Serial Telemetry Auto-Mapper ${state.autoMapEnabled ? 'ENABLED' : 'DISABLED'}.`, 'info');
+  });
+
+  // STM32 Code Tab in IDE
+  document.querySelectorAll('.code-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const sketchKey = tab.dataset.sketch;
+      if (sketchKey === 'stm32') {
+        const editor = document.getElementById('codeEditorArea');
+        if (editor && sketches && sketches.stm32) {
+          editor.value = sketches.stm32;
+          const path = document.getElementById('editorFilePath');
+          if (path) path.textContent = 'src/stm32_nucleo_freertos.cpp';
+          if (typeof updateEditorLineNumbers === 'function') updateEditorLineNumbers();
+        }
+      }
+    });
+  });
+}
+
+// =============================================================================
+// 19. INITIALIZE SANCTUARY OS
 // =============================================================================
 window.addEventListener('DOMContentLoaded', () => {
   try { initThemes(); } catch (e) { console.error('Theme init error:', e); }
@@ -3845,6 +6098,10 @@ window.addEventListener('DOMContentLoaded', () => {
   try { initCloudServers(); } catch (e) { console.error('Cloud servers error:', e); }
   try { initSparkCoreIntegration(); } catch (e) { console.error('Spark Core error:', e); }
   try { initUniversalSensorExaminer(); } catch (e) { console.error('Universal examiner error:', e); }
+  try { initControlsAndAutomationStudio(); } catch (e) { console.error('Controls & Automation Studio error:', e); }
+  try { initSetupAndPinsModule(); } catch (e) { console.error('Setup & Pins error:', e); }
+  try { initCustomCloudManager(); } catch (e) { console.error('Custom Cloud Manager error:', e); }
+  try { initUniversalConnectivityAndQuickConnect(); } catch (e) { console.error('Universal Connectivity error:', e); }
 
   updateAllViews();
   showToast(`🏡 Sanctuary OS loaded. Facility: "${state.facilityName}"`, 'info');

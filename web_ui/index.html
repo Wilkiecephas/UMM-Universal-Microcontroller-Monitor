@@ -62,11 +62,12 @@
           </select>
         </div>
 
-        <!-- Connection Status Pill -->
-        <div class="connection-status-pill" id="globalConnStatus">
+        <!-- Connection Status Pill & Quick Action -->
+        <div class="connection-status-pill" id="globalConnStatus" title="Click to manage Hardware Connection (Serial, BLE, Wi-Fi)">
           <span class="status-dot waiting" id="globalConnDot"></span>
           <span class="status-label" id="globalConnLabel">Awaiting Board</span>
         </div>
+        <button class="btn btn-secondary btn-xs" id="btnGlobalDisconnect" style="display: none;" title="Disconnect Hardware">Disconnect</button>
 
         <!-- Segregated IDE Route Button -->
         <a href="#ide" class="btn btn-secondary btn-sm" id="btnToggleEngineering" title="Open Hardware IDE & Serial Terminal">
@@ -256,11 +257,20 @@
                 </g>
                 <text x="290" y="385" class="marker-reading" id="txtTempReading">-- °C</text>
                 <text x="290" y="405" class="marker-subtle" id="txtHumReading">-- %</text>
-                <g id="marker-ultra" class="sensor-marker" transform="translate(260, 460)">
-                  <circle r="14" class="marker-circle ultra-circle"/>
+                <g id="marker-ultra" class="sensor-marker" transform="translate(245, 450)">
+                  <circle r="13" class="marker-circle ultra-circle"/>
+                  <text y="4" text-anchor="middle" class="marker-icon">📏</text>
+                </g>
+                <text x="270" y="454" class="marker-subtle" id="txtDistReading">HC-SR04: 24.5 cm</text>
+
+                <!-- Doppler Microwave Radar Scanner (RCWL-0516) -->
+                <g id="marker-radar" class="sensor-marker radar-marker-group" transform="translate(245, 490)" title="RCWL-0516 Doppler Radar (5.8GHz)">
+                  <circle r="13" class="marker-circle radar-circle"/>
+                  <circle r="22" class="radar-pulse-ring"/>
+                  <line x1="0" y1="0" x2="16" y2="-9" class="radar-sweep-beam"/>
                   <text y="4" text-anchor="middle" class="marker-icon">📡</text>
                 </g>
-                <text x="290" y="465" class="marker-subtle" id="txtDistReading">Clear: -- cm</text>
+                <text x="270" y="494" class="marker-subtle" id="txtRadarStatus">RCWL-0516: Scanning / Clear</text>
               </g>
 
               <!-- Room 5: Utility & Mains Power (ZMPT101B, ACS712, GSM) -->
@@ -406,78 +416,319 @@
     <section id="tab-controls" class="tab-content">
       <div class="section-header">
         <div>
-          <h2 class="section-title">Home Automation & Controls</h2>
-          <p class="section-desc">Manage physical relays, ventilation, security routines, and emergency chimes</p>
+          <h2 class="section-title">Home Automation, Logic & Controls Studio</h2>
+          <p class="section-desc">Manage physical room outputs, configure IF / ELSE conditional automations, and test WHAT-IF hypothetical scenarios</p>
         </div>
-        <a href="#monitor" class="btn btn-secondary btn-sm">← Back to Monitor</a>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <button class="btn btn-primary btn-sm" id="btnOpenAddRuleModal">➕ Add IF / ELSE Rule</button>
+          <a href="#monitor" class="btn btn-secondary btn-sm">← Back to Monitor</a>
+        </div>
       </div>
 
-      <div class="cards-grid">
-        <div class="card control-card">
-          <div class="card-header">
-            <div class="card-icon-title">
-              <span class="card-icon">🌀</span>
-              <div>
-                <h3 class="card-title">Kitchen Exhaust Fan</h3>
-                <span class="pin-tag">Relay 1: GPIO 4</span>
-              </div>
-            </div>
-            <label class="switch">
-              <input type="checkbox" id="toggleFan">
-              <span class="slider round"></span>
-            </label>
-          </div>
-          <p class="control-note">Turns on automatically during high gas concentration or via manual switch.</p>
-        </div>
+      <!-- Segmented Sub-Navigation Toolbar -->
+      <div class="controls-subnav" id="controlsSubNav">
+        <button class="subnav-btn active" data-subtab="outputs">🎛️ Room Outputs & Actuators</button>
+        <button class="subnav-btn" data-subtab="rules">⚡ IF / ELSE Logic Engine (<span id="countActiveRules">5 Rules</span>)</button>
+        <button class="subnav-btn" data-subtab="whatif">🧪 WHAT-IF Simulation Sandbox</button>
+      </div>
 
-        <div class="card control-card">
-          <div class="card-header">
-            <div class="card-icon-title">
-              <span class="card-icon">🪟</span>
-              <div>
-                <h3 class="card-title">Smart Airflow Window</h3>
-                <span class="pin-tag">Servo: GPIO 2</span>
+      <!-- SUB-PANEL 1: ROOM OUTPUTS & ACTUATORS -->
+      <div class="controls-subpanel active" id="subpanel-outputs">
+        <div class="cards-grid">
+          <!-- Output 1: Kitchen Fan -->
+          <div class="card control-card">
+            <div class="card-header">
+              <div class="card-icon-title">
+                <span class="card-icon">🌀</span>
+                <div>
+                  <h3 class="card-title">Kitchen Exhaust Fan</h3>
+                  <span class="pin-tag">Relay 1: GPIO 4</span>
+                </div>
               </div>
+              <label class="switch">
+                <input type="checkbox" id="toggleFan">
+                <span class="slider round"></span>
+              </label>
             </div>
-            <span class="control-badge" id="lblWindowPercent">45% Ajar</span>
+            <p class="control-note">Turns on automatically during high gas concentration or via manual switch.</p>
           </div>
-          <input type="range" min="0" max="100" value="45" class="range-slider" id="sliderWindow">
-          <div class="range-labels">
-            <span>Closed (0%)</span>
-            <span>Ajar (50%)</span>
-            <span>Open (100%)</span>
+
+          <!-- Output 2: Gas Solenoid Valve -->
+          <div class="card control-card">
+            <div class="card-header">
+              <div class="card-icon-title">
+                <span class="card-icon">🎛️</span>
+                <div>
+                  <h3 class="card-title">Gas Line Solenoid Valve</h3>
+                  <span class="pin-tag">Solenoid: GPIO 5</span>
+                </div>
+              </div>
+              <span class="badge badge-peaceful" id="lblGasValveStatus">OPEN (FLOWING)</span>
+            </div>
+            <p class="control-note">Automatic safety shutoff when gas &gt; 350 ppm. Requires manual or rule trip.</p>
+            <div style="display: flex; gap: 6px; margin-top: 10px;">
+              <button class="btn btn-secondary btn-xs" id="btnOutputValveOpen" style="flex: 1;">🟢 Open Valve</button>
+              <button class="btn btn-primary btn-xs" id="btnOutputValveCutoff" style="flex: 1;">🔴 Emergency Cutoff</button>
+            </div>
+          </div>
+
+          <!-- Output 3: Smart Airflow Window -->
+          <div class="card control-card">
+            <div class="card-header">
+              <div class="card-icon-title">
+                <span class="card-icon">🪟</span>
+                <div>
+                  <h3 class="card-title">Smart Airflow Window</h3>
+                  <span class="pin-tag">Servo: GPIO 2</span>
+                </div>
+              </div>
+              <span class="control-badge" id="lblWindowPercent">45% Ajar</span>
+            </div>
+            <input type="range" min="0" max="100" value="45" class="range-slider" id="sliderWindow">
+            <div class="range-labels">
+              <span>Closed (0%)</span>
+              <span>Ajar (50%)</span>
+              <span>Open (100%)</span>
+            </div>
+          </div>
+
+          <!-- Output 4: Smart Climate AC -->
+          <div class="card control-card">
+            <div class="card-header">
+              <div class="card-icon-title">
+                <span class="card-icon">❄️</span>
+                <div>
+                  <h3 class="card-title">Smart Inverter AC Unit</h3>
+                  <span class="pin-tag">UART Serial / Modbus</span>
+                </div>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="toggleAcPower" checked>
+                <span class="slider round"></span>
+              </label>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin: 8px 0;">
+              <span style="font-size: 0.8rem; color: var(--text-muted);">Set Temperature:</span>
+              <strong id="lblAcTargetTemp">22°C (Cooling)</strong>
+            </div>
+            <input type="range" min="16" max="30" value="22" class="range-slider" id="sliderAcTemp">
+            <div style="display: flex; gap: 4px; margin-top: 6px;">
+              <button class="btn btn-secondary btn-xs active-mode" id="btnAcCool" style="flex: 1;">❄️ Cool</button>
+              <button class="btn btn-secondary btn-xs" id="btnAcHeat" style="flex: 1;">☀️ Heat</button>
+              <button class="btn btn-secondary btn-xs" id="btnAcEco" style="flex: 1;">🌱 Eco</button>
+            </div>
+          </div>
+
+          <!-- Output 5: Alarm Sounder Buzzer -->
+          <div class="card control-card">
+            <div class="card-header">
+              <div class="card-icon-title">
+                <span class="card-icon">🔔</span>
+                <div>
+                  <h3 class="card-title">Alarm Sounder (Piezo)</h3>
+                  <span class="pin-tag">Piezo: GPIO 33</span>
+                </div>
+              </div>
+              <button class="btn btn-secondary btn-sm" id="btnTestBuzzer">Test Chime (2s)</button>
+            </div>
+            <p class="control-note">Audible 85dB piezoelectric siren for emergency gas leaks and intrusions.</p>
+          </div>
+
+          <!-- Output 6: Security Perimeter Floodlights -->
+          <div class="card control-card">
+            <div class="card-header">
+              <div class="card-icon-title">
+                <span class="card-icon">💡</span>
+                <div>
+                  <h3 class="card-title">Perimeter Security Floodlights</h3>
+                  <span class="pin-tag">PWM Dimmer: GPIO 16</span>
+                </div>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="toggleFloodlights">
+                <span class="slider round"></span>
+              </label>
+            </div>
+            <p class="control-note">High-lumen LED floodlights triggered on radar/PIR intrusion after dark.</p>
+          </div>
+
+          <!-- Output 7: Smart Magnetic Door Lock -->
+          <div class="card control-card">
+            <div class="card-header">
+              <div class="card-icon-title">
+                <span class="card-icon">🔒</span>
+                <div>
+                  <h3 class="card-title">Front Entrance Maglock</h3>
+                  <span class="pin-tag">Relay 2: GPIO 17</span>
+                </div>
+              </div>
+              <button class="btn btn-secondary btn-xs" id="btnToggleDoorLock">🔒 ENGAGED</button>
+            </div>
+            <p class="control-note">Fail-secure 12V electromagnetic lock with electronic pulse unlock.</p>
+          </div>
+
+          <!-- Output 8: Sump / Hydroponic Pump -->
+          <div class="card control-card">
+            <div class="card-header">
+              <div class="card-icon-title">
+                <span class="card-icon">💧</span>
+                <div>
+                  <h3 class="card-title">Sump / Water Circulator Pump</h3>
+                  <span class="pin-tag">Relay 3: GPIO 18</span>
+                </div>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="togglePump">
+                <span class="slider round"></span>
+              </label>
+            </div>
+            <p class="control-note">Closed-loop water circulation and basement flood prevention pump.</p>
+          </div>
+
+          <!-- Output 9: Main Distribution Circuit Breaker -->
+          <div class="card control-card">
+            <div class="card-header">
+              <div class="card-icon-title">
+                <span class="card-icon">⚡</span>
+                <div>
+                  <h3 class="card-title">Mains AC Grid Circuit Breaker</h3>
+                  <span class="pin-tag">Shunt Trip: GPIO 19</span>
+                </div>
+              </div>
+              <span class="badge badge-peaceful" id="lblBreakerStatus">CLOSED (ACTIVE)</span>
+            </div>
+            <p class="control-note">Motorized shunt-trip circuit breaker for overvoltage / surge isolation.</p>
+            <div style="display: flex; gap: 6px; margin-top: 10px;">
+              <button class="btn btn-primary btn-xs" id="btnTripBreaker" style="flex: 1;">⚡ Trip Breaker</button>
+              <button class="btn btn-secondary btn-xs" id="btnResetBreaker" style="flex: 1;">🔄 Re-Close Breaker</button>
+            </div>
+          </div>
+
+          <!-- Output 10: Night Guard Auto-Arm -->
+          <div class="card control-card">
+            <div class="card-header">
+              <div class="card-icon-title">
+                <span class="card-icon">🌙</span>
+                <div>
+                  <h3 class="card-title">Night Guard Auto-Arm</h3>
+                  <span class="pin-tag">10 PM - 6 AM Routine</span>
+                </div>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="toggleNightGuard" checked>
+                <span class="slider round"></span>
+              </label>
+            </div>
+            <p class="control-note">Engages surveillance: auto-snaps photo & sends Telegram alert on movement.</p>
           </div>
         </div>
+      </div>
 
-        <div class="card control-card">
+      <!-- SUB-PANEL 2: IF / ELSE LOGIC ENGINE -->
+      <div class="controls-subpanel" id="subpanel-rules">
+        <div class="card" style="margin-bottom: 16px;">
           <div class="card-header">
-            <div class="card-icon-title">
-              <span class="card-icon">🌙</span>
-              <div>
-                <h3 class="card-title">Night Guard Auto-Arm</h3>
-                <span class="pin-tag">10 PM - 6 AM Routine</span>
-              </div>
+            <div>
+              <h3 class="card-title">Conditional Logic Rules (IF / THEN / ELSE)</h3>
+              <p class="section-desc">Automate room outputs based on sensor signals with instant conditional triggers and fallback states</p>
             </div>
-            <label class="switch">
-              <input type="checkbox" id="toggleNightGuard" checked>
-              <span class="slider round"></span>
-            </label>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn btn-secondary btn-xs" id="btnEvaluateRulesNow">⚡ Run All Rules Now</button>
+              <button class="btn btn-primary btn-xs" id="btnSubpanelAddRule">➕ New Rule</button>
+            </div>
           </div>
-          <p class="control-note">Automatically engages after 10:00 PM: triggers camera snapshot & SMS on unauthorized movement.</p>
+          <div class="rules-container" id="rulesContainer">
+            <!-- Dynamically populated rule cards -->
+          </div>
         </div>
+      </div>
 
-        <div class="card control-card">
-          <div class="card-header">
-            <div class="card-icon-title">
-              <span class="card-icon">🔔</span>
-              <div>
-                <h3 class="card-title">Alarm Sounder (Buzzer)</h3>
-                <span class="pin-tag">Piezo: GPIO 33</span>
+      <!-- SUB-PANEL 3: WHAT-IF SIMULATION SANDBOX -->
+      <div class="controls-subpanel" id="subpanel-whatif">
+        <div class="whatif-sandbox-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+            <div>
+              <h3 style="font-size: 1.05rem; font-weight: 700; margin: 0;">🧪 WHAT-IF Scenario Simulator</h3>
+              <p style="font-size: 0.76rem; color: var(--text-muted); margin: 2px 0 0 0;">Hypothetically alter environmental metrics to preview rule execution and room output reactions before live deployment</p>
+            </div>
+            <div style="display: flex; gap: 6px;">
+              <button class="btn btn-primary btn-sm" id="btnRunWhatIfSim">🚀 Evaluate What-If</button>
+              <button class="btn btn-secondary btn-sm" id="btnApplyWhatIfToLive">🌐 Apply to Live Twin</button>
+              <button class="btn btn-secondary btn-sm" id="btnResetWhatIf">🌿 Reset</button>
+            </div>
+          </div>
+
+          <!-- Scenario Presets -->
+          <div class="whatif-scenario-pills" id="whatifScenarioPills">
+            <button class="whatif-pill" data-scenario="gas_leak">🔥 What-If: Kitchen Gas Leak (580 ppm)</button>
+            <button class="whatif-pill" data-scenario="heatwave">🌡️ What-If: Severe Heatwave (36.5°C)</button>
+            <button class="whatif-pill" data-scenario="intruder">🦹 What-If: Intruder Breach (Door Open + PIR Active)</button>
+            <button class="whatif-pill" data-scenario="surge">⚡ What-If: AC Mains Surge (262V AC)</button>
+            <button class="whatif-pill" data-scenario="flood">💧 What-If: Water Tank Low (12% Full)</button>
+          </div>
+
+          <!-- Hypothetical Parameter Sliders -->
+          <div class="whatif-controls-grid">
+            <div class="whatif-control-item">
+              <div class="whatif-slider-header">
+                <span>💨 Hypothetical Gas Level</span>
+                <strong id="lblWhatifGas">185 ppm</strong>
+              </div>
+              <input type="range" min="50" max="800" value="185" class="range-slider" id="sliderWhatifGas">
+            </div>
+
+            <div class="whatif-control-item">
+              <div class="whatif-slider-header">
+                <span>🌡️ Hypothetical Temperature</span>
+                <strong id="lblWhatifTemp">24.2°C</strong>
+              </div>
+              <input type="range" min="10" max="45" value="24.2" step="0.2" class="range-slider" id="sliderWhatifTemp">
+            </div>
+
+            <div class="whatif-control-item">
+              <div class="whatif-slider-header">
+                <span>⚡ Hypothetical AC Grid Voltage</span>
+                <strong id="lblWhatifVolt">238 V</strong>
+              </div>
+              <input type="range" min="140" max="280" value="238" class="range-slider" id="sliderWhatifVolt">
+            </div>
+
+            <div class="whatif-control-item">
+              <div class="whatif-slider-header">
+                <span>🚪 Hypothetical Door / PIR Breach</span>
+                <strong id="lblWhatifBreach">Normal / Secure</strong>
+              </div>
+              <div style="display: flex; gap: 8px; margin-top: 6px;">
+                <label style="font-size: 0.78rem; display: flex; align-items: center; gap: 4px;">
+                  <input type="checkbox" id="chkWhatifDoor"> Door Open
+                </label>
+                <label style="font-size: 0.78rem; display: flex; align-items: center; gap: 4px;">
+                  <input type="checkbox" id="chkWhatifPir"> PIR Motion
+                </label>
               </div>
             </div>
-            <button class="btn btn-secondary btn-sm" id="btnTestBuzzer">Test Chime (2s)</button>
           </div>
-          <p class="control-note">Audible 85dB piezoelectric siren for emergency gas leaks and intrusions.</p>
+
+          <!-- Evaluation Outcome Display -->
+          <div class="whatif-eval-results" id="whatifResultsBox">
+            <div style="color: #38bdf8; font-weight: 700; margin-bottom: 8px;">⚡ WHAT-IF REAL-TIME CONSECUENCE MATRIX:</div>
+            <div class="whatif-result-row">
+              <span>Rule Evaluation:</span>
+              <span id="whatifResultRules">5 Active Rules Evaluated (Click "Evaluate What-If" to simulate)</span>
+            </div>
+            <div class="whatif-result-row">
+              <span>Triggered IF Conditions:</span>
+              <span id="whatifResultTriggers" style="color: #34d399;">None currently</span>
+            </div>
+            <div class="whatif-result-row">
+              <span>Actuated Room Outputs:</span>
+              <span id="whatifResultOutputs" style="color: #fbbf24;">All systems in standby</span>
+            </div>
+            <div class="whatif-result-row">
+              <span>Cloud Alerts Queued:</span>
+              <span id="whatifResultAlerts">0 Alerts</span>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -590,8 +841,9 @@
           <p class="section-desc">Configure, monitor, and test real-time servers: Telegram Bot, Discord, Google Colab ML, and Blynk IoT</p>
         </div>
         <div class="house-actions">
+          <button class="btn btn-primary btn-sm" id="btnOpenAddCloudModal">➕ Add Other Cloud / Server</button>
           <button class="btn btn-secondary btn-sm" id="btnTestAllServers">🚀 Test All Enabled</button>
-          <button class="btn btn-primary btn-sm" id="btnSaveServerConfigs">💾 Save Settings</button>
+          <button class="btn btn-secondary btn-sm" id="btnSaveServerConfigs">💾 Save Settings</button>
         </div>
       </div>
 
@@ -907,6 +1159,17 @@
           <div class="audit-row"><span class="audit-time">[17:30:18]</span> <span class="audit-tag tag-discord">DISCORD</span> Webhook incident embed sent to #lab4-security-feed (HTTP 204 No Content)</div>
           <div class="audit-row"><span class="audit-time">[17:30:20]</span> <span class="audit-tag tag-colab">COLAB ML</span> Telemetry packet [24.2°C, 58%, 184ppm, 238V] ingested by Isolation Forest: Score 0.94 (Nominal)</div>
           <div class="audit-row"><span class="audit-time">[17:30:22]</span> <span class="audit-tag tag-blynk">BLYNK</span> Virtual pins V0-V5 synchronized with Blynk 2.0 Cloud successfully</div>
+      <!-- User-Configured Custom Clouds Section -->
+      <div class="custom-cloud-section" style="margin-top: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+          <div>
+            <h3 style="font-size: 1.1rem; font-weight: 700; margin: 0;">🌐 Connected Custom Clouds & Brokers</h3>
+            <p style="font-size: 0.76rem; color: var(--text-muted); margin: 2px 0 0 0;">Add and route telemetry to AWS IoT, Azure IoT Hub, ThingsBoard, Adafruit IO, or Private MQTT/WebSockets</p>
+          </div>
+          <button class="btn btn-primary btn-xs" id="btnAddCloudQuick">➕ Add New Cloud</button>
+        </div>
+        <div class="server-grid" id="customCloudGrid">
+          <!-- Dynamically populated custom cloud cards -->
         </div>
       </div>
     </section>
@@ -922,6 +1185,7 @@
         </div>
         <div class="house-actions">
           <button class="btn btn-secondary btn-sm" id="btnOpenFirmwareModal">📋 Unified Firmware Generator</button>
+          <button class="btn btn-secondary btn-sm" id="btnExportAllStackToRoom" title="Export currently selected firmware sensors into premise room blueprint">🏠 Export Stack to Room</button>
           <button class="btn btn-primary btn-sm" id="btnExportCatalogJson">💾 Export Catalog JSON</button>
         </div>
       </div>
@@ -1134,19 +1398,19 @@
           </div>
         </div>
       </div>
-      </div>
 
       <div class="pins-layout">
         <!-- Interactive Board Pinout Graphic -->
         <div class="card pinout-card">
           <div class="card-header">
             <h3 class="card-title">Board Pinout Map</h3>
-            <div style="display: flex; gap: 6px;">
+            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
               <button type="button" class="btn btn-primary btn-xs" id="btnPinoutEsp32">ESP32-CAM</button>
               <button type="button" class="btn btn-secondary btn-xs" id="btnPinoutSpark">Spark Core (Particle)</button>
+              <button type="button" class="btn btn-secondary btn-xs" id="btnPinoutStm32">STM32 Nucleo / Blue Pill</button>
             </div>
           </div>
-          <p class="pinout-help" id="pinoutHelpText">Click any pin to inspect assigned function or assign a new sensor</p>
+          <p class="pinout-help" id="pinoutHelpText">Click any pin to inspect assigned function, change mode, or map a sensor</p>
 
           <!-- ESP32-CAM Pinout Graphic -->
           <div class="esp32-board-graphic" id="graphicEsp32">
@@ -1202,6 +1466,61 @@
               <div class="pin-chip" data-pin="D4">D4 (PIR Motion)</div>
               <div class="pin-chip" data-pin="D3">D3 (Reed Door)</div>
               <div class="pin-chip" data-pin="D2">D2 (DHT22 Climate)</div>
+            </div>
+          </div>
+
+          <!-- STM32 Nucleo / Blue Pill Pinout Graphic -->
+          <div class="stm32-board-graphic" id="graphicStm32" style="display: none;">
+            <div class="pin-header left-header">
+              <div class="pin-chip" data-pin="PA0">PA0 (ADC1_0)</div>
+              <div class="pin-chip" data-pin="PA1">PA1 (ADC1_1)</div>
+              <div class="pin-chip" data-pin="PA2">PA2 (USART2_TX)</div>
+              <div class="pin-chip" data-pin="PA3">PA3 (USART2_RX)</div>
+              <div class="pin-chip" data-pin="PA4">PA4 (SPI1_NSS)</div>
+              <div class="pin-chip" data-pin="PA5">PA5 (SPI1_SCK)</div>
+              <div class="pin-chip" data-pin="PA6">PA6 (SPI1_MISO)</div>
+              <div class="pin-chip" data-pin="PA7">PA7 (SPI1_MOSI)</div>
+              <div class="pin-chip" data-pin="PB0">PB0 (ADC1_8)</div>
+              <div class="pin-chip" data-pin="PB1">PB1 (ADC1_9)</div>
+              <div class="pin-chip" data-pin="PC13">PC13 (User LED)</div>
+              <div class="pin-chip" data-pin="NRST">NRST</div>
+              <div class="pin-chip" data-pin="3V3">3V3</div>
+              <div class="pin-chip" data-pin="GND">GND</div>
+            </div>
+            <div class="stm32-core">
+              <div class="stm32-mcu-chip">
+                <div class="stm32-chip-notch"></div>
+                <div class="stm32-chip-label">ARM<br>STM32<br>F103/F4</div>
+              </div>
+              <div class="stm32-crystal">8.000 MHz</div>
+              <div class="stm32-led-pc13" title="PC13 User / Heartbeat LED"></div>
+              <span class="mcu-name">STM32 NUCLEO</span>
+              <span class="mcu-sub">Cortex-M3 / M4 @ 72-84MHz</span>
+            </div>
+            <div class="pin-header right-header">
+              <div class="pin-chip" data-pin="5V">5V</div>
+              <div class="pin-chip" data-pin="GND">GND</div>
+              <div class="pin-chip" data-pin="3V3">3V3</div>
+              <div class="pin-chip" data-pin="PB10">PB10 (I2C2_SCL)</div>
+              <div class="pin-chip" data-pin="PB11">PB11 (I2C2_SDA)</div>
+              <div class="pin-chip" data-pin="PB12">PB12 (SPI2_NSS)</div>
+              <div class="pin-chip" data-pin="PB13">PB13 (SPI2_SCK)</div>
+              <div class="pin-chip" data-pin="PB14">PB14 (SPI2_MISO)</div>
+              <div class="pin-chip" data-pin="PB15">PB15 (SPI2_MOSI)</div>
+              <div class="pin-chip" data-pin="PA8">PA8 (TIM1_PWM)</div>
+              <div class="pin-chip" data-pin="PA9">PA9 (USART1_TX)</div>
+              <div class="pin-chip" data-pin="PA10">PA10 (USART1_RX)</div>
+              <div class="pin-chip" data-pin="PB6">PB6 (I2C1_SCL)</div>
+              <div class="pin-chip" data-pin="PB7">PB7 (I2C1_SDA)</div>
+            </div>
+          </div>
+
+          <!-- Pin Actions & Mode Bar -->
+          <div class="pin-actions-bar" style="margin-top: 12px; display: flex; justify-content: space-between; align-items: center; background: var(--bg-secondary); padding: 8px 14px; border-radius: 6px; flex-wrap: wrap; gap: 8px;">
+            <span id="selectedPinInfo" style="font-size: 0.8rem; font-weight: 600;">Selected Pin: None (Click any pin chip above)</span>
+            <div style="display: flex; gap: 6px;">
+              <button class="btn btn-primary btn-xs" id="btnInspectSelectedPin" disabled>⚡ Configure / Assign Pin</button>
+              <button class="btn btn-secondary btn-xs" id="btnTogglePinHighLow" disabled>Toggle Pin Output (H/L)</button>
             </div>
           </div>
         </div>
@@ -1270,7 +1589,9 @@
           <label class="input-label">Hardware Board</label>
           <select class="input-control" id="boardSelector">
             <option value="esp32cam">ESP32-CAM (AI-Thinker)</option>
-            <option value="spark_core" selected>Spark Core (Particle STM32 + CC3000)</option>
+            <option value="spark_core">Spark Core (Particle STM32 + CC3000)</option>
+            <option value="stm32_nucleo" selected>STM32 Nucleo-64 (STM32F401 / STM32F103)</option>
+            <option value="stm32_bluepill">STM32 Blue Pill (STM32F103C8T6)</option>
             <option value="esp32">ESP32 DevKit</option>
             <option value="arduino_uno">Arduino Uno / Nano</option>
             <option value="sparkfun">SparkFun Thing Plus / RedBoard</option>
@@ -1288,11 +1609,14 @@
         </div>
 
         <div class="eng-conn-group">
-          <label class="input-label">Serial / Cloud Action</label>
-          <div style="display: flex; gap: 6px;">
+          <label class="input-label">Hardware Connection (Serial / BLE / Wi-Fi)</label>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap;">
             <button class="btn btn-primary btn-sm" id="btnIdeConnectSerial">🔌 Connect Serial</button>
+            <button class="btn btn-secondary btn-sm" id="btnIdeConnectBle" title="Connect via Web Bluetooth LE Serial">📡 Connect BLE</button>
+            <button class="btn btn-secondary btn-sm" id="btnIdeConnectWifi" title="Connect via Wi-Fi TCP/WebSocket Stream">📶 Connect Wi-Fi</button>
             <button class="btn btn-secondary btn-sm" id="btnIdeDisconnectSerial" disabled>Disconnect</button>
             <button class="btn btn-secondary btn-sm" id="btnSparkCloudConnect" title="Connect Spark Core via Particle Cloud REST API">⚡ Spark Cloud</button>
+            <button class="btn btn-secondary btn-sm" id="btnToggleAutoMap" title="Auto-collect incoming sensor channels and map automatically">🔄 Auto-Map: ON</button>
           </div>
         </div>
 
@@ -1305,13 +1629,33 @@
         </div>
       </div>
 
+      <!-- IDE Workspace Layout & Terminal Width Toolbar -->
+      <div class="ide-layout-toolbar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px; background: #161b22; padding: 10px 16px; border-radius: 6px; border: 1px solid #30363d;">
+        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+          <span style="font-size: 0.78rem; font-weight: 700; color: #8b949e; text-transform: uppercase; letter-spacing: 0.5px;">Terminal &amp; IDE Layout:</span>
+          <button type="button" class="btn btn-primary btn-xs btn-ide-layout active" id="btnLayoutTermPriority" title="Give terminal 70% width for live output visibility">📟 Terminal Priority (30 / 70)</button>
+          <button type="button" class="btn btn-secondary btn-xs btn-ide-layout" id="btnLayoutBalanced" title="Equal 50/50 split between code and terminal">⚡ Balanced (50 / 50)</button>
+          <button type="button" class="btn btn-secondary btn-xs btn-ide-layout" id="btnLayoutTermMax" title="Maximize terminal output to 100% width">⛶ Maximize Terminal</button>
+          <button type="button" class="btn btn-secondary btn-xs btn-ide-layout" id="btnLayoutCodeMax" title="Expand code editor to 100% width">💻 Code Full</button>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <label style="font-size: 0.76rem; color: #8b949e; display: flex; align-items: center; gap: 6px; margin: 0;">
+            Editor Width:
+            <input type="range" id="sliderIdeEditorWidth" min="15" max="60" value="30" style="width: 90px; cursor: pointer;">
+            <span id="txtIdeEditorWidthPct" style="font-family: monospace; color: #58a6ff; font-weight: 600;">30%</span>
+          </label>
+          <button type="button" class="btn btn-secondary btn-xs" id="btnCopyTerminalLogs" title="Copy all terminal lines to clipboard">📋 Copy Log</button>
+        </div>
+      </div>
+
       <!-- IDE Editor & Live Terminal Grid -->
-      <div class="eng-grid">
-        <div class="card editor-card">
+      <div class="eng-grid" id="engineeringGrid">
+        <div class="card editor-card" id="ideEditorCard">
           <div class="editor-header">
-            <div class="editor-tabs">
-              <button class="code-tab active" data-sketch="esp32cam">ESP32-CAM.ino</button>
+            <div class="editor-tabs" id="editorSketchTabs">
+              <button class="code-tab" data-sketch="esp32cam">ESP32-CAM.ino</button>
               <button class="code-tab" data-sketch="spark_core">Spark_Core_Full.ino</button>
+              <button class="code-tab active" data-sketch="stm32">STM32_Node.cpp</button>
               <button class="code-tab" data-sketch="telegram">Telegram_Bot.ino</button>
               <button class="code-tab" data-sketch="discord">Discord_Webhook.ino</button>
               <button class="code-tab" data-sketch="colab">Colab_Analytics.py</button>
@@ -1326,19 +1670,25 @@
           </div>
         </div>
 
-        <div class="card terminal-card">
+        <div class="card terminal-card" id="ideTerminalCard">
           <div class="terminal-header">
-            <h3 class="card-title">Live Serial Terminal</h3>
-            <div style="display: flex; gap: 8px; align-items: center;">
-              <label class="terminal-checkbox"><input type="checkbox" id="chkAutoScroll" checked> Auto-Scroll</label>
-              <button class="btn btn-secondary btn-xs" id="btnClearTerminal">Clear</button>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <h3 class="card-title" style="margin: 0; font-size: 0.95rem;">Live Serial Terminal</h3>
+              <span class="badge" id="terminalLiveBadge" style="background: #238636; color: #fff; font-size: 0.7rem; padding: 2px 6px;">Ready</span>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+              <button type="button" class="btn btn-secondary btn-xs" id="btnTermFontDecr" title="Decrease font size">A-</button>
+              <button type="button" class="btn btn-secondary btn-xs" id="btnTermFontIncr" title="Increase font size">A+</button>
+              <label class="terminal-checkbox" style="font-size: 0.75rem; color: #8b949e;"><input type="checkbox" id="chkAutoScroll" checked> Auto-Scroll</label>
+              <button type="button" class="btn btn-secondary btn-xs" id="btnClearTerminal">Clear</button>
+              <button type="button" class="btn btn-secondary btn-xs" id="btnToggleTermMax" title="Toggle Terminal Fullscreen">⛶ Maximize</button>
             </div>
           </div>
           <div class="terminal-window" id="terminalWindow">
             <div class="terminal-line system-msg">[Sanctuary Serial Driver online. Connect your board]</div>
           </div>
           <div class="terminal-input-bar">
-            <input type="text" class="input-control" id="terminalInput" placeholder="Send serial command...">
+            <input type="text" class="input-control" id="terminalInput" placeholder="Send serial command (e.g. AT, STATUS, REBOOT)...">
             <button class="btn btn-primary btn-xs" id="btnSendTerminal">Send</button>
           </div>
         </div>
@@ -1600,8 +1950,6 @@
 
   <div class="toast-container" id="toastContainer"></div>
 
-  <script type="module" src="sensorTemplatesCatalog.js"></script>
-  <script src="app.js"></script>
 
   <!-- Modal: Add Custom Building / Premise -->
   <div class="modal-overlay" id="modalAddBuilding">
@@ -1877,6 +2225,322 @@
       </form>
     </div>
   </div>
+  <!-- Modal: Add Other Cloud / Server Platform -->
+  <div class="modal-overlay" id="modalAddCloudServer">
+    <div class="modal-box" style="max-width: 540px;">
+      <div class="modal-header">
+        <h3 class="modal-title">🌐 Add Other Cloud / Broker Platform</h3>
+        <button class="modal-close" id="btnCloseAddCloudModal">&times;</button>
+      </div>
+      <form id="formAddCloudServer" class="modal-body">
+        <div class="form-group">
+          <label class="input-label">Cloud Platform / Service Type</label>
+          <select class="input-control" id="newCloudType">
+            <option value="aws_iot">☁️ AWS IoT Core (MQTT / X.509)</option>
+            <option value="azure_iot">⚡ Microsoft Azure IoT Hub</option>
+            <option value="gcp_iot">🌐 Google Cloud IoT / PubSub</option>
+            <option value="thingsboard">📊 ThingsBoard Open-Source IoT</option>
+            <option value="adafruit_io">🍓 Adafruit IO (REST / MQTT)</option>
+            <option value="generic_mqtt">🔌 Generic Private MQTT Broker (Mosquitto/EMQX)</option>
+            <option value="custom_rest">📡 Custom REST Webhook / Cloud API</option>
+            <option value="custom_ws">⚡ Custom WebSocket Server (ws:// / wss://)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="input-label">Server / Relay Display Name</label>
+          <input type="text" class="input-control" id="newCloudName" placeholder="e.g. AWS Production Fleet, Factory Edge Broker" required>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <div class="form-group" style="flex: 2;">
+            <label class="input-label">Endpoint URL / Host</label>
+            <input type="text" class="input-control" id="newCloudHost" placeholder="e.g. a3xxxxxxxx-ats.iot.us-east-1.amazonaws.com or 192.168.1.100" required>
+          </div>
+          <div class="form-group" style="flex: 1;">
+            <label class="input-label">Port</label>
+            <input type="number" class="input-control" id="newCloudPort" value="8883" placeholder="8883 / 1883">
+          </div>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <div class="form-group" style="flex: 1;">
+            <label class="input-label">Client ID / Device ID</label>
+            <input type="text" class="input-control" id="newCloudClientId" placeholder="e.g. sanctuary_node_01">
+          </div>
+          <div class="form-group" style="flex: 1;">
+            <label class="input-label">Telemetry Topic / Route</label>
+            <input type="text" class="input-control" id="newCloudTopic" value="sanctuary/telemetry/live" placeholder="topic/path">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="input-label">Authentication Token / API Key / Secret</label>
+          <div class="input-with-action">
+            <input type="password" class="input-control" id="newCloudToken" placeholder="Bearer token, SAS token, or secret key">
+            <button type="button" class="btn-icon-subtle toggle-visibility" data-target="newCloudToken" title="Toggle Visibility">👁️</button>
+          </div>
+        </div>
+        <div class="server-options-list">
+          <label class="server-check-item">
+            <input type="checkbox" id="chkNewCloudPublishAlerts" checked>
+            <span>Auto-publish sensor threshold incidents to this cloud</span>
+          </label>
+          <label class="server-check-item">
+            <input type="checkbox" id="chkNewCloudSyncTelemetry" checked>
+            <span>Real-time continuous telemetry stream (5s cadence)</span>
+          </label>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btnCancelAddCloud">Cancel</button>
+          <button type="button" class="btn btn-secondary" id="btnTestNewCloudPing">🔍 Test Ping</button>
+          <button type="submit" class="btn btn-primary">➕ Connect Cloud</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Add / Configure IF / ELSE Automation Rule -->
+  <div class="modal-overlay" id="modalAddRule">
+    <div class="modal-box" style="max-width: 580px;">
+      <div class="modal-header">
+        <h3 class="modal-title">⚡ Add IF / THEN / ELSE Automation Rule</h3>
+        <button class="modal-close" id="btnCloseAddRuleModal">&times;</button>
+      </div>
+      <form id="formAddRule" class="modal-body">
+        <div class="form-group">
+          <label class="input-label">Rule Name & Purpose</label>
+          <input type="text" class="input-control" id="newRuleName" placeholder="e.g. Emergency Smoke Exhaust & Pipeline Isolation" required>
+        </div>
+
+        <!-- IF Section -->
+        <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px; padding: 12px; margin-bottom: 12px;">
+          <div style="font-weight: 700; color: #b45309; margin-bottom: 8px; font-size: 0.82rem;">IF CONDITIONAL TRIGGER:</div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <div style="flex: 2; min-width: 140px;">
+              <label class="input-label">Source Sensor</label>
+              <select class="input-control" id="ruleSensorSelect">
+                <!-- Dynamically populated with active sensors -->
+              </select>
+            </div>
+            <div style="flex: 1; min-width: 80px;">
+              <label class="input-label">Operator</label>
+              <select class="input-control" id="ruleOperatorSelect">
+                <option value=">">&gt; (Greater than)</option>
+                <option value="<">&lt; (Less than)</option>
+                <option value=">=">&gt;= (Greater/Equal)</option>
+                <option value="<=">&lt;= (Less/Equal)</option>
+                <option value="==">== (Equals / State)</option>
+                <option value="!=">!= (Not Equals)</option>
+              </select>
+            </div>
+            <div style="flex: 1; min-width: 80px;">
+              <label class="input-label">Threshold Value</label>
+              <input type="text" class="input-control" id="ruleThresholdInput" value="350" required>
+            </div>
+          </div>
+        </div>
+
+        <!-- THEN Section -->
+        <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 8px; padding: 12px; margin-bottom: 12px;">
+          <div style="font-weight: 700; color: #047857; margin-bottom: 8px; font-size: 0.82rem;">THEN ACTION (WHEN CONDITION IS MET):</div>
+          <div style="display: flex; gap: 8px;">
+            <div style="flex: 2;">
+              <label class="input-label">Target Room Output</label>
+              <select class="input-control" id="ruleThenOutputSelect">
+                <option value="fan">🌀 Kitchen Exhaust Fan</option>
+                <option value="valve">🎛️ Gas Solenoid Valve</option>
+                <option value="buzzer">🔔 Piezo Alarm Siren</option>
+                <option value="window">🪟 Smart Airflow Window</option>
+                <option value="ac">❄️ Smart Inverter AC</option>
+                <option value="floodlights">💡 Security Floodlights</option>
+                <option value="lock">🔒 Entrance Maglock</option>
+                <option value="pump">💧 Sump / Water Pump</option>
+                <option value="breaker">⚡ Grid Circuit Breaker</option>
+                <option value="snapshot">📸 Camera Snapshot & Alert</option>
+              </select>
+            </div>
+            <div style="flex: 1;">
+              <label class="input-label">Target State</label>
+              <select class="input-control" id="ruleThenStateSelect">
+                <option value="ON">ON / ACTIVATE</option>
+                <option value="OFF">OFF / DEACTIVATE</option>
+                <option value="OPEN">OPEN / 100%</option>
+                <option value="SHUT">SHUT / CUTOFF</option>
+                <option value="COOL_MAX">COOL 20°C</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- ELSE Section -->
+        <div style="background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 8px; padding: 12px;">
+          <div style="font-weight: 700; color: #4338ca; margin-bottom: 8px; font-size: 0.82rem;">ELSE ACTION (FALLBACK WHEN CONDITION IS FALSE):</div>
+          <div style="display: flex; gap: 8px;">
+            <div style="flex: 2;">
+              <label class="input-label">Target Room Output</label>
+              <select class="input-control" id="ruleElseOutputSelect">
+                <option value="fan">🌀 Kitchen Exhaust Fan</option>
+                <option value="valve">🎛️ Gas Solenoid Valve</option>
+                <option value="buzzer">🔔 Piezo Alarm Siren</option>
+                <option value="window">🪟 Smart Airflow Window</option>
+                <option value="ac">❄️ Smart Inverter AC</option>
+                <option value="floodlights">💡 Security Floodlights</option>
+                <option value="lock">🔒 Entrance Maglock</option>
+                <option value="pump">💧 Sump / Water Pump</option>
+                <option value="breaker">⚡ Grid Circuit Breaker</option>
+              </select>
+            </div>
+            <div style="flex: 1;">
+              <label class="input-label">Fallback State</label>
+              <select class="input-control" id="ruleElseStateSelect">
+                <option value="OFF">OFF / DEACTIVATE</option>
+                <option value="ON">ON / ACTIVATE</option>
+                <option value="OPEN">NORMAL / OPEN</option>
+                <option value="STANDBY">STANDBY / ECO</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer" style="margin-top: 14px;">
+          <button type="button" class="btn btn-secondary" id="btnCancelAddRule">Cancel</button>
+          <button type="submit" class="btn btn-primary">⚡ Save Automation Rule</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Pin Inspector & Interactive Assignment -->
+  <div class="modal-overlay" id="modalPinInspector">
+    <div class="modal-box" style="max-width: 520px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="pinInspectorTitle">📍 Pin Inspector & Configuration</h3>
+        <button class="modal-close" id="btnClosePinInspector">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-secondary); padding: 12px; border-radius: 8px; margin-bottom: 12px;">
+          <div>
+            <strong id="inspectorPinName" style="font-size: 1.1rem; font-family: var(--font-code, monospace); color: var(--accent-primary);">GPIO 13</strong>
+            <div id="inspectorBoardType" style="font-size: 0.76rem; color: var(--text-muted);">Board: ESP32-CAM</div>
+          </div>
+          <span class="badge" id="inspectorPinStateBadge" style="background: #10b981; color: #fff;">READ: LOW (0)</span>
+        </div>
+
+        <div class="form-group">
+          <label class="input-label">Pin Operational Mode</label>
+          <div class="pin-mode-selector" id="pinModeSelector">
+            <button type="button" class="pin-mode-btn active" data-mode="INPUT">INPUT</button>
+            <button type="button" class="pin-mode-btn" data-mode="INPUT_PULLUP">PULLUP</button>
+            <button type="button" class="pin-mode-btn" data-mode="OUTPUT">OUTPUT</button>
+            <button type="button" class="pin-mode-btn" data-mode="PWM">PWM</button>
+            <button type="button" class="pin-mode-btn" data-mode="ADC">ANALOG ADC</button>
+            <button type="button" class="pin-mode-btn" data-mode="I2C">I2C / BUS</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="input-label">Mapped Sensor / Peripheral</label>
+          <select class="input-control" id="inspectorMappedSensorSelect">
+            <option value="">-- No Sensor Mapped (Floating Pin) --</option>
+            <!-- Dynamically populated with catalog and configured sensors -->
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="input-label">Assigned Room / Facility Zone</label>
+          <select class="input-control" id="inspectorPinRoomSelect">
+            <!-- Dynamically populated with active rooms -->
+          </select>
+        </div>
+
+        <!-- Live Pin State Testing Sandbox -->
+        <div style="background: var(--bg-secondary); padding: 12px; border-radius: 8px; margin-top: 10px;">
+          <label class="input-label" style="margin-bottom: 6px;">Live Pin Interactive Testing:</label>
+          <div style="display: flex; gap: 8px;">
+            <button type="button" class="btn btn-secondary btn-xs" id="btnPinSetHigh" style="flex: 1;">⚡ Set HIGH (3.3V)</button>
+            <button type="button" class="btn btn-secondary btn-xs" id="btnPinSetLow" style="flex: 1;">Set LOW (0V)</button>
+            <button type="button" class="btn btn-secondary btn-xs" id="btnPinPulse" style="flex: 1;">〰️ Pulse 100ms</button>
+          </div>
+        </div>
+
+        <div class="modal-footer" style="margin-top: 14px;">
+          <button type="button" class="btn btn-danger btn-xs" id="btnUnmapPin" style="margin-right: auto;">Clear Pin</button>
+          <button type="button" class="btn btn-secondary" id="btnCancelPinInspector">Cancel</button>
+          <button type="button" class="btn btn-primary" id="btnSavePinInspector">💾 Apply Pin Config</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Quick Connection Manager (Navbar Pill Click) -->
+  <div class="modal-overlay" id="modalQuickConnect">
+    <div class="modal-box" style="max-width: 500px;">
+      <div class="modal-header">
+        <h3 class="modal-title">⚡ Hardware & Wireless Connection</h3>
+        <button class="modal-close" id="btnCloseQuickConnect">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 14px;">
+          Connect your physical microcontroller or simulation bridge. Telemetry streams will automatically parse and map sensor channels.
+        </p>
+
+        <div class="conn-methods-grid">
+          <div class="conn-method-card active" id="cardMethodSerial" data-method="serial">
+            <div class="conn-icon">🔌</div>
+            <div class="conn-title">Web Serial</div>
+            <div class="conn-desc">USB UART COM Port (115200)</div>
+          </div>
+          <div class="conn-method-card" id="cardMethodBle" data-method="ble">
+            <div class="conn-icon">📡</div>
+            <div class="conn-title">Bluetooth</div>
+            <div class="conn-desc">Web BLE Nordic UART</div>
+          </div>
+          <div class="conn-method-card" id="cardMethodWifi" data-method="wifi">
+            <div class="conn-icon">📶</div>
+            <div class="conn-title">Wi-Fi / IP</div>
+            <div class="conn-desc">WebSocket / HTTP REST</div>
+          </div>
+        </div>
+
+        <div id="connParamContainer" style="background: var(--bg-secondary); padding: 12px; border-radius: 8px; margin-bottom: 12px;">
+          <div id="serialParams">
+            <label class="input-label">Select Board & Baud Rate</label>
+            <div style="display: flex; gap: 8px;">
+              <select class="input-control" id="quickConnBoard">
+                <option value="STM32 Nucleo-64">STM32 Nucleo-64 (F401/F103)</option>
+                <option value="STM32 Blue Pill">STM32 Blue Pill (STM32F103C8T6)</option>
+                <option value="ESP32-CAM">ESP32-CAM (AI-Thinker)</option>
+                <option value="Spark Core">Spark Core (Particle STM32)</option>
+                <option value="Arduino Uno">Arduino Uno / Nano</option>
+              </select>
+              <select class="input-control" id="quickConnBaud" style="width: 130px;">
+                <option value="115200" selected>115200</option>
+                <option value="9600">9600</option>
+                <option value="57600">57600</option>
+              </select>
+            </div>
+          </div>
+          <div id="wifiParams" style="display: none;">
+            <label class="input-label">ESP32 / STM32 Wi-Fi Endpoint</label>
+            <input type="text" class="input-control" id="quickWifiEndpoint" value="ws://192.168.4.1:81" placeholder="ws://192.168.x.x:81 or http://...">
+          </div>
+        </div>
+
+        <!-- Connection Status & Disconnect Action -->
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(0,0,0,0.03); border-radius: 6px;">
+          <div>
+            <span style="font-size: 0.74rem; color: var(--text-muted);">Current Status:</span>
+            <strong id="quickConnStatusText" style="display: block; font-size: 0.85rem;">Offline / Awaiting Board</strong>
+          </div>
+          <button type="button" class="btn btn-danger btn-sm" id="btnQuickDisconnect" disabled>Disconnect Board</button>
+        </div>
+
+        <div class="modal-footer" style="margin-top: 14px;">
+          <button type="button" class="btn btn-secondary" id="btnCancelQuickConnect">Close</button>
+          <button type="button" class="btn btn-primary" id="btnQuickConnectAction">⚡ Initiate Connection</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="sensorTemplatesCatalog.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
 

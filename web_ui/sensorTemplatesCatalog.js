@@ -7,7 +7,7 @@
  * Part of Sanctuary OS & KyU Universal Telemetry Platform
  */
 
-export const SENSOR_CATEGORIES = [
+const SENSOR_CATEGORIES = [
   {
     "id": "all",
     "label": "All Templates",
@@ -60,7 +60,7 @@ export const SENSOR_CATEGORIES = [
   }
 ];
 
-export const SENSOR_TEMPLATES = [
+const SENSOR_TEMPLATES = [
   {
     id: "dht11",
     name: "DHT11 Basic Climate Sensor",
@@ -2142,11 +2142,14 @@ export class SerialOutputExaminer {
   }
 }
 
-export const serialOutputExaminer = new SerialOutputExaminer();
+const serialOutputExaminer = new SerialOutputExaminer();
 
 if (typeof window !== 'undefined') {
   window.SENSOR_CATEGORIES = SENSOR_CATEGORIES;
   window.SENSOR_TEMPLATES = SENSOR_TEMPLATES;
   window.SerialOutputExaminer = SerialOutputExaminer;
   window.serialOutputExaminer = serialOutputExaminer;
+}
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { SENSOR_CATEGORIES, SENSOR_TEMPLATES, SerialOutputExaminer, serialOutputExaminer };
 }
