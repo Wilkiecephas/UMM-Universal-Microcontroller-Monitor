@@ -273,6 +273,44 @@ ThingSpeak & HTTP GET / POST & $15$ s & 8-Field Numerical & Long-term cloud tren
 }
 \end{table}
 
+\subsection{Universal Serial Device Output Examiner and 120+ Sensor Template Library}
+To support universal serial interoperability across heterogeneous microcontrollers and sensor technologies, the system incorporates an intelligent \textbf{Universal Serial Output Examiner} backed by an extensive repository of over 120 sensor, actuator, and device templates. This architecture eliminates vendor lock-in by dynamically inspecting arbitrary serial data streams, classifying signal protocols, and matching telemetry signatures against known hardware models.
+
+\begin{enumerate}
+    \item \textbf{Heuristic Pattern Recognition Engine:} The serial examiner parses unformatted asynchronous UART streams, identifying transmission framing such as JSON objects, key-value comma-delimited strings (\texttt{TEMP:24.2,HUM:58.4}), raw 10-bit/12-bit ADC integer streams, GPS NMEA sentences, and cellular AT command responses. A multi-tier scoring algorithm correlates regex signatures, token names, and mathematical value domains to compute a percentage match confidence for candidate sensor models.
+    
+    \item \textbf{Comprehensive 120+ Sensor \& Actuator Classification:} The template library classifies devices across analog and digital paradigms, standardizing pinouts, operating voltages, calibration equations, and baud configurations across 10 functional domains:
+    \begin{itemize}
+        \item \textbf{Climate \& Temperature (16 Models):} Digital single-bus (DHT11, DHT22, AM2302), Dallas 1-Wire (DS18B20), I$^2$C/SPI environmental sensors (BME280, BMP280, BME680, SHT31, SHT40, AHT20, Si7021, MCP9808), linear analog sensors (LM35 10~mV/$^\circ$C, TMP36), analog resistance dividers (NTC 10K MF52 Steinhart-Hart), and platinum RTDs (PT100 with MAX31865).
+        \item \textbf{Gas, Smoke \& Hazardous Fumes (18 Models):} Metal-oxide semiconductor modules (MQ-2 smoke, MQ-3 alcohol, MQ-4 methane, MQ-5 LPG, MQ-6 propane, MQ-7 CO cyclic, MQ-8 hydrogen, MQ-9 dual-gas, MQ-135 air quality, MQ-136 H$_2$S, MQ-137 ammonia, MQ-138 VOCs), multi-pixel digital sensors (SGP30, SGP40), optical NDIR detectors (Winsen MH-Z19B, Senseair S8, Sensirion SCD30), and laser dust sensors (Plantower PMS5003).
+        \item \textbf{AC Power, Voltage \& Current (10 Models):} Active voltage transformers (ZMPT101B 0--250~V AC), Hall-effect current sensors (Allegro ACS712-05A/20A/30A), non-invasive split-core current transformers (SCT-013-000, SCT-013-030), and multi-function energy meters (Peacefair PZEM-004T v3.0 UART, PZEM-016 Modbus-RS485, HLW8032, and INA219 DC power).
+        \item \textbf{Gas Valves, Actuators \& HVAC Controls (16 Models):} 12~V brass electromagnetic solenoid shutoff valves (2W-160-15), 3-wire motorized ball valves (DN15-CR02 with limit feedback), automatic pipe shutoff manipulator arms, Tuya Wi-Fi smart AC gateways, Midea split AC UART dongles (OSK-103 9600 baud), Mitsubishi CN105 heatpump serial adapters (2400 baud 8-E-1), Daikin S21 serial split AC bridges, Modbus RTU RS485 fan coil thermostats, 38~kHz infrared AC blasters, optocoupled relays (1-channel, 4-channel), solid-state relays (SSR-25DA zero-crossing), and 24~V motorized HVAC damper actuators (Belimo LM24A).
+        \item \textbf{Motion, Radar \& Optical (26 Models):} Passive infrared detectors (HC-SR501, HC-SR505, AM312), Doppler microwave radar (RCWL-0516 3.18~GHz), 24~GHz human static presence mmWave radar (HLK-LD2410), ultrasonic distance rangers (HC-SR04, waterproof JSN-SR04T), Time-of-Flight laser sensors (VL53L0X, Benewake TFmini Plus), magnetic reed switches (MC-38), 6-axis IMUs (MPU-6050, ADXL345), ambient light sensors (GL5528 LDR, BH1750, TSL2561, TSL2591), pulse oximeters (MAX30102), and non-contact infrared thermopiles (MLX90614, AMG8833 Grid-EYE).
+        \item \textbf{Liquid, Soil, Wireless \& Controllers (38 Models):} Capacitive soil moisture (HW-390 v1.2), submersible hydrostatic level transmitters (4--20~mA loop), YF-S201 Hall water flow meters, analog TDS and pH meters (E-201-C), BLE beacons (Xiaomi LYWSD03MMC, Inkbird IBS-TH2, RuuviTag B8), Shelly Plus H\&T Wi-Fi, Sonoff Zigbee, ESP-NOW radios, SIM800L cellular, SIM7600E-H 4G LTE, and target microcontroller boards (ESP32-CAM, Spark Core Particle STM32, Arduino Uno/Mega, and STM32 Blue Pill).
+    \end{itemize}
+    
+    \item \textbf{Turnkey Multi-Sensor Firmware Generation:} Users can select any combination of catalog sensor profiles to instantly synthesize compile-ready Arduino C++ sketches. The generator provisions precise GPIO pin mapping, baud rate configuration, header inclusion, and structured JSON serial streaming compatible with Sanctuary OS and KyU Telemetry endpoints.
+\end{enumerate}
+
+\begin{table}[H]
+\centering
+\caption{Comparison of Primary Sensor Signal Categories and Operating Characteristics}
+\label{tab:sensor_signal_matrix}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|l|l|l|c|l|l|}
+\hline
+\textbf{Sensor Category} & \textbf{Typical Signal Type} & \textbf{Output Domain} & \textbf{Supply Voltage} & \textbf{Primary Models} & \textbf{Noise Immunity} \\ \hline
+Analog ADC & Continuously Variable & 0 -- 3.3~V / 0 -- 5.0~V & 3.3~V / 5.0~V & LM35, ZMPT101B, MQ-2, LDR & Moderate (Requires Filtering) \\ \hline
+Digital Single-Bus & Bidirectional 1-Wire & Asynchronous Pulse Width & 3.3~V -- 5.0~V & DHT11, DHT22, AM2302 & High (Parity / Checksum) \\ \hline
+Dallas 1-Wire & 64-bit Addressable Bus & Digital Bit-Banging & 3.0~V -- 5.5~V & DS18B20 & High (CRC8 Verification) \\ \hline
+I$^2$C Serial Bus & Synchronous 2-Wire & Serial Packets (SCL/SDA) & 1.8~V -- 3.3~V & BME280, SGP30, BH1750, MPU-6050 & Very High (Bus Protocol) \\ \hline
+UART / RS485 & Asynchronous Serial & ASCII / Modbus RTU & 5.0~V / 12--24~V & PZEM-004T, MH-Z19B, PMS5003 & Excellent (Differential on RS485) \\ \hline
+Actuator / Valve & Digital / PWM Switching & Coil State / Pulse Width & 5.0~V / 12--24~V & 12V Solenoid, Motorized Ball, Relay & Isolated (Optocoupler / Flyback) \\ \hline
+Wireless BLE / RF & 2.4~GHz Radio Packets & Bluetooth Advertisements & 3.0~V (Battery) & LYWSD03MMC, RuuviTag, ESP-NOW & Maximum (No Galvanic Lines) \\ \hline
+\end{tabular}%
+}
+\end{table}
+
 \subsection{Cost Analysis and Bill of Materials}
 A critical deliverable was the formulation of the Bill of Materials (BOM) for a scaled deployment of 100 units. The estimation assumes bulk purchasing discounts. 
 

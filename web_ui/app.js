@@ -691,6 +691,8 @@ function navigateToRoute(targetHash) {
     'reports': 'reports',
     'servers': 'cloud-servers',
     'cloud-servers': 'cloud-servers',
+    'universal': 'universal-devices',
+    'universal-devices': 'universal-devices',
     'setup': 'facility-rooms',
     'facility-rooms': 'facility-rooms'
   };
@@ -1296,6 +1298,9 @@ async function readIncomingSerial(port) {
           if (trimmed) {
             logTerminal(trimmed);
             parseHardwareLine(trimmed);
+            if (typeof handleExaminerLiveStream === 'function') {
+              handleExaminerLiveStream(trimmed);
+            }
           }
         }
       }
@@ -2328,7 +2333,456 @@ function initSparkCoreIntegration() {
 }
 
 // =============================================================================
-// 14. INITIALIZE SANCTUARY OS
+// 14. UNIVERSAL SERIAL DEVICE EXAMINER & 100+ SENSOR REPOSITORY
+// =============================================================================
+let activeCatalogCategory = 'all';
+let activeCatalogSignal = 'all';
+let activeCatalogSearch = '';
+let selectedFirmwareSensorIds = ['dht22', 'mq2', 'zmpt101b', 'acs712_20', 'reed_switch', 'hcsr501', 'relay_1ch'];
+
+function handleExaminerLiveStream(line) {
+  const autoCheckbox = document.getElementById('examinerAutoAnalyze');
+  if (!autoCheckbox || !autoCheckbox.checked) return;
+
+  const inputArea = document.getElementById('examinerSerialInput');
+  if (inputArea) {
+    inputArea.value = line;
+  }
+  const statusPill = document.getElementById('examinerSerialStatus');
+  if (statusPill) {
+    statusPill.textContent = 'Active Ingestion';
+    statusPill.className = 'badge badge-peaceful';
+  }
+  runExaminerAnalysis(line, true);
+}
+
+function runExaminerAnalysis(rawText, fromStream = false) {
+  const resultsBox = document.getElementById('examinerResultsBox');
+  if (!resultsBox) return;
+
+  if (!rawText || !rawText.trim()) {
+    resultsBox.innerHTML = `
+      <div class="results-empty-state">
+        <span style="font-size: 2rem;">⚡</span>
+        <p>No serial data to examine. Paste a packet above or click a test signature.</p>
+      </div>`;
+    return;
+  }
+
+  if (!window.serialOutputExaminer) {
+    resultsBox.innerHTML = `<div style="color: #ef4444; font-size: 0.85rem;">Examiner engine not yet initialized.</div>`;
+    return;
+  }
+
+  const analysis = window.serialOutputExaminer.examine(rawText);
+
+  // Render extracted fields
+  const fieldKeys = Object.keys(analysis.extractedFields);
+  let fieldsHtml = '';
+  if (fieldKeys.length > 0) {
+    fieldsHtml = `
+      <div style="margin-bottom: 8px;">
+        <span style="font-size: 0.76rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Extracted Telemetry Tokens:</span>
+        <div class="fields-chip-group" style="margin-top: 4px;">
+          ${fieldKeys.map(k => `<span class="field-kv-chip"><strong>${k}:</strong> ${analysis.extractedFields[k]}</span>`).join('')}
+        </div>
+      </div>`;
+  }
+
+  // Render Matches
+  let matchesHtml = '';
+  if (analysis.matches.length === 0) {
+    matchesHtml = `
+      <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid #f59e0b; border-radius: 6px; padding: 10px; font-size: 0.82rem; color: #b45309;">
+        ⚠️ No confident sensor match found (>20% score) for this signature. The data might be an unknown proprietary binary framing or custom protocol.
+      </div>`;
+  } else {
+    matchesHtml = analysis.matches.slice(0, 5).map(m => {
+      const t = m.template;
+      const scoreClass = m.confidence >= 75 ? '' : 'amber';
+      const tagClass = t.analogOrDigital === 'Analog' ? 'sensor-tag-analog' : (t.category === 'actuator' ? 'sensor-tag-actuator' : 'sensor-tag-digital');
+      return `
+        <div class="matched-sensor-card">
+          <div class="match-card-top">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 1.1rem;">${getCategoryIcon(t.category)}</span>
+              <strong style="font-size: 0.92rem; color: var(--text-main);">${t.name}</strong>
+            </div>
+            <span class="match-score-badge ${scoreClass}">${m.confidence}% MATCH</span>
+          </div>
+          <div style="display: flex; gap: 6px; margin: 4px 0 6px 0;">
+            <span class="${tagClass}">${t.analogOrDigital}</span>
+            <span class="badge" style="background: #f1f5f9; color: #475569; font-size: 0.68rem;">Model: ${t.model}</span>
+            <span class="badge" style="background: #f1f5f9; color: #475569; font-size: 0.68rem;">Voltage: ${t.voltage}</span>
+          </div>
+          <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0 0 6px 0;">${t.description}</p>
+          <div class="sensor-pins-wrap"><strong>Wiring:</strong> ${t.pins.join(' | ')}</div>
+          <div style="display: flex; justify-content: flex-end; gap: 6px; margin-top: 8px;">
+            <button class="btn btn-secondary btn-xs btn-inspect-sensor" data-id="${t.id}">Inspect Model</button>
+            <button class="btn btn-primary btn-xs btn-add-to-fw" data-id="${t.id}">+ Add to Firmware Stack</button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  resultsBox.innerHTML = `
+    <div class="match-summary-header">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span class="format-pill">${analysis.formatDetected}</span>
+        <span style="font-size: 0.82rem; font-weight: 600; color: var(--text-main);">
+          ${analysis.matchCount} Candidate Model${analysis.matchCount === 1 ? '' : 's'} Matched
+        </span>
+      </div>
+      <span style="font-size: 0.72rem; color: var(--text-muted);">${fromStream ? 'Live Stream Frame' : 'Manual Examination'}</span>
+    </div>
+    ${fieldsHtml}
+    ${matchesHtml}
+  `;
+
+  // Attach button handlers inside results box
+  resultsBox.querySelectorAll('.btn-inspect-sensor').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.id;
+      const searchInput = document.getElementById('catalogSearchInput');
+      if (searchInput) {
+        searchInput.value = id;
+        activeCatalogSearch = id.toLowerCase();
+        renderSensorCatalogGrid();
+      }
+    });
+  });
+
+  resultsBox.querySelectorAll('.btn-add-to-fw').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.id;
+      if (!selectedFirmwareSensorIds.includes(id)) {
+        selectedFirmwareSensorIds.push(id);
+        showToast(`Added ${id} to firmware generator stack`, 'success');
+      } else {
+        showToast(`${id} is already in the firmware stack`, 'info');
+      }
+    });
+  });
+}
+
+function getCategoryIcon(cat) {
+  const map = {
+    climate: '🌡️',
+    gas: '💨',
+    power: '⚡',
+    motion: '🚶',
+    optical: '💡',
+    liquid: '💧',
+    actuator: '🎛️',
+    wireless: '📡',
+    mcu: '📷'
+  };
+  return map[cat] || '📟';
+}
+
+function renderSensorCatalogGrid() {
+  const grid = document.getElementById('catalogGrid');
+  if (!grid) return;
+
+  const templates = window.SENSOR_TEMPLATES || [];
+  const query = activeCatalogSearch.toLowerCase().trim();
+
+  const filtered = templates.filter(t => {
+    // Category match
+    if (activeCatalogCategory !== 'all' && t.category !== activeCatalogCategory) return false;
+
+    // Signal type match
+    if (activeCatalogSignal === 'analog' && t.analogOrDigital !== 'Analog') return false;
+    if (activeCatalogSignal === 'digital' && t.analogOrDigital !== 'Digital') return false;
+    if (activeCatalogSignal === 'actuator' && t.category !== 'actuator') return false;
+
+    // Text search query
+    if (query) {
+      const textCorpus = `${t.name} ${t.model} ${t.id} ${t.category} ${t.signalType} ${t.pins.join(' ')} ${t.voltage} ${t.description}`.toLowerCase();
+      if (!textCorpus.includes(query)) return false;
+    }
+    return true;
+  });
+
+  const countBadge = document.getElementById('catalogBadgeCount');
+  if (countBadge) {
+    countBadge.textContent = `${filtered.length} of ${templates.length} Models`;
+  }
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `
+      <div style="grid-column: 1 / -1; text-align: center; padding: 40px 20px; color: var(--text-muted);">
+        <span style="font-size: 2rem;">🔍</span>
+        <p style="margin-top: 8px;">No sensor templates found matching "${query}".</p>
+        <button class="btn btn-secondary btn-sm" id="btnResetCatalogFilters" style="margin-top: 10px;">Reset Filters</button>
+      </div>`;
+    document.getElementById('btnResetCatalogFilters')?.addEventListener('click', () => {
+      activeCatalogCategory = 'all';
+      activeCatalogSignal = 'all';
+      activeCatalogSearch = '';
+      if (document.getElementById('catalogSearchInput')) document.getElementById('catalogSearchInput').value = '';
+      if (document.getElementById('catalogSignalFilter')) document.getElementById('catalogSignalFilter').value = 'all';
+      renderCategoryPills();
+      renderSensorCatalogGrid();
+    });
+    return;
+  }
+
+  grid.innerHTML = filtered.map(t => {
+    const tagClass = t.analogOrDigital === 'Analog' ? 'sensor-tag-analog' : (t.category === 'actuator' ? 'sensor-tag-actuator' : 'sensor-tag-digital');
+    return `
+      <div class="sensor-catalog-card" data-id="${t.id}">
+        <div>
+          <div class="sensor-card-header">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span style="font-size: 1.15rem;">${getCategoryIcon(t.category)}</span>
+              <h4 class="sensor-model-title">${t.model}</h4>
+            </div>
+            <span class="${tagClass}">${t.analogOrDigital}</span>
+          </div>
+          <div style="font-size: 0.8rem; font-weight: 500; color: var(--text-main); margin-bottom: 6px;">${t.name}</div>
+          <p style="font-size: 0.74rem; color: var(--text-muted); margin-bottom: 8px; line-height: 1.35;">${t.description}</p>
+          
+          <div class="sensor-detail-row">
+            <span>Operating Voltage:</span>
+            <strong>${t.voltage}</strong>
+          </div>
+          <div class="sensor-detail-row">
+            <span>Signal Protocol:</span>
+            <span style="font-size: 0.7rem; font-family: monospace;">${t.signalType}</span>
+          </div>
+          <div class="sensor-pins-wrap" title="${t.pins.join(', ')}">
+            📌 ${t.pins.join(' | ')}
+          </div>
+        </div>
+
+        <div class="sensor-card-actions">
+          <button class="btn btn-secondary btn-xs btn-card-test" data-sample='${t.sampleOutput.replace(/'/g, "&#39;")}' style="flex: 1;">🧪 Test Signature</button>
+          <button class="btn btn-primary btn-xs btn-card-add-fw" data-id="${t.id}" style="flex: 1;">+ Firmware</button>
+        </div>
+      </div>`;
+  }).join('');
+
+  // Attach card event listeners
+  grid.querySelectorAll('.btn-card-test').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const sample = btn.dataset.sample;
+      const input = document.getElementById('examinerSerialInput');
+      if (input) input.value = sample;
+      runExaminerAnalysis(sample, false);
+      showToast('Loaded sample signature into examiner', 'info');
+    });
+  });
+
+  grid.querySelectorAll('.btn-card-add-fw').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.id;
+      if (!selectedFirmwareSensorIds.includes(id)) {
+        selectedFirmwareSensorIds.push(id);
+        showToast(`Added ${id} to firmware generator stack`, 'success');
+      } else {
+        showToast(`${id} is already in the firmware stack`, 'info');
+      }
+    });
+  });
+}
+
+function renderCategoryPills() {
+  const container = document.getElementById('catalogCategoryPills');
+  if (!container) return;
+
+  const categories = window.SENSOR_CATEGORIES || [];
+  const templates = window.SENSOR_TEMPLATES || [];
+
+  container.innerHTML = categories.map(cat => {
+    const count = cat.id === 'all' 
+      ? templates.length 
+      : templates.filter(t => t.category === cat.id).length;
+    const isActive = cat.id === activeCatalogCategory ? 'active' : '';
+    return `
+      <button class="cat-pill ${isActive}" data-category="${cat.id}">
+        <span>${cat.icon}</span> ${cat.label} (${count})
+      </button>`;
+  }).join('');
+
+  container.querySelectorAll('.cat-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      activeCatalogCategory = pill.dataset.category;
+      renderCategoryPills();
+      renderSensorCatalogGrid();
+    });
+  });
+}
+
+function initFirmwareGeneratorModal() {
+  const modal = document.getElementById('firmwareGenModal');
+  const btnOpen = document.getElementById('btnOpenFirmwareModal');
+  const btnClose = document.getElementById('btnCloseFirmwareModal');
+  const btnCancel = document.getElementById('btnCancelFwModal');
+  const btnCopy = document.getElementById('btnCopyGeneratedFw');
+  const btnDownload = document.getElementById('btnDownloadFwIno');
+  const boardSelect = document.getElementById('fwTargetBoard');
+  const baudSelect = document.getElementById('fwBaudRate');
+  const checklistContainer = document.getElementById('fwSensorsChecklist');
+  const codeOutput = document.getElementById('fwCodeOutput');
+
+  if (!modal || !btnOpen) return;
+
+  function updateFirmwarePreview() {
+    if (!window.serialOutputExaminer) return;
+    const board = boardSelect ? boardSelect.value : 'esp32cam';
+    const baud = baudSelect ? baudSelect.value : '115200';
+    
+    // Read currently checked boxes
+    const checkedIds = [];
+    checklistContainer.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
+      checkedIds.push(cb.value);
+    });
+    selectedFirmwareSensorIds = checkedIds;
+
+    const code = window.serialOutputExaminer.generateFirmware(selectedFirmwareSensorIds, board, baud);
+    if (codeOutput) {
+      codeOutput.textContent = code;
+    }
+  }
+
+  function populateSensorsChecklist() {
+    const templates = window.SENSOR_TEMPLATES || [];
+    checklistContainer.innerHTML = templates.map(t => {
+      const isChecked = selectedFirmwareSensorIds.includes(t.id) ? 'checked' : '';
+      return `
+        <label class="fw-checkbox-label" title="${t.name}">
+          <input type="checkbox" value="${t.id}" ${isChecked}>
+          <span>${t.model} (${t.analogOrDigital})</span>
+        </label>`;
+    }).join('');
+
+    checklistContainer.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+      cb.addEventListener('change', updateFirmwarePreview);
+    });
+  }
+
+  btnOpen.addEventListener('click', () => {
+    populateSensorsChecklist();
+    updateFirmwarePreview();
+    modal.classList.add('active');
+  });
+
+  btnClose?.addEventListener('click', () => modal.classList.remove('active'));
+  btnCancel?.addEventListener('click', () => modal.classList.remove('active'));
+  boardSelect?.addEventListener('change', updateFirmwarePreview);
+  baudSelect?.addEventListener('change', updateFirmwarePreview);
+
+  btnCopy?.addEventListener('click', () => {
+    if (codeOutput && codeOutput.textContent) {
+      navigator.clipboard.writeText(codeOutput.textContent).then(() => {
+        showToast('Firmware sketch copied to clipboard!', 'success');
+      });
+    }
+  });
+
+  btnDownload?.addEventListener('click', () => {
+    if (!codeOutput || !codeOutput.textContent) return;
+    const blob = new Blob([codeOutput.textContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Sanctuary_Universal_Firmware_${boardSelect.value}.ino`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Downloaded .ino firmware sketch', 'success');
+  });
+}
+
+function initUniversalSensorExaminer() {
+  const templates = window.SENSOR_TEMPLATES || [];
+  
+  // Populate metric counters
+  const statTotal = document.getElementById('statTotalSensors');
+  const statAnalog = document.getElementById('statAnalogSensors');
+  const statDigital = document.getElementById('statDigitalSensors');
+  const statActuator = document.getElementById('statActuatorSensors');
+
+  if (statTotal) statTotal.textContent = `${templates.length} Loaded`;
+  if (statAnalog) statAnalog.textContent = `${templates.filter(t => t.analogOrDigital === 'Analog').length} Sensors`;
+  if (statDigital) statDigital.textContent = `${templates.filter(t => t.analogOrDigital === 'Digital').length} Sensors`;
+  if (statActuator) statActuator.textContent = `${templates.filter(t => t.category === 'actuator').length} Devices`;
+
+  // Render UI Components
+  renderCategoryPills();
+  renderSensorCatalogGrid();
+  initFirmwareGeneratorModal();
+
+  // Search Input listener
+  const searchInput = document.getElementById('catalogSearchInput');
+  searchInput?.addEventListener('input', (e) => {
+    activeCatalogSearch = e.target.value;
+    renderSensorCatalogGrid();
+  });
+
+  // Signal filter listener
+  const signalFilter = document.getElementById('catalogSignalFilter');
+  signalFilter?.addEventListener('change', (e) => {
+    activeCatalogSignal = e.target.value;
+    renderSensorCatalogGrid();
+  });
+
+  // Test Signatures Sample Chips
+  const sampleChips = document.getElementById('examinerSampleChips');
+  sampleChips?.querySelectorAll('.sample-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const sample = chip.dataset.sample;
+      const input = document.getElementById('examinerSerialInput');
+      if (input) input.value = sample;
+      runExaminerAnalysis(sample, false);
+      showToast('Loaded sample serial signature into examiner', 'info');
+    });
+  });
+
+  // Examine & Match Button
+  const btnAnalyze = document.getElementById('btnRunExaminerAnalyze');
+  btnAnalyze?.addEventListener('click', () => {
+    const input = document.getElementById('examinerSerialInput');
+    const text = input ? input.value : '';
+    runExaminerAnalysis(text, false);
+  });
+
+  // Clear Button
+  const btnClearText = document.getElementById('btnClearExaminerText');
+  btnClearText?.addEventListener('click', () => {
+    const input = document.getElementById('examinerSerialInput');
+    if (input) input.value = '';
+    const resultsBox = document.getElementById('examinerResultsBox');
+    if (resultsBox) {
+      resultsBox.innerHTML = `
+        <div class="results-empty-state">
+          <span style="font-size: 2rem;">⚡</span>
+          <p>Click any test signature above or stream serial output to run heuristic pattern matching.</p>
+        </div>`;
+    }
+  });
+
+  // Export Catalog JSON
+  const btnExportJson = document.getElementById('btnExportCatalogJson');
+  btnExportJson?.addEventListener('click', () => {
+    const jsonStr = JSON.stringify(templates, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'kyu_universal_sensor_catalog_120plus.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Exported 120+ Sensor Templates Catalog JSON', 'success');
+  });
+}
+
+// =============================================================================
+// 15. INITIALIZE SANCTUARY OS
 // =============================================================================
 window.addEventListener('DOMContentLoaded', () => {
   try { initThemes(); } catch (e) { console.error('Theme init error:', e); }
@@ -2344,7 +2798,9 @@ window.addEventListener('DOMContentLoaded', () => {
   try { initEngineeringIde(); } catch (e) { console.error('IDE error:', e); }
   try { initCloudServers(); } catch (e) { console.error('Cloud servers error:', e); }
   try { initSparkCoreIntegration(); } catch (e) { console.error('Spark Core error:', e); }
+  try { initUniversalSensorExaminer(); } catch (e) { console.error('Universal examiner error:', e); }
 
   updateAllViews();
   showToast(`🏡 Sanctuary OS loaded. Facility: "${state.facilityName}"`, 'info');
 });
+

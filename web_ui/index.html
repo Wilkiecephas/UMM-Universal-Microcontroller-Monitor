@@ -52,6 +52,9 @@
       <a href="#servers" class="nav-tab" data-tab="cloud-servers">
         <span class="tab-icon">🌐</span> Cloud & Servers
       </a>
+      <a href="#universal" class="nav-tab" data-tab="universal-devices">
+        <span class="tab-icon">🔌</span> 100+ Sensors & Examiner
+      </a>
       <a href="#setup" class="nav-tab" data-tab="facility-rooms">
         <span class="tab-icon">🏢</span> Setup & Pins
       </a>
@@ -952,7 +955,141 @@
     </section>
 
     <!-- ===================================================================== -->
-    <!-- TAB 8: FACILITY, ROOMS & PINS SETUP                                  -->
+    <!-- TAB 8: UNIVERSAL SERIAL DEVICE EXAMINER & 100+ SENSOR TEMPLATES    -->
+    <!-- ===================================================================== -->
+    <section id="tab-universal-devices" class="tab-content">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Universal Serial Device Examiner & 100+ Sensor Library</h2>
+          <p class="section-desc">Examine live serial streams from unknown microcontrollers, automatically match signatures across 120+ sensor models (analog & digital, gas valves, AC units, BLE, Wi-Fi), and generate turnkey firmware.</p>
+        </div>
+        <div class="house-actions">
+          <button class="btn btn-secondary btn-sm" id="btnOpenFirmwareModal">📋 Unified Firmware Generator</button>
+          <button class="btn btn-primary btn-sm" id="btnExportCatalogJson">💾 Export Catalog JSON</button>
+        </div>
+      </div>
+
+      <!-- Quick Metrics Bar -->
+      <div class="server-summary-bar">
+        <div class="server-stat-chip">
+          <span class="chip-label">Catalog Profiles:</span>
+          <strong id="statTotalSensors">123 Loaded</strong>
+        </div>
+        <div class="server-stat-chip">
+          <span class="chip-label">Analog / ADC Models:</span>
+          <strong id="statAnalogSensors">42 Sensors</strong>
+        </div>
+        <div class="server-stat-chip">
+          <span class="chip-label">Digital (I2C/SPI/1-Wire):</span>
+          <strong id="statDigitalSensors">61 Sensors</strong>
+        </div>
+        <div class="server-stat-chip">
+          <span class="chip-label">Valves, AC & Actuators:</span>
+          <strong id="statActuatorSensors">20 Devices</strong>
+        </div>
+        <div class="server-stat-chip">
+          <span class="chip-label">Serial Link:</span>
+          <span class="badge badge-peaceful" id="examinerSerialStatus">Ready</span>
+        </div>
+      </div>
+
+      <!-- Split Workstation: Examiner on Left / 100+ Catalog on Right -->
+      <div class="universal-layout">
+        <!-- LEFT: SERIAL EXAMINER WORKSTATION -->
+        <div class="examiner-panel">
+          <div class="panel-header">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 1.2rem;">🔬</span>
+              <h3 style="margin: 0; font-size: 1.05rem; font-weight: 600;">Serial Output Examiner & Classifier</h3>
+            </div>
+            <div style="display: flex; gap: 6px;">
+              <button class="btn btn-secondary btn-xs" id="btnClearExaminerText" title="Clear text">Clear</button>
+            </div>
+          </div>
+
+          <div style="padding: 16px 20px;">
+            <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 10px;">
+              Paste or stream raw serial output below, or click any sample signature to test automatic protocol detection, key-value extraction, and sensor model matching:
+            </p>
+
+            <!-- Sample Sensor Stream Presets -->
+            <div class="sample-chips-container" id="examinerSampleChips">
+              <span class="preset-label">Test Signatures:</span>
+              <button class="sample-chip" data-sample='{"temp": 24.2, "hum": 58.4, "sensor": "DHT22"}'>🌡️ DHT22 JSON</button>
+              <button class="sample-chip" data-sample='MQ-2 Gas Sensor: Analog A0 = 840 (185 ppm Smoke/LPG)'>💨 MQ-2 Smoke</button>
+              <button class="sample-chip" data-sample='{"vac": 238.4, "freq": 50.02, "zmpt101b_adc": 2180}'>⚡ ZMPT101B AC Grid</button>
+              <button class="sample-chip" data-sample='TEMP_PROBE: 25.62 C, ROM: 28FF641E8216035A (DS18B20)'>🧪 DS18B20 1-Wire</button>
+              <button class="sample-chip" data-sample='[SECURITY_ALARM] HC-SR501 PIR TRIGGERED! Motion Detected on Pin D12'>🚶 PIR Motion</button>
+              <button class="sample-chip" data-sample='[SOLENOID_VALVE] State: CLOSED, Pulse: 12V 100ms, Gas Safety Interlock: ACTIVE'>🎛️ Gas Valve Solenoid</button>
+              <button class="sample-chip" data-sample='TUYA_SMART_AC: Power=ON, Mode=COOL, SetTemp=22C, FanSpeed=AUTO, Ambient=25.4C'>❄️ Smart AC Unit</button>
+              <button class="sample-chip" data-sample='BLE_ENV_BEACON [C4:7F:51:22:A1:04] Temp: 23.4C, Hum: 48%, Batt: 92%, RSSI: -64dBm'>📡 BLE Sensor Beacon</button>
+              <button class="sample-chip" data-sample='{"co2_ppm": 745, "tvoc_ppb": 42, "eco2": 720, "sensor": "SGP30"}'>🌿 SGP30 Air Quality</button>
+              <button class="sample-chip" data-sample='PZEM004T: Volt=240.2V, Current=1.45A, Power=348.3W, Energy=12.45kWh, PF=0.98'>🔌 PZEM Power Meter</button>
+              <button class="sample-chip" data-sample='DISTANCE_RAW: 24.6 cm, ECHO_TIME: 1432 us (HC-SR04)'>📏 Ultrasonic Ranger</button>
+            </div>
+
+            <!-- Serial Input Box -->
+            <div class="examiner-input-wrap">
+              <textarea id="examinerSerialInput" class="examiner-textarea" placeholder="Paste or stream raw serial output lines here... (e.g. {&quot;temp&quot;: 24.2, &quot;hum&quot;: 58.4} or A0: 780 or PZEM: 240V, 1.2A)..."></textarea>
+            </div>
+
+            <!-- Action Row -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; margin-bottom: 14px;">
+              <label class="switch-container" style="display: flex; align-items: center; gap: 8px; font-size: 0.82rem; cursor: pointer;">
+                <input type="checkbox" id="examinerAutoAnalyze" checked>
+                <span>Auto-examine incoming serial stream</span>
+              </label>
+              <button class="btn btn-primary btn-sm" id="btnRunExaminerAnalyze">🔬 Examine & Match</button>
+            </div>
+
+            <!-- Analysis Output Box -->
+            <div class="examiner-results-box" id="examinerResultsBox">
+              <div class="results-empty-state">
+                <span style="font-size: 2rem;">⚡</span>
+                <p>Click any test signature above or stream serial output to run heuristic pattern matching.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: 100+ SENSOR TEMPLATES LIBRARY -->
+        <div class="library-panel">
+          <div class="panel-header" style="flex-direction: column; align-items: stretch; gap: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 1.2rem;">📚</span>
+                <h3 style="margin: 0; font-size: 1.05rem; font-weight: 600;">100+ Sensor & Device Catalog</h3>
+              </div>
+              <span class="badge badge-peaceful" id="catalogBadgeCount">123 Templates</span>
+            </div>
+
+            <!-- Search & Filters -->
+            <div class="catalog-filter-bar">
+              <input type="text" id="catalogSearchInput" class="input-control" placeholder="Search 120+ sensors (e.g. DHT, MQ, Gas, AC, BLE, Valve, 3.3V, Analog)...">
+              <select id="catalogSignalFilter" class="input-control" style="width: 175px;">
+                <option value="all">All Signal Types</option>
+                <option value="analog">Analog Only</option>
+                <option value="digital">Digital Only</option>
+                <option value="actuator">Actuators & Valves</option>
+              </select>
+            </div>
+
+            <!-- Category Pills Scrollable -->
+            <div class="category-pills-bar" id="catalogCategoryPills">
+              <!-- Dynamically populated categories -->
+            </div>
+          </div>
+
+          <!-- Sensor Catalog Grid -->
+          <div class="catalog-grid-scroll" id="catalogGrid">
+            <!-- Dynamically populated 100+ cards -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 9: FACILITY, ROOMS & PINS SETUP                                  -->
     <!-- ===================================================================== -->
     <section id="tab-facility-rooms" class="tab-content">
       <div class="section-header">
@@ -1336,10 +1473,67 @@
         <button type="button" class="btn btn-primary" id="btnStartSparkCloudStream">⚡ Start Cloud Stream</button>
       </div>
     </div>
+  <!-- Unified Firmware Generator Modal -->
+  <div class="modal-overlay" id="firmwareGenModal">
+    <div class="modal-box" style="max-width: 820px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 1.25rem;">💻</span>
+          <h3 class="modal-title">Turnkey Multi-Sensor Firmware Generator</h3>
+        </div>
+        <button class="modal-close" id="btnCloseFirmwareModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="section-desc" style="margin-bottom: 12px;">Select hardware architecture and active sensors from the catalog to generate verified, compile-ready Arduino C++ firmware.</p>
+        
+        <div style="display: flex; gap: 12px; margin-bottom: 14px;">
+          <div class="form-group" style="flex: 1; margin: 0;">
+            <label class="input-label">Target Hardware Board</label>
+            <select class="input-control" id="fwTargetBoard">
+              <option value="esp32cam">ESP32-CAM AI-Thinker (UART + Camera + Flash)</option>
+              <option value="sparkcore">Spark Core (Particle STM32F103 + CC3000 Wi-Fi)</option>
+              <option value="arduino_uno">Arduino Uno / Nano (ATmega328P, 5V Logic)</option>
+              <option value="stm32_bluepill">STM32F103C8T6 Blue Pill (ARM Cortex-M3)</option>
+              <option value="esp32_wroom">ESP32-WROOM-32 (Dual-core Wi-Fi + BLE)</option>
+            </select>
+          </div>
+          <div class="form-group" style="flex: 1; margin: 0;">
+            <label class="input-label">Serial Baud Rate</label>
+            <select class="input-control" id="fwBaudRate">
+              <option value="115200" selected>115200 Baud (Standard High Speed)</option>
+              <option value="9600">9600 Baud (Legacy GPS / NMEA)</option>
+              <option value="57600">57600 Baud</option>
+              <option value="230400">230400 Baud (Fast Telemetry)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="input-label">Active Sensors to Include in Firmware</label>
+          <div class="fw-sensors-selector" id="fwSensorsChecklist">
+            <!-- Dynamically populated checkboxes -->
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <label class="input-label" style="margin: 0;">Generated C++ Firmware (Compatible with Arduino IDE, PlatformIO, Particle CLI)</label>
+            <button class="btn btn-secondary btn-xs" id="btnCopyGeneratedFw">📋 Copy Sketch</button>
+          </div>
+          <pre class="fw-code-preview" id="fwCodeOutput"></pre>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="btnCancelFwModal">Close</button>
+        <button type="button" class="btn btn-primary" id="btnDownloadFwIno">💾 Download .ino File</button>
+      </div>
+    </div>
   </div>
 
   <div class="toast-container" id="toastContainer"></div>
 
+  <script type="module" src="sensorTemplatesCatalog.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
+
