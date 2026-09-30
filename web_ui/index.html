@@ -178,7 +178,10 @@
         <div class="floorplan-hero-card">
           <div class="card-header" style="margin-bottom: 6px;">
             <span class="card-title">Virtual Model House Twin</span>
-            <span class="meta-detail">Click any room to view details</span>
+            <div style="display:flex;gap:6px;align-items:center;">
+              <span class="meta-detail" style="font-size:0.7rem;">🖱️ Drag sensors to move · ⚠️ = interference</span>
+              <button class="btn btn-secondary btn-sm" id="btnResetSensorPositions" style="font-size:0.7rem;padding:2px 8px;" title="Reset all sensor markers to default positions">↺ Reset</button>
+            </div>
           </div>
 
           <div class="floorplan-hero-wrapper" id="floorplanWrapper">
@@ -200,6 +203,7 @@
                 <path d="M 35 150 L 35 220" class="door-frame" />
                 <line id="doorSwing" x1="35" y1="150" x2="35" y2="220" class="door-leaf" />
                 <g id="marker-reed" class="sensor-marker" transform="translate(70, 180)">
+                  <title>🚪 Reed Switch – Drag to reposition</title>
                   <circle r="16" class="marker-circle reed-circle"/>
                   <text y="5" text-anchor="middle" class="marker-icon">🚪</text>
                 </g>
@@ -215,10 +219,12 @@
                 <rect x="360" y="190" width="120" height="35" rx="4" class="furniture table"/>
                 <path id="cameraCone" d="M 590 60 L 400 130 L 440 260 Z" class="camera-cone" />
                 <g id="marker-cam" class="sensor-marker" transform="translate(590, 60)">
+                  <title>📷 ESP32-CAM – Drag to reposition</title>
                   <circle r="16" class="marker-circle cam-circle"/>
                   <text y="5" text-anchor="middle" class="marker-icon">📷</text>
                 </g>
                 <g id="marker-pir" class="sensor-marker" transform="translate(330, 260)">
+                  <title>🚶 PIR Motion – Drag to reposition</title>
                   <circle r="16" class="marker-circle pir-circle"/>
                   <text y="5" text-anchor="middle" class="marker-icon">🚶</text>
                 </g>
@@ -234,6 +240,7 @@
                 <circle cx="760" cy="155" r="14" class="burner"/>
                 <circle cx="805" cy="155" r="14" class="burner"/>
                 <g id="marker-gas" class="sensor-marker" transform="translate(685, 155)">
+                  <title>💨 MQ-2 Gas – Drag to reposition</title>
                   <circle r="16" class="marker-circle gas-circle"/>
                   <text y="5" text-anchor="middle" class="marker-icon">💨</text>
                 </g>
@@ -252,12 +259,14 @@
                 <text x="50" y="330" class="room-sublabel">DHT22 Climate Haven</text>
                 <rect x="70" y="360" width="130" height="135" rx="8" class="furniture bed"/>
                 <g id="marker-dht" class="sensor-marker" transform="translate(260, 390)">
+                  <title>🌡️ DHT22 Climate – Drag to reposition</title>
                   <circle r="16" class="marker-circle dht-circle"/>
                   <text y="5" text-anchor="middle" class="marker-icon">🌡️</text>
                 </g>
                 <text x="290" y="385" class="marker-reading" id="txtTempReading">-- °C</text>
                 <text x="290" y="405" class="marker-subtle" id="txtHumReading">-- %</text>
                 <g id="marker-ultra" class="sensor-marker" transform="translate(245, 450)">
+                  <title>📏 HC-SR04 Ultrasonic – Drag to reposition</title>
                   <circle r="13" class="marker-circle ultra-circle"/>
                   <text y="4" text-anchor="middle" class="marker-icon">📏</text>
                 </g>
@@ -280,12 +289,14 @@
                 <text x="450" y="390" class="room-sublabel">UEDCL Grid, SIM800L GSM</text>
                 <rect x="455" y="420" width="85" height="85" rx="6" class="furniture panel-box"/>
                 <g id="marker-power" class="sensor-marker" transform="translate(580, 440)">
+                  <title>⚡ ZMPT101B Voltage – Drag to reposition</title>
                   <circle r="16" class="marker-circle volt-circle"/>
                   <text y="5" text-anchor="middle" class="marker-icon">⚡</text>
                 </g>
                 <text x="610" y="435" class="marker-reading" id="txtVoltageReading">-- V AC</text>
                 <text x="610" y="455" class="marker-subtle" id="txtPowerReading">-- W</text>
                 <g id="marker-gsm" class="sensor-marker" transform="translate(740, 440)">
+                  <title>📶 SIM800L GSM – Drag to reposition</title>
                   <circle r="16" class="marker-circle gsm-circle"/>
                   <text y="5" text-anchor="middle" class="marker-icon">📶</text>
                 </g>

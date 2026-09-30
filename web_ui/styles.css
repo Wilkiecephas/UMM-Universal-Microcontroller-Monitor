@@ -3819,3 +3819,88 @@ input:checked + .slider:before { transform: translateX(20px); }
   font-size: 0.68rem !important;
 }
 
+/* ==========================================================================
+   SVG FLOOR PLAN: DRAGGABLE SENSORS + INTERFERENCE OBSTACLES
+   ========================================================================== */
+
+/* Draggable sensor markers - hover glow */
+.draggable-svg-sensor {
+  transition: filter 0.15s ease;
+}
+.draggable-svg-sensor:hover {
+  filter: drop-shadow(0 0 6px rgba(88,127,89,0.7));
+}
+.draggable-svg-sensor:active {
+  filter: drop-shadow(0 0 10px rgba(251,191,36,0.85));
+}
+
+/* Sensor marker in interference range - pulsing amber warning */
+.sensor-in-interference .marker-circle {
+  animation: interference-pulse 0.8s ease-in-out infinite alternate !important;
+  stroke: #f59e0b !important;
+  stroke-width: 2.5px !important;
+}
+@keyframes interference-pulse {
+  from { filter: drop-shadow(0 0 4px rgba(245,158,11,0.5)); }
+  to   { filter: drop-shadow(0 0 12px rgba(245,158,11,1));   }
+}
+
+/* Obstacle control panel - positioned over floorplan */
+.obstacle-panel {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  z-index: 50;
+  background: var(--bg-card, #fff);
+  border: 1px solid var(--border-light, #e2e8e0);
+  border-radius: 10px;
+  padding: 10px 12px;
+  width: min(340px, calc(100% - 16px));
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+  backdrop-filter: blur(6px);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.obstacle-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  color: var(--text-primary, #232c25);
+}
+
+#obsPanelBody {
+  transition: all 0.2s ease;
+}
+
+/* Obstacle list item */
+.obs-list-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 6px;
+  border-radius: 6px;
+  background: var(--bg-card-subtle, #faf8f5);
+  border: 1px solid var(--border-light, #e2e8e0);
+  color: var(--text-primary, #232c25);
+}
+
+/* SVG obstacle groups cursor */
+.obstacle-group {
+  cursor: move;
+}
+.obstacle-group:hover circle:first-child {
+  opacity: 0.9;
+  filter: brightness(1.1);
+}
+
+/* Floorplan wrapper relative positioning */
+.floorplan-hero-wrapper {
+  position: relative;
+}
+
+/* Tooltip hint on sensor markers */
+.draggable-svg-sensor title {
+  pointer-events: none;
+}
+

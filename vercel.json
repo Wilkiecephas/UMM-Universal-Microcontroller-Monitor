@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "outputDirectory": "web_ui",
+  "builds": [
+    {
+      "src": "web_ui/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/web_ui/$1"
+    }
+  ]
+}

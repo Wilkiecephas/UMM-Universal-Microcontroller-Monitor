@@ -179,6 +179,25 @@ const state = {
   bluetoothCharacteristic: null,
   wifiSocket: null,
 
+  // SVG Floor Plan: Draggable Sensor Marker Positions (markerId -> {x, y})
+  sensorPositions: {
+    'marker-reed':   { x: 70,  y: 180 },
+    'marker-cam':    { x: 590, y: 60  },
+    'marker-pir':    { x: 330, y: 260 },
+    'marker-gas':    { x: 685, y: 155 },
+    'marker-dht':    { x: 260, y: 390 },
+    'marker-ultra':  { x: 245, y: 450 },
+    'marker-radar':  { x: 245, y: 490 },
+    'marker-power':  { x: 580, y: 440 },
+    'marker-gsm':    { x: 740, y: 440 }
+  },
+
+  // RF/Interference Obstacles on floor plan
+  obstacles: [
+    { id: 'obs-wifi-1', type: 'wifi',      label: 'Wi-Fi Router (2.4GHz)', x: 460, y: 155, radius: 55, color: 'rgba(59,130,246,0.18)', border: '#3b82f6' },
+    { id: 'obs-micro-1', type: 'microwave', label: 'Microwave Oven',        x: 770, y: 145, radius: 38, color: 'rgba(239,68,68,0.15)',  border: '#ef4444' }
+  ],
+
   // Photo & Evidence Gallery
   evidencePhotos: [
     { id: 'img-101', timestamp: '2026-09-29 10:15:32', trigger: 'Manual Snapshot', room: 'Living Room', src: '' },
@@ -6081,8 +6100,406 @@ function initUniversalConnectivityAndQuickConnect() {
 }
 
 // =============================================================================
+// 20. SVG FLOOR PLAN: DRAGGABLE SENSORS + INTERFERENCE OBSTACLES
+// =============================================================================
+
+/**
+ * Renders all obstacle zones (Wi-Fi, microwave, thick wall, etc.) onto the
+ * houseSvg as translucent circles with labels and a delete button.
+ */
+function renderObstaclesOnSvg() {
+  const svg = document.getElementById('houseSvg');
+  if (!svg) return;
+
+  // Remove existing obstacle layer if any
+  const old = svg.querySelector('#obstacleLayer');
+  if (old) old.remove();
+
+  const layer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  layer.id = 'obstacleLayer';
+  layer.setAttribute('style', 'pointer-events: none;');
+
+  state.obstacles.forEach(obs => {
+    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.setAttribute('class', 'obstacle-group');
+    g.setAttribute('data-obs-id', obs.id);
+    g.setAttribute('style', 'pointer-events: all; cursor: move;');
+
+    // Interference aura circle
+    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    circle.setAttribute('cx', obs.x);
+    circle.setAttribute('cy', obs.y);
+    circle.setAttribute('r', obs.radius);
+    circle.setAttribute('fill', obs.color);
+    circle.setAttribute('stroke', obs.border);
+    circle.setAttribute('stroke-width', '1.5');
+    circle.setAttribute('stroke-dasharray', '4 3');
+    g.appendChild(circle);
+
+    // Icon
+    const ICONS = { wifi: '📶', microwave: '📡', wall: '🧱', bluetooth: '🔷', zigbee: '🔶', motor: '⚙️', other: '⚠️' };
+    const icon = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    icon.setAttribute('x', obs.x);
+    icon.setAttribute('y', obs.y + 4);
+    icon.setAttribute('text-anchor', 'middle');
+    icon.setAttribute('font-size', '14');
+    icon.setAttribute('style', 'user-select:none;');
+    icon.textContent = ICONS[obs.type] || '⚠️';
+    g.appendChild(icon);
+
+    // Label beneath
+    const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    label.setAttribute('x', obs.x);
+    label.setAttribute('y', obs.y + obs.radius + 12);
+    label.setAttribute('text-anchor', 'middle');
+    label.setAttribute('font-size', '9');
+    label.setAttribute('fill', obs.border);
+    label.setAttribute('font-family', 'JetBrains Mono, monospace');
+    label.textContent = obs.label;
+    g.appendChild(label);
+
+    // Delete X button (SVG foreignObject workaround with a small circle)
+    const delBtn = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    delBtn.setAttribute('cx', obs.x + obs.radius - 6);
+    delBtn.setAttribute('cy', obs.y - obs.radius + 6);
+    delBtn.setAttribute('r', '7');
+    delBtn.setAttribute('fill', '#ef4444');
+    delBtn.setAttribute('style', 'cursor: pointer; pointer-events: all;');
+    delBtn.setAttribute('class', 'obs-del-btn');
+    delBtn.setAttribute('data-obs-id', obs.id);
+    g.appendChild(delBtn);
+
+    const delX = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    delX.setAttribute('x', obs.x + obs.radius - 6);
+    delX.setAttribute('y', obs.y - obs.radius + 10);
+    delX.setAttribute('text-anchor', 'middle');
+    delX.setAttribute('font-size', '9');
+    delX.setAttribute('fill', '#fff');
+    delX.setAttribute('style', 'pointer-events: none; user-select: none;');
+    delX.textContent = '✕';
+    g.appendChild(delX);
+
+    // Draggable obstacle support
+    makeSvgGroupDraggable(g, obs.x, obs.y, (nx, ny) => {
+      obs.x = nx;
+      obs.y = ny;
+      renderObstaclesOnSvg();
+      checkSensorInterference();
+    });
+
+    layer.appendChild(g);
+  });
+
+  // Insert obstacle layer just before sensor markers so markers stay on top
+  svg.appendChild(layer);
+
+  // Wire up delete buttons (pointer-events restored via style)
+  layer.querySelectorAll('.obs-del-btn').forEach(btn => {
+    btn.style.pointerEvents = 'all';
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = btn.dataset.obsId;
+      state.obstacles = state.obstacles.filter(o => o.id !== id);
+      renderObstaclesOnSvg();
+      renderObstaclePanel();
+      showToast('Interference zone removed', 'info');
+    });
+  });
+}
+
+/**
+ * Checks if any sensor markers are within an obstacle's interference radius
+ * and visually warns them with a CSS class.
+ */
+function checkSensorInterference() {
+  document.querySelectorAll('.sensor-marker').forEach(marker => {
+    const markerId = marker.id;
+    const pos = state.sensorPositions[markerId];
+    if (!pos) return;
+
+    const inInterference = state.obstacles.some(obs => {
+      const dx = pos.x - obs.x;
+      const dy = pos.y - obs.y;
+      return Math.sqrt(dx * dx + dy * dy) < obs.radius + 20;
+    });
+
+    marker.classList.toggle('sensor-in-interference', inInterference);
+  });
+}
+
+/**
+ * Makes an SVG <g> element draggable within houseSvg coordinate space.
+ */
+function makeSvgGroupDraggable(groupEl, initX, initY, onMove) {
+  let dragging = false;
+  let startMouseX = 0, startMouseY = 0;
+  let startX = initX, startY = initY;
+  let currentX = initX, currentY = initY;
+
+  const svg = document.getElementById('houseSvg');
+  if (!svg) return;
+
+  const getMouseSvgPoint = (e) => {
+    const pt = svg.createSVGPoint();
+    pt.x = (e.touches ? e.touches[0].clientX : e.clientX);
+    pt.y = (e.touches ? e.touches[0].clientY : e.clientY);
+    return pt.matrixTransform(svg.getScreenCTM().inverse());
+  };
+
+  const onDown = (e) => {
+    // Don't drag if clicking the delete button
+    if (e.target.classList.contains('obs-del-btn')) return;
+    dragging = true;
+    const pt = getMouseSvgPoint(e);
+    startMouseX = pt.x;
+    startMouseY = pt.y;
+    startX = currentX;
+    startY = currentY;
+    e.stopPropagation();
+    e.preventDefault();
+  };
+
+  const onMoveEvt = (e) => {
+    if (!dragging) return;
+    const pt = getMouseSvgPoint(e);
+    const dx = pt.x - startMouseX;
+    const dy = pt.y - startMouseY;
+    currentX = Math.max(20, Math.min(880, startX + dx));
+    currentY = Math.max(20, Math.min(540, startY + dy));
+    onMove(currentX, currentY);
+  };
+
+  const onUp = () => { dragging = false; };
+
+  groupEl.addEventListener('mousedown', onDown, { passive: false });
+  groupEl.addEventListener('touchstart', onDown, { passive: false });
+  window.addEventListener('mousemove', onMoveEvt);
+  window.addEventListener('touchmove', onMoveEvt, { passive: false });
+  window.addEventListener('mouseup', onUp);
+  window.addEventListener('touchend', onUp);
+}
+
+/**
+ * Initialises drag on all sensor-marker <g> elements already in the SVG.
+ * Saves positions back to state.sensorPositions.
+ */
+function initSvgSensorDrag() {
+  const svg = document.getElementById('houseSvg');
+  if (!svg) return;
+
+  const markers = svg.querySelectorAll('.sensor-marker');
+  markers.forEach(marker => {
+    const markerId = marker.id;
+    if (!markerId) return;
+
+    // Apply saved position
+    if (state.sensorPositions[markerId]) {
+      const { x, y } = state.sensorPositions[markerId];
+      marker.setAttribute('transform', `translate(${x}, ${y})`);
+    }
+
+    // Parse current position
+    let curX = state.sensorPositions[markerId]?.x ?? 0;
+    let curY = state.sensorPositions[markerId]?.y ?? 0;
+
+    marker.style.cursor = 'grab';
+    marker.classList.add('draggable-svg-sensor');
+
+    let dragging = false;
+    let startMX = 0, startMY = 0;
+    let startX = curX, startY = curY;
+
+    const getSvgPt = (e) => {
+      const pt = svg.createSVGPoint();
+      pt.x = (e.touches ? e.touches[0].clientX : e.clientX);
+      pt.y = (e.touches ? e.touches[0].clientY : e.clientY);
+      return pt.matrixTransform(svg.getScreenCTM().inverse());
+    };
+
+    marker.addEventListener('mousedown', (e) => {
+      dragging = true;
+      marker.style.cursor = 'grabbing';
+      const pt = getSvgPt(e);
+      startMX = pt.x; startMY = pt.y;
+      startX = state.sensorPositions[markerId]?.x ?? curX;
+      startY = state.sensorPositions[markerId]?.y ?? curY;
+      e.stopPropagation();
+      e.preventDefault();
+    }, { passive: false });
+
+    marker.addEventListener('touchstart', (e) => {
+      dragging = true;
+      const pt = getSvgPt(e);
+      startMX = pt.x; startMY = pt.y;
+      startX = state.sensorPositions[markerId]?.x ?? curX;
+      startY = state.sensorPositions[markerId]?.y ?? curY;
+      e.stopPropagation();
+    }, { passive: false });
+
+    const onMove = (e) => {
+      if (!dragging) return;
+      const pt = getSvgPt(e);
+      const dx = pt.x - startMX;
+      const dy = pt.y - startMY;
+      const nx = Math.max(20, Math.min(880, startX + dx));
+      const ny = Math.max(20, Math.min(540, startY + dy));
+      marker.setAttribute('transform', `translate(${nx}, ${ny})`);
+      state.sensorPositions[markerId] = { x: nx, y: ny };
+      checkSensorInterference();
+    };
+
+    const onUp = () => {
+      if (dragging) {
+        dragging = false;
+        marker.style.cursor = 'grab';
+        const pos = state.sensorPositions[markerId];
+        if (pos) showToast(`📍 Sensor moved to (${Math.round(pos.x)}, ${Math.round(pos.y)}) on floor plan`, 'info');
+      }
+    };
+
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('touchmove', onMove, { passive: false });
+    window.addEventListener('mouseup', onUp);
+    window.addEventListener('touchend', onUp);
+  });
+
+  // Initial render of obstacles
+  renderObstaclesOnSvg();
+  checkSensorInterference();
+}
+
+/** Renders the obstacle management panel inside floorplanWrapper */
+function renderObstaclePanel() {
+  const panelId = 'obstacleControlPanel';
+  const existing = document.getElementById(panelId);
+  if (existing) existing.remove();
+
+  const wrapper = document.getElementById('floorplanWrapper');
+  if (!wrapper) return;
+
+  const OBS_TYPES = [
+    { value: 'wifi',      label: '📶 Wi-Fi 2.4GHz', color: 'rgba(59,130,246,0.18)',  border: '#3b82f6', radius: 55 },
+    { value: 'microwave', label: '🔴 Microwave Oven', color: 'rgba(239,68,68,0.15)',  border: '#ef4444', radius: 38 },
+    { value: 'bluetooth', label: '🔷 Bluetooth 2.4G', color: 'rgba(99,102,241,0.18)', border: '#6366f1', radius: 40 },
+    { value: 'zigbee',    label: '🔶 Zigbee/Z-Wave',  color: 'rgba(245,158,11,0.18)', border: '#f59e0b', radius: 35 },
+    { value: 'wall',      label: '🧱 Thick Concrete',  color: 'rgba(120,113,108,0.25)',border: '#78716c', radius: 30 },
+    { value: 'motor',     label: '⚙️ Motor/Inverter',  color: 'rgba(234,179,8,0.18)', border: '#eab308', radius: 32 },
+    { value: 'other',     label: '⚠️ Other EMI Source',color: 'rgba(239,68,68,0.12)', border: '#f97316', radius: 45 }
+  ];
+
+  const panel = document.createElement('div');
+  panel.id = panelId;
+  panel.className = 'obstacle-panel';
+  panel.innerHTML = `
+    <div class="obstacle-panel-header">
+      <span style="font-weight:700;font-size:0.8rem;">🔧 Interference & Obstacles</span>
+      <button class="btn btn-sm" id="btnToggleObsPanel" title="Toggle Panel" style="padding:2px 8px;font-size:0.75rem;">▲ Hide</button>
+    </div>
+    <div id="obsPanelBody">
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:6px;">
+        <select id="obsTypeSelect" class="input-control" style="font-size:0.72rem;padding:3px 6px;flex:1;min-width:140px;">
+          ${OBS_TYPES.map(t => `<option value="${t.value}">${t.label}</option>`).join('')}
+        </select>
+        <input id="obsLabelInput" class="input-control" placeholder="Label (optional)" style="font-size:0.72rem;padding:3px 6px;flex:1;min-width:100px;">
+        <button class="btn btn-primary btn-sm" id="btnAddObstacle" style="white-space:nowrap;">➕ Add to Map</button>
+      </div>
+      <div id="obstacleList" style="display:flex;flex-direction:column;gap:4px;max-height:110px;overflow-y:auto;">
+        ${state.obstacles.length === 0 ? '<span style="font-size:0.72rem;color:var(--text-muted);">No obstacles placed yet</span>' : state.obstacles.map(obs => `
+          <div class="obs-list-item" data-obs-id="${obs.id}">
+            <span style="font-size:0.9em;">${{ wifi:'📶',microwave:'🔴',bluetooth:'🔷',zigbee:'🔶',wall:'🧱',motor:'⚙️',other:'⚠️' }[obs.type] || '⚠️'}</span>
+            <span style="flex:1;font-size:0.72rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${obs.label}</span>
+            <span style="font-size:0.68rem;color:var(--text-muted);">${Math.round(obs.x)},${Math.round(obs.y)}</span>
+            <button class="btn-obs-del" data-obs-id="${obs.id}" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:0.75rem;padding:0 2px;">✕</button>
+          </div>`).join('')}
+      </div>
+      <div style="margin-top:6px;font-size:0.67rem;color:var(--text-muted);">
+        💡 Drag sensor markers freely on the floor plan. Obstacles show interference zones.
+        <span style="color:#f59e0b;">⚠️ = sensor in interference range</span>
+      </div>
+    </div>
+  `;
+
+  wrapper.style.position = 'relative';
+  wrapper.appendChild(panel);
+
+  // Toggle visibility
+  document.getElementById('btnToggleObsPanel')?.addEventListener('click', () => {
+    const body = document.getElementById('obsPanelBody');
+    const btn = document.getElementById('btnToggleObsPanel');
+    if (body) {
+      const hidden = body.style.display === 'none';
+      body.style.display = hidden ? '' : 'none';
+      if (btn) btn.textContent = hidden ? '▲ Hide' : '▼ Show';
+    }
+  });
+
+  // Add obstacle button
+  document.getElementById('btnAddObstacle')?.addEventListener('click', () => {
+    const typeEl = document.getElementById('obsTypeSelect');
+    const labelEl = document.getElementById('obsLabelInput');
+    const typeVal = typeEl?.value || 'wifi';
+    const found = OBS_TYPES.find(t => t.value === typeVal) || OBS_TYPES[0];
+    const userLabel = labelEl?.value?.trim() || found.label.replace(/^[^\s]+\s/, '');
+    const newObs = {
+      id: `obs-${typeVal}-${Date.now()}`,
+      type: typeVal,
+      label: userLabel,
+      x: 450 + Math.random() * 60 - 30,
+      y: 280 + Math.random() * 60 - 30,
+      radius: found.radius,
+      color: found.color,
+      border: found.border
+    };
+    state.obstacles.push(newObs);
+    if (labelEl) labelEl.value = '';
+    renderObstaclesOnSvg();
+    renderObstaclePanel();
+    showToast(`Interference zone "${userLabel}" added to floor plan`, 'success');
+  });
+
+  // Delete from list
+  panel.querySelectorAll('.btn-obs-del').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.obstacles = state.obstacles.filter(o => o.id !== btn.dataset.obsId);
+      renderObstaclesOnSvg();
+      renderObstaclePanel();
+      showToast('Obstacle removed', 'info');
+    });
+  });
+}
+
+/** Initializes the entire SVG floor plan interaction system */
+function initSvgFloorPlan() {
+  initSvgSensorDrag();
+  renderObstaclePanel();
+
+  // Wire up Reset Positions button
+  document.getElementById('btnResetSensorPositions')?.addEventListener('click', () => {
+    const defaults = {
+      'marker-reed':  { x: 70,  y: 180 },
+      'marker-cam':   { x: 590, y: 60  },
+      'marker-pir':   { x: 330, y: 260 },
+      'marker-gas':   { x: 685, y: 155 },
+      'marker-dht':   { x: 260, y: 390 },
+      'marker-ultra': { x: 245, y: 450 },
+      'marker-radar': { x: 245, y: 490 },
+      'marker-power': { x: 580, y: 440 },
+      'marker-gsm':   { x: 740, y: 440 }
+    };
+    Object.entries(defaults).forEach(([id, pos]) => {
+      state.sensorPositions[id] = { ...pos };
+      const el = document.getElementById(id);
+      if (el) el.setAttribute('transform', `translate(${pos.x}, ${pos.y})`);
+    });
+    checkSensorInterference();
+    showToast('📍 All sensor positions reset to default', 'info');
+  });
+}
+
+// =============================================================================
 // 19. INITIALIZE SANCTUARY OS
 // =============================================================================
+
 window.addEventListener('DOMContentLoaded', () => {
   try { initThemes(); } catch (e) { console.error('Theme init error:', e); }
   try { initRouter(); } catch (e) { console.error('Router init error:', e); }
@@ -6102,6 +6519,7 @@ window.addEventListener('DOMContentLoaded', () => {
   try { initSetupAndPinsModule(); } catch (e) { console.error('Setup & Pins error:', e); }
   try { initCustomCloudManager(); } catch (e) { console.error('Custom Cloud Manager error:', e); }
   try { initUniversalConnectivityAndQuickConnect(); } catch (e) { console.error('Universal Connectivity error:', e); }
+  try { initSvgFloorPlan(); } catch (e) { console.error('SVG Floor Plan error:', e); }
 
   updateAllViews();
   showToast(`🏡 Sanctuary OS loaded. Facility: "${state.facilityName}"`, 'info');
