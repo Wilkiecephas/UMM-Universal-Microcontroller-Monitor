@@ -2,27 +2,28 @@
    SANCTUARY OS - CLEAN, UNCLUTTERED HOME MONITOR & 10 IMMERSIVE THEMES
    ========================================================================== */
 
-/* 1. HOME SANCTUARY (Cozy Botanical Linen & Warm Cream) */
+/* 1. NEON SANCTUARY (Deep Navy & Glowing Purple) */
 :root, [data-theme="home"] {
-  --bg-page: #f6f5f0;
-  --bg-pattern: radial-gradient(#e5e2d8 1px, transparent 1px);
+  --bg-page: #0B0E14; /* Deep midnight navy */
+  --bg-pattern: radial-gradient(rgba(139, 92, 246, 0.05) 1px, transparent 1px);
   --bg-pattern-size: 24px 24px;
-  --bg-card: #ffffff;
-  --bg-card-subtle: #faf8f5;
-  --bg-accent-soft: #edf2eb;
-  --text-primary: #232c25;
-  --text-secondary: #526353;
-  --text-muted: #829283;
-  --accent-primary: #587f59;
-  --accent-primary-hover: #436344;
+  --bg-card: #151A28; /* Slightly lighter deep blue */
+  --bg-card-subtle: #1C2235;
+  --bg-accent-soft: #231E3D;
+  --text-primary: #ffffff;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+  --accent-primary: #8B5CF6; /* Glowing Purple */
+  --accent-primary-hover: #A855F7;
   --accent-contrast: #ffffff;
-  --accent-warning: #c2573d;
-  --border-light: #e2e8e0;
-  --border-focus: #7a9c7b;
-  --card-glow: 0 4px 16px rgba(35, 44, 37, 0.05);
-  --wall-stroke: #b0bfaf;
-  --floor-fill: #f3f6f1;
-  --floor-hover: #eaf1e7;
+  --accent-warning: #EF4444;
+  --accent-neon: #a855f7;
+  --border-light: rgba(139, 92, 246, 0.15); /* Purple tint border */
+  --border-focus: #8B5CF6;
+  --card-glow: 0 4px 20px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(139, 92, 246, 0.05);
+  --wall-stroke: #334155;
+  --floor-fill: #151A28;
+  --floor-hover: #1E293B;
 }
 
 /* 2. NORDIC OFFICE (Crisp Minimalist Slate & Electric Royal Blue) */
@@ -589,7 +590,7 @@ body {
    ========================================================================== */
 .monitor-grid {
   display: grid;
-  grid-template-columns: 1fr 340px;
+  grid-template-columns: 1fr 420px 340px;
   gap: 18px;
   align-items: stretch;
   height: calc(100vh - 140px); /* Fit to screen */
@@ -4055,4 +4056,239 @@ body.monitor-fullscreen-mode #houseSvg {
     margin-top: 2px;
     font-size: 0.9rem !important;
   }
+}
+/* ==========================================================================
+   NEON GLOW DASHBOARD (Middle Column Design)
+   ========================================================================== */
+.monitor-middle-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.neon-card {
+  background: #111521;
+  border-radius: 20px;
+  border: 1px solid rgba(139, 92, 246, 0.1);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  padding: 20px;
+  transition: var(--transition-smooth);
+}
+.neon-card:hover {
+  border-color: rgba(139, 92, 246, 0.3);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 15px rgba(139, 92, 246, 0.1);
+}
+.neon-card.small {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.neon-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+.neon-card.small .neon-card-header {
+  margin-bottom: 16px;
+}
+
+.btn-neon-toggle {
+  background: rgba(139, 92, 246, 0.1);
+  color: #8b5cf6;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.btn-neon-toggle.active {
+  background: #8b5cf6;
+  color: white;
+  box-shadow: 0 0 12px rgba(139, 92, 246, 0.6);
+}
+
+.neon-dial-container {
+  position: relative;
+  width: 100%;
+  max-width: 200px;
+  margin: 0 auto;
+}
+.neon-arc-svg {
+  width: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 0 12px rgba(139, 92, 246, 0.5));
+}
+.neon-dial-value {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -20%);
+  text-align: center;
+}
+.neon-dial-value h2 {
+  font-size: 3rem;
+  font-weight: 800;
+  margin: 0;
+  line-height: 1;
+  text-shadow: 0 0 20px rgba(255,255,255,0.4);
+}
+.neon-dial-value span {
+  color: #a855f7;
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.neon-dial-labels {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 40px;
+  color: var(--text-muted);
+  font-weight: 700;
+  font-size: 0.85rem;
+  margin-bottom: 30px;
+}
+
+.neon-time-selectors {
+  margin-bottom: 20px;
+}
+.neon-label {
+  display: block;
+  color: var(--text-muted);
+  font-weight: 800;
+  font-size: 0.75rem;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+}
+.neon-pill-group {
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+}
+.neon-pill {
+  background: #1C2235;
+  border: 1px solid rgba(255,255,255,0.05);
+  color: var(--text-secondary);
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  flex: 1;
+  transition: all 0.3s;
+}
+.neon-pill.active {
+  background: #8b5cf6;
+  color: white;
+  border-color: #8b5cf6;
+  box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
+}
+
+.neon-mode-selectors {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  margin-bottom: 24px;
+}
+.neon-btn-square {
+  background: #1C2235;
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 14px;
+  padding: 12px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: white;
+  font-weight: 700;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.neon-btn-square.active {
+  background: #8b5cf6;
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+  border-color: transparent;
+}
+.neon-icon {
+  font-size: 1.2rem;
+}
+
+.neon-bottom-actions {
+  display: flex;
+  gap: 12px;
+}
+.neon-action-btn {
+  flex: 1;
+  background: #1C2235;
+  border: 1px solid rgba(255,255,255,0.05);
+  color: white;
+  padding: 12px;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+.neon-action-btn.primary {
+  background: #231E3D;
+  border-color: rgba(139, 92, 246, 0.3);
+  color: #a855f7;
+}
+
+.neon-small-cards-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.neon-card-center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 0;
+}
+.neon-card-footer h4 {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+.neon-card-footer span {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+/* Overrides for existing right sidebar cards to match Neon aesthetic */
+.monitor-sidebar > .card {
+  background: #111521;
+  border-radius: 20px;
+  border: 1px solid rgba(139, 92, 246, 0.1);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+.vital-row {
+  background: #1C2235;
+  border: 1px solid rgba(255,255,255,0.05) !important;
+  border-radius: 14px !important;
+}
+.floorplan-hero-card {
+  background: #111521;
+  border-radius: 24px;
+  border: 1px solid rgba(139, 92, 246, 0.15);
+  box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+}
+.floorplan-hero-wrapper {
+  background: #0B0E14;
+  border: 1px solid rgba(139, 92, 246, 0.1);
 }
