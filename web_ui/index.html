@@ -45,20 +45,13 @@
           </select>
         </div>
 
-        <!-- 10 Theme Environment Selector -->
+        <!-- Theme Environment Selector -->
         <div class="header-control-box" title="Select Theme Environment">
           <span style="font-size: 0.85rem;">🎨</span>
           <select class="theme-select" id="themeSelect">
-            <option value="home" selected>🏡 Home Theme</option>
-            <option value="office">💼 Office</option>
-            <option value="workshop">🔨 Workshop</option>
-            <option value="space">🚀 Space</option>
-            <option value="cyber">⚡ Cyber</option>
-            <option value="lab">🔬 Lab</option>
-            <option value="garden">🌿 Garden</option>
-            <option value="night">🌙 Night</option>
-            <option value="ocean">🌊 Ocean</option>
-            <option value="industrial">🏭 Industrial</option>
+            <option value="light" selected>☀️ Light Mode</option>
+            <option value="dark">🌙 Dark Mode</option>
+            <option value="auto">⏱️ Auto (Switch at Night)</option>
           </select>
         </div>
 
@@ -181,6 +174,7 @@
             <div style="display:flex;gap:6px;align-items:center;">
               <span class="meta-detail" style="font-size:0.7rem;">🖱️ Drag sensors to move · ⚠️ = interference</span>
               <button class="btn btn-secondary btn-sm" id="btnResetSensorPositions" style="font-size:0.7rem;padding:2px 8px;" title="Reset all sensor markers to default positions">↺ Reset</button>
+              <button class="btn btn-primary btn-sm" id="btnToggleFullScreen" style="font-size:0.7rem;padding:2px 8px;" title="Toggle Full Screen Monitor">⛶ Full Screen</button>
             </div>
           </div>
 

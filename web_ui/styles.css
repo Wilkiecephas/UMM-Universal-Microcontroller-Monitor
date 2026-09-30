@@ -2,8 +2,8 @@
    SANCTUARY OS - CLEAN, UNCLUTTERED HOME MONITOR & 10 IMMERSIVE THEMES
    ========================================================================== */
 
-/* 1. HOME SANCTUARY (Cozy Botanical Linen & Warm Cream) */
-:root, [data-theme="home"] {
+/* 1. LIGHT MODE (Clean & Crisp) */
+:root, [data-theme="light"], [data-theme="home"] {
   --bg-page: #f6f5f0;
   --bg-pattern: radial-gradient(#e5e2d8 1px, transparent 1px);
   --bg-pattern-size: 24px 24px;
@@ -25,146 +25,8 @@
   --floor-hover: #eaf1e7;
 }
 
-/* 2. NORDIC OFFICE (Crisp Minimalist Slate & Electric Royal Blue) */
-[data-theme="office"] {
-  --bg-page: #edf1f7;
-  --bg-pattern: linear-gradient(to right, #e2e8f0 1px, transparent 1px), linear-gradient(to bottom, #e2e8f0 1px, transparent 1px);
-  --bg-pattern-size: 32px 32px;
-  --bg-card: #ffffff;
-  --bg-card-subtle: #f8fafc;
-  --bg-accent-soft: #e0e7ff;
-  --text-primary: #0f172a;
-  --text-secondary: #334155;
-  --text-muted: #64748b;
-  --accent-primary: #2563eb;
-  --accent-primary-hover: #1d4ed8;
-  --accent-contrast: #ffffff;
-  --accent-warning: #ef4444;
-  --border-light: #cbd5e1;
-  --border-focus: #3b82f6;
-  --card-glow: 0 4px 16px rgba(15, 23, 42, 0.06);
-  --wall-stroke: #64748b;
-  --floor-fill: #f8fafc;
-  --floor-hover: #e2e8f0;
-}
-
-/* 3. MAKER WORKSHOP (Industrial Charcoal, Brass & Glowing Amber) */
-[data-theme="workshop"] {
-  --bg-page: #1c1a18;
-  --bg-pattern: radial-gradient(#332e29 1.5px, transparent 1.5px);
-  --bg-pattern-size: 20px 20px;
-  --bg-card: #272421;
-  --bg-card-subtle: #302c28;
-  --bg-accent-soft: #423d37;
-  --text-primary: #f5eedc;
-  --text-secondary: #d4c5a9;
-  --text-muted: #9e8f77;
-  --accent-primary: #d97706;
-  --accent-primary-hover: #b45309;
-  --accent-contrast: #ffffff;
-  --accent-warning: #ea580c;
-  --border-light: #443e36;
-  --border-focus: #f59e0b;
-  --card-glow: 0 6px 20px rgba(0, 0, 0, 0.4);
-  --wall-stroke: #7c7264;
-  --floor-fill: #2d2925;
-  --floor-hover: #3b3631;
-}
-
-/* 4. COSMIC DEEP SPACE (Starlight Indigo, Purple Nebula & Cyan) */
-[data-theme="space"] {
-  --bg-page: #070913;
-  --bg-pattern: radial-gradient(ellipse at top, #161b36 0%, #070913 80%);
-  --bg-pattern-size: 100% 100%;
-  --bg-card: rgba(18, 23, 45, 0.9);
-  --bg-card-subtle: rgba(26, 33, 64, 0.7);
-  --bg-accent-soft: #2a3363;
-  --text-primary: #f0f4ff;
-  --text-secondary: #a8b8f8;
-  --text-muted: #6d7cb8;
-  --accent-primary: #818cf8;
-  --accent-primary-hover: #6366f1;
-  --accent-contrast: #ffffff;
-  --accent-warning: #f43f5e;
-  --border-light: #2a3563;
-  --border-focus: #a5b4fc;
-  --card-glow: 0 0 24px rgba(99, 102, 241, 0.18);
-  --wall-stroke: #4f5f9e;
-  --floor-fill: #11162d;
-  --floor-hover: #19203f;
-}
-
-/* 5. CYBER NEON (Midnight OLED, Matrix Green & Cyan Glow) */
-[data-theme="cyber"] {
-  --bg-page: #040608;
-  --bg-pattern: linear-gradient(rgba(0, 255, 136, 0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 136, 0.04) 1px, transparent 1px);
-  --bg-pattern-size: 28px 28px;
-  --bg-card: #0a0e12;
-  --bg-card-subtle: #11171d;
-  --bg-accent-soft: #162422;
-  --text-primary: #dffcee;
-  --text-secondary: #00ff88;
-  --text-muted: #4e806c;
-  --accent-primary: #00ff88;
-  --accent-primary-hover: #00cc6a;
-  --accent-contrast: #040608;
-  --accent-warning: #ff0055;
-  --border-light: #162821;
-  --border-focus: #00ff88;
-  --card-glow: 0 0 16px rgba(0, 255, 136, 0.15);
-  --wall-stroke: #00ff88;
-  --floor-fill: #060b0e;
-  --floor-hover: #0c1816;
-}
-
-/* 6. CLINICAL LABORATORY (Sterile Mint & Clean Steel Blue) */
-[data-theme="lab"] {
-  --bg-page: #edf6f4;
-  --bg-pattern: radial-gradient(#cadfd8 1px, transparent 1px);
-  --bg-pattern-size: 20px 20px;
-  --bg-card: #ffffff;
-  --bg-card-subtle: #f6fbf9;
-  --bg-accent-soft: #ddf0ea;
-  --text-primary: #0f2d24;
-  --text-secondary: #245244;
-  --text-muted: #5e8a7d;
-  --accent-primary: #0d9488;
-  --accent-primary-hover: #0f766e;
-  --accent-contrast: #ffffff;
-  --accent-warning: #e11d48;
-  --border-light: #cce4dc;
-  --border-focus: #14b8a6;
-  --card-glow: 0 4px 14px rgba(13, 148, 136, 0.06);
-  --wall-stroke: #86b4a6;
-  --floor-fill: #e9f5f1;
-  --floor-hover: #dcf0e9;
-}
-
-/* 7. BOTANICAL GREENHOUSE (Lush Emerald & Forest Moss) */
-[data-theme="garden"] {
-  --bg-page: #eef5eb;
-  --bg-pattern: radial-gradient(#d3e5cf 1.2px, transparent 1.2px);
-  --bg-pattern-size: 24px 24px;
-  --bg-card: #ffffff;
-  --bg-card-subtle: #f7faf5;
-  --bg-accent-soft: #e1edd9;
-  --text-primary: #172d17;
-  --text-secondary: #355735;
-  --text-muted: #6b8a6b;
-  --accent-primary: #15803d;
-  --accent-primary-hover: #166534;
-  --accent-contrast: #ffffff;
-  --accent-warning: #dc2626;
-  --border-light: #cfe3c9;
-  --border-focus: #22c55e;
-  --card-glow: 0 4px 14px rgba(21, 128, 61, 0.08);
-  --wall-stroke: #739f6f;
-  --floor-fill: #e5f2e1;
-  --floor-hover: #d7ebd1;
-}
-
-/* 8. WARM NIGHT EMBER (Low-Light Amber & Twilight Maroon) */
-[data-theme="night"] {
+/* 2. DARK MODE (Low-Light Amber & Twilight Maroon) */
+[data-theme="dark"] {
   --bg-page: #151314;
   --bg-pattern: radial-gradient(#292324 1.5px, transparent 1.5px);
   --bg-pattern-size: 24px 24px;
@@ -184,52 +46,6 @@
   --wall-stroke: #665054;
   --floor-fill: #241f20;
   --floor-hover: #2e282a;
-}
-
-/* 9. OCEANIC MARINA (Deep Sea Navy & Wave Cyan) */
-[data-theme="ocean"] {
-  --bg-page: #0a1520;
-  --bg-pattern: radial-gradient(#14293d 1.5px, transparent 1.5px);
-  --bg-pattern-size: 26px 26px;
-  --bg-card: #102131;
-  --bg-card-subtle: #172b3f;
-  --bg-accent-soft: #203c57;
-  --text-primary: #e6f3fc;
-  --text-secondary: #7dd3fc;
-  --text-muted: #648ba6;
-  --accent-primary: #0284c7;
-  --accent-primary-hover: #0369a1;
-  --accent-contrast: #ffffff;
-  --accent-warning: #ef4444;
-  --border-light: #203a52;
-  --border-focus: #38bdf8;
-  --card-glow: 0 4px 20px rgba(2, 132, 199, 0.2);
-  --wall-stroke: #396387;
-  --floor-fill: #0c1c2b;
-  --floor-hover: #13273c;
-}
-
-/* 10. HIGH-VOLT INDUSTRIAL (Dark Titanium & Safety Amber Hazard) */
-[data-theme="industrial"] {
-  --bg-page: #18191b;
-  --bg-pattern: linear-gradient(135deg, #1f2124 25%, transparent 25%), linear-gradient(225deg, #1f2124 25%, transparent 25%);
-  --bg-pattern-size: 28px 28px;
-  --bg-card: #222428;
-  --bg-card-subtle: #2b2e33;
-  --bg-accent-soft: #383c42;
-  --text-primary: #f0f3f6;
-  --text-secondary: #fbbf24;
-  --text-muted: #8b949e;
-  --accent-primary: #f59e0b;
-  --accent-primary-hover: #d97706;
-  --accent-contrast: #18191b;
-  --accent-warning: #ef4444;
-  --border-light: #373b42;
-  --border-focus: #f59e0b;
-  --card-glow: 0 4px 20px rgba(245, 158, 11, 0.15);
-  --wall-stroke: #5a616b;
-  --floor-fill: #1d1e21;
-  --floor-hover: #272a2e;
 }
 
 /* ==========================================================================
@@ -3903,4 +3719,45 @@ input:checked + .slider:before { transform: translateX(20px); }
 .draggable-svg-sensor title {
   pointer-events: none;
 }
+.draggable-svg-sensor {
+  pointer-events: bounding-box; /* Capture clicks more easily */
+}
 
+/* ==========================================================================
+   FULL SCREEN MONITOR MODE
+   ========================================================================== */
+body.monitor-fullscreen-mode {
+  overflow: hidden !important;
+}
+body.monitor-fullscreen-mode .navbar-wrapper {
+  display: none !important;
+}
+body.monitor-fullscreen-mode .main-content {
+  padding: 0 !important;
+  margin: 0 !important;
+  max-width: none !important;
+}
+body.monitor-fullscreen-mode .monitor-grid {
+  display: block !important;
+  height: 100vh !important;
+}
+body.monitor-fullscreen-mode .monitor-sidebar,
+body.monitor-fullscreen-mode .section-header {
+  display: none !important;
+}
+body.monitor-fullscreen-mode .floorplan-hero-card {
+  height: 100vh !important;
+  border-radius: 0 !important;
+  border: none !important;
+  margin: 0 !important;
+  display: flex;
+  flex-direction: column;
+}
+body.monitor-fullscreen-mode .floorplan-hero-wrapper {
+  flex: 1;
+  border-radius: 0 !important;
+  border: none !important;
+}
+body.monitor-fullscreen-mode #houseSvg {
+  max-height: 100% !important;
+}

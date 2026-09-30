@@ -836,17 +836,46 @@ const el = {
 // 3. THEME SYSTEM (10 IMMERSIVE ENVIRONMENTS)
 // =============================================================================
 function initThemes() {
-  const savedTheme = localStorage.getItem('sanctuary_theme') || 'home';
-  state.currentTheme = savedTheme;
-  document.documentElement.setAttribute('data-theme', savedTheme);
+  let savedTheme = localStorage.getItem('sanctuary_theme') || 'auto';
+  // Fallback to auto if previously saved an old theme like 'home' or 'office'
+  if (!['light', 'dark', 'auto'].includes(savedTheme)) {
+    savedTheme = 'auto';
+  }
+  
+  const applyTheme = (themeValue) => {
+    let actualTheme = themeValue;
+    if (themeValue === 'auto') {
+      const hour = new Date().getHours();
+      actualTheme = (hour >= 18 || hour < 6) ? 'dark' : 'light';
+    }
+    state.currentTheme = actualTheme;
+    document.documentElement.setAttribute('data-theme', actualTheme);
+  };
+
+  applyTheme(savedTheme);
   if (el.themeSelect) el.themeSelect.value = savedTheme;
 
   el.themeSelect?.addEventListener('change', (e) => {
     const selected = e.target.value;
-    state.currentTheme = selected;
-    document.documentElement.setAttribute('data-theme', selected);
     localStorage.setItem('sanctuary_theme', selected);
+    applyTheme(selected);
     showToast(`Environment shifted to: ${e.target.options[e.target.selectedIndex].text}`, 'info');
+  });
+
+  // Periodically check auto theme
+  setInterval(() => {
+    if (el.themeSelect && el.themeSelect.value === 'auto') {
+      applyTheme('auto');
+    }
+  }, 60000);
+
+  // Full Screen Toggle Logic
+  document.getElementById('btnToggleFullScreen')?.addEventListener('click', (e) => {
+    const isFullscreen = document.body.classList.toggle('monitor-fullscreen-mode');
+    e.target.innerHTML = isFullscreen ? '⛶ Exit Full Screen' : '⛶ Full Screen';
+    if (isFullscreen) {
+      showToast('Entered Monitor Full Screen Mode', 'info');
+    }
   });
 }
 
