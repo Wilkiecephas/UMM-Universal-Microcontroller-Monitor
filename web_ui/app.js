@@ -166,10 +166,21 @@ const state = {
   ],
 
   // Custom User Cloud & Broker Gateways
-  customClouds: [
-    { id: 'cloud-aws', type: 'aws_iot', name: 'AWS IoT Core Fleet Gateway', host: 'a39f1k-ats.iot.us-east-1.amazonaws.com', port: 8883, topic: 'sanctuary/sensors/live', status: 'online', latency: 38, enabled: true },
-    { id: 'cloud-tb', type: 'thingsboard', name: 'ThingsBoard Industrial Cloud', host: 'thingsboard.cloud', port: 1883, topic: 'v1/devices/me/telemetry', status: 'online', latency: 46, enabled: true }
-  ],
+  customClouds: (function() {
+    try {
+      const saved = localStorage.getItem('sanctuary_custom_clouds');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return [
+      { id: 'cloud-aws', type: 'aws_iot', name: 'AWS IoT Core Fleet Gateway', host: 'a39f1k-ats.iot.us-east-1.amazonaws.com', port: 8883, topic: 'sanctuary/sensors/live', status: 'online', latency: 38, enabled: true },
+      { id: 'cloud-tb', type: 'thingsboard', name: 'ThingsBoard Industrial Cloud', host: 'thingsboard.cloud', port: 1883, topic: 'v1/devices/me/telemetry', status: 'online', latency: 46, enabled: true },
+      { id: 'cloud-azure', type: 'azure_iot', name: 'Azure IoT Hub', host: 'kyu-iot-hub.azure-devices.net', port: 8883, topic: 'devices/messages/', status: 'online', latency: 52, enabled: true },
+      { id: 'cloud-gcp', type: 'gcp_iot', name: 'Google Cloud PubSub', host: 'mqtt.googleapis.com', port: 8883, topic: 'projects/kyu/topics/telemetry', status: 'online', latency: 41, enabled: true },
+      { id: 'cloud-adafruit', type: 'adafruit_io', name: 'Adafruit IO Dashboard', host: 'io.adafruit.com', port: 8883, topic: 'user/feeds/sanctuary', status: 'online', latency: 60, enabled: true },
+      { id: 'cloud-mqtt', type: 'generic_mqtt', name: 'Local EMQX Broker', host: '192.168.1.100', port: 1883, topic: 'sanctuary/local', status: 'online', latency: 12, enabled: true },
+      { id: 'cloud-rest', type: 'custom_rest', name: 'Webhook API Server', host: 'api.sanctuary-iot.org', port: 443, topic: '/v1/ingest', status: 'online', latency: 85, enabled: true }
+    ];
+  })(),
 
   // Auto-collect and mapping flag
   autoMapEnabled: true,
@@ -2261,10 +2272,26 @@ function renderGalleryGrid() {
     el.photoGalleryContainer.appendChild(card);
   });
 
-  document.querySelectorAll('.gallery-thumb, .btn-inspect-photo').forEach(elem => {
+  document.querySelectorAll('.btn-inspect-photo').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = e.currentTarget.dataset.id;
+      const found = state.evidencePhotos.find(p => String(p.id) === String(id));
+      const modal = document.getElementById('modalGalleryEditor');
+      if (found && modal) {
+        document.getElementById('galleryEditPreview').src = found.src || placeholderSvg;
+        document.getElementById('galleryEditTitle').value = found.trigger;
+        document.getElementById('galleryEditTag').value = found.room;
+        modal.dataset.editingId = found.id;
+        modal.classList.add('active');
+      }
+    });
+  });
+  
+  document.querySelectorAll('.gallery-thumb').forEach(elem => {
     elem.addEventListener('click', (e) => {
       const id = e.currentTarget.dataset.id;
-      const found = state.evidencePhotos.find(p => p.id === id);
+      const found = state.evidencePhotos.find(p => String(p.id) === String(id));
       if (found) {
         el.lightboxTitle.textContent = `${found.trigger} — ${found.room}`;
         el.lightboxMeta.textContent = `Captured: ${found.timestamp}`;
@@ -2291,6 +2318,32 @@ function initMediaGallery() {
     showToast('Gallery cleared.', 'info');
   });
   el.btnCloseLightbox.addEventListener('click', () => el.lightboxModal.classList.remove('active'));
+
+  const modalEditor = document.getElementById('modalGalleryEditor');
+  const closeEditor = () => modalEditor?.classList.remove('active');
+  
+  document.getElementById('btnCloseGalleryEditor')?.addEventListener('click', closeEditor);
+  document.getElementById('btnCancelGalleryEditor')?.addEventListener('click', closeEditor);
+  
+  document.getElementById('btnDeleteGalleryImg')?.addEventListener('click', () => {
+    const id = modalEditor.dataset.editingId;
+    state.evidencePhotos = state.evidencePhotos.filter(p => String(p.id) !== String(id));
+    renderGalleryGrid();
+    closeEditor();
+    showToast('Image deleted from gallery', 'info');
+  });
+  
+  document.getElementById('btnSaveGalleryImg')?.addEventListener('click', () => {
+    const id = modalEditor.dataset.editingId;
+    const photo = state.evidencePhotos.find(p => String(p.id) === String(id));
+    if (photo) {
+      photo.trigger = document.getElementById('galleryEditTitle').value || 'Snapshot';
+      photo.room = document.getElementById('galleryEditTag').value || 'Unassigned';
+      renderGalleryGrid();
+      closeEditor();
+      showToast('Image details updated', 'success');
+    }
+  });
 }
 
 // =============================================================================
@@ -2315,6 +2368,7 @@ function renderAlarmTable() {
   el.alarmLogTableBody.innerHTML = '';
   state.alarmLogs.forEach(log => {
     const tr = document.createElement('tr');
+    tr.style.cursor = 'pointer';
     tr.innerHTML = `
       <td><span class="meta-detail">${log.timestamp}</span></td>
       <td><strong>${log.category}</strong></td>
@@ -2323,6 +2377,24 @@ function renderAlarmTable() {
       <td>${log.action}</td>
       <td><span class="status-badge ${log.status === 'Critical' ? 'badge-alert-crit' : log.status === 'Warning' ? 'badge-warning' : 'badge-alert-info'}">${log.status}</span></td>
     `;
+    tr.addEventListener('click', () => {
+      const modal = document.getElementById('modalAlarmDetail');
+      const content = document.getElementById('alarmDetailContent');
+      if (modal && content) {
+        content.innerHTML = `
+          <p><strong>Timestamp:</strong> ${log.timestamp}</p>
+          <p><strong>Location/Category:</strong> ${log.category}</p>
+          <p><strong>Triggering Sensor:</strong> ${log.sensor}</p>
+          <p><strong>Incident Detail:</strong> ${log.detail}</p>
+          <p><strong>System Action Taken:</strong> ${log.action}</p>
+          <p><strong>Status:</strong> <span class="status-badge ${log.status === 'Critical' ? 'badge-alert-crit' : log.status === 'Warning' ? 'badge-warning' : 'badge-alert-info'}">${log.status}</span></p>
+          <div style="margin-top:15px; text-align:center;">
+            <p style="font-size:0.8rem; color:var(--text-muted);">Associated evidence (if any) will be logged in the Media Gallery.</p>
+          </div>
+        `;
+        modal.classList.add('active');
+      }
+    });
     el.alarmLogTableBody.appendChild(tr);
   });
 }
@@ -2333,6 +2405,12 @@ function initAlarmLog() {
     state.alarmLogs = [];
     renderAlarmTable();
     showToast('Alarm history cleared.', 'info');
+  });
+  document.getElementById('btnCloseAlarmDetail')?.addEventListener('click', () => {
+    document.getElementById('modalAlarmDetail')?.classList.remove('active');
+  });
+  document.getElementById('btnDismissAlarmDetail')?.addEventListener('click', () => {
+    document.getElementById('modalAlarmDetail')?.classList.remove('active');
   });
 }
 
@@ -2345,6 +2423,45 @@ function initReportGenerator() {
   document.querySelectorAll('input[name="reportType"]').forEach(r => r.addEventListener('change', generateReportPreview));
   el.btnPreviewReport.addEventListener('click', generateReportPreview);
   el.btnDownloadPdf.addEventListener('click', exportPdfDocument);
+  
+  const btnExport = document.getElementById('btnExportSettings');
+  const btnImport = document.getElementById('btnImportSettings');
+  const fileImport = document.getElementById('fileImportSettings');
+  
+  if (btnExport) {
+    btnExport.addEventListener('click', () => {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
+      const downloadAnchorNode = document.createElement('a');
+      downloadAnchorNode.setAttribute("href", dataStr);
+      downloadAnchorNode.setAttribute("download", "sanctuary_settings_backup.json");
+      document.body.appendChild(downloadAnchorNode);
+      downloadAnchorNode.click();
+      downloadAnchorNode.remove();
+      showToast('Settings exported successfully!', 'success');
+    });
+  }
+  
+  if (btnImport && fileImport) {
+    btnImport.addEventListener('click', () => fileImport.click());
+    fileImport.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const imported = JSON.parse(event.target.result);
+          if (imported && typeof imported === 'object') {
+            Object.assign(state, imported);
+            updateAllViews();
+            showToast('Settings imported successfully!', 'success');
+          }
+        } catch(err) {
+          showToast('Invalid backup file!', 'warning');
+        }
+      };
+      reader.readAsText(file);
+    });
+  }
 }
 
 function generateReportPreview() {
@@ -2354,35 +2471,39 @@ function generateReportPreview() {
 
   let html = `
     <div class="report-header-preview">
-      <h2>KYAMBOGO UNIVERSITY — FACULTY OF ENGINEERING</h2>
-      <p><strong>Facility:</strong> ${state.facilityName} | <strong>Report:</strong> ${period} ${isFull ? 'Full Technical Review' : 'Summary'}</p>
-      <p><strong>Generated:</strong> ${now.toLocaleString()}</p>
+      <h2 style="color: var(--accent-primary); text-align: center; border-bottom: 2px solid var(--border-color); padding-bottom: 10px;">KYAMBOGO UNIVERSITY — OFFICIAL ENGINEERING REPORT</h2>
+      <p style="text-align: center;"><strong>Client / Facility:</strong> ${state.facilityName}</p>
+      <p style="text-align: center;"><strong>Report Type:</strong> ${period} ${isFull ? 'Comprehensive System Audit' : 'Executive Summary'}</p>
+      <p style="text-align: center; font-size: 0.85rem; color: var(--text-muted);"><strong>Date of Assessment:</strong> ${now.toLocaleString()}</p>
     </div>
 
-    <h4>1. Environmental Health Checks</h4>
-    <table class="report-table-preview">
-      <tr><th>System Health Check</th><th>Status</th><th>Active Sensors</th></tr>
-      <tr><td>Perimeter & Intrusion</td><td>Operational</td><td>2 Channels</td></tr>
-      <tr><td>Atmosphere & Air Purity</td><td>Calibrated Normal</td><td>2 Channels</td></tr>
-      <tr><td>UEDCL Mains Power</td><td>Stable 230V Nominal</td><td>2 Channels</td></tr>
-      <tr><td>GSM Gateway (SIM800L)</td><td>Armed (MTN UG Ready)</td><td>1 Gateway</td></tr>
-    </table>
+    <h4 style="margin-top: 20px;">1. Executive Summary & Objective</h4>
+    <p style="line-height: 1.5;">This document serves as the official ${period.toLowerCase()} telemetry and systems performance report for the <strong>${state.facilityName}</strong>. The primary objective is to evaluate the integrity of the deployed microcontrollers, sensor nodes, and automation controls ensuring optimal environmental health, security, and operational safety.</p>
 
-    <h4>2. Incident Log Summary (${period})</h4>
-    <p>Total recorded incidents: <strong>${state.alarmLogs.length} events</strong>.</p>
-    <table class="report-table-preview">
-      <tr><th>Timestamp</th><th>Category</th><th>Sensor</th><th>Action Taken</th></tr>
-      ${state.alarmLogs.slice(0, 3).map(l => `<tr><td>${l.timestamp}</td><td>${l.category}</td><td>${l.sensor}</td><td>${l.action}</td></tr>`).join('')}
-    </table>
+    <h4>2. Environmental Health & Systems Overview</h4>
+    <p style="line-height: 1.5;">During this review period, the core infrastructure was evaluated across various perimeters. The <strong>Perimeter & Intrusion Security</strong> channels functioned within expected thresholds, while the <strong>Atmosphere & Air Purity</strong> nodes reported nominal, calibrated levels. The <strong>Mains Grid Power (UEDCL)</strong> maintained a stable nominal voltage, supported by the active GSM Gateway ensuring continuous SMS failover communication.</p>
+
+    <h4>3. Incident & Anomaly Assessment</h4>
+    <p style="line-height: 1.5;">A total of <strong>${state.alarmLogs.length} incident events</strong> were logged in the central database over the assessment period. Key observations include:</p>
+    <ul style="line-height: 1.6; margin-bottom: 15px;">
+      ${state.alarmLogs.slice(0, 3).map(l => `<li>On <em>${l.timestamp}</em>, the <strong>${l.category}</strong> subsystem (${l.sensor}) triggered an alert. <strong>Detail:</strong> ${l.detail}. <strong>Corrective Action Taken:</strong> ${l.action}.</li>`).join('')}
+    </ul>
+
+    <h4>4. Automation Controls (IF/THEN/ELSE) Procedure</h4>
+    <p style="line-height: 1.5;">The facility is governed by the following automated procedural logic rules to ensure autonomous safety mitigation:</p>
+    <ul style="line-height: 1.6;">
+      ${state.automationRules.length > 0 ? state.automationRules.map(r => `<li><strong>${r.name}:</strong> IF ${r.sensorName} is ${r.operator} ${r.threshold}, THEN activate ${r.thenOutput} to ${r.thenState}; ELSE default to ${r.elseState}.</li>`).join('') : '<li>No active automation rules configured during this period.</li>'}
+    </ul>
   `;
 
   if (isFull) {
     html += `
-      <h4>3. Hardware Pinout Wiring Matrix</h4>
-      <table class="report-table-preview">
-        <tr><th>Sensor Component</th><th>Pin</th><th>Type</th><th>Room</th></tr>
-        ${state.configuredSensors.slice(0, 6).map(s => `<tr><td>${s.name}</td><td>${s.pin}</td><td>${s.type}</td><td>${s.room}</td></tr>`).join('')}
-      </table>
+      <h4>5. Hardware Integration & Pinout Matrix</h4>
+      <p style="line-height: 1.5;">The following sensor components represent the hardware deployment map mapped to microcontroller GPIO logic levels:</p>
+      <ul style="line-height: 1.6;">
+        ${state.configuredSensors.slice(0, 6).map(s => `<li>The <strong>${s.name}</strong> (${s.type}) is physically mapped to <strong>${s.pin}</strong> and designated to the <strong>${s.room}</strong> zone.</li>`).join('')}
+      </ul>
+      <p style="line-height: 1.5; margin-top: 15px;"><strong>Conclusion:</strong> All nodes report optimal packet transmission. Proceed with routine maintenance schedules.</p>
     `;
   }
 
@@ -4835,6 +4956,36 @@ function initUniversalSensorExaminer() {
     runExaminerAnalysis(text, false);
   });
 
+  // Auto-Refresh Telemetry Toggle
+  const chkAutoRefresh = document.getElementById('examinerAutoRefreshStream');
+  let autoRefreshInterval = null;
+  chkAutoRefresh?.addEventListener('change', (e) => {
+    if (e.target.checked) {
+      showToast('Started Universal Telemetry Auto-Refresh', 'info');
+      const templates = window.SENSOR_TEMPLATES || [];
+      autoRefreshInterval = setInterval(() => {
+        const input = document.getElementById('examinerSerialInput');
+        if (input && templates.length > 0) {
+          const randTmpl = templates[Math.floor(Math.random() * templates.length)];
+          const val = Math.floor(Math.random() * 100);
+          let rawData = '';
+          if (randTmpl.analogOrDigital === 'Analog') {
+            rawData = `A0: ${val * 10}`;
+          } else {
+            rawData = `{"${randTmpl.name.replace(/\s+/g, '').toLowerCase()}": ${val}}`;
+          }
+          input.value = rawData;
+          if (document.getElementById('examinerAutoAnalyze')?.checked) {
+            runExaminerAnalysis(rawData, true);
+          }
+        }
+      }, 3000);
+    } else {
+      showToast('Stopped Telemetry Auto-Refresh', 'info');
+      clearInterval(autoRefreshInterval);
+    }
+  });
+
   // Clear Button
   const btnClearText = document.getElementById('btnClearExaminerText');
   btnClearText?.addEventListener('click', () => {
@@ -5058,8 +5209,18 @@ function initControlsAndAutomationStudio() {
     modalAddRule.classList.add('active');
   };
 
-  btnOpenRule1?.addEventListener('click', openAddRuleModal);
-  btnOpenRule2?.addEventListener('click', openAddRuleModal);
+  btnOpenRule1?.addEventListener('click', () => {
+    if (document.getElementById('editRuleId')) document.getElementById('editRuleId').value = '';
+    if (document.getElementById('newRuleName')) document.getElementById('newRuleName').value = '';
+    if (document.getElementById('ruleTemplateSelect')) document.getElementById('ruleTemplateSelect').value = '';
+    openAddRuleModal();
+  });
+  btnOpenRule2?.addEventListener('click', () => {
+    if (document.getElementById('editRuleId')) document.getElementById('editRuleId').value = '';
+    if (document.getElementById('newRuleName')) document.getElementById('newRuleName').value = '';
+    if (document.getElementById('ruleTemplateSelect')) document.getElementById('ruleTemplateSelect').value = '';
+    openAddRuleModal();
+  });
 
   const closeAddRuleModal = () => {
     if (modalAddRule) modalAddRule.classList.remove('active');
@@ -5067,10 +5228,42 @@ function initControlsAndAutomationStudio() {
 
   btnCloseAddRule?.addEventListener('click', closeAddRuleModal);
   btnCancelAddRule?.addEventListener('click', closeAddRuleModal);
+  
+  const templateSelect = document.getElementById('ruleTemplateSelect');
+  if (templateSelect) {
+    templateSelect.addEventListener('change', (e) => {
+      const val = e.target.value;
+      const tplName = document.getElementById('newRuleName');
+      const tplOp = document.getElementById('ruleOperatorSelect');
+      const tplThresh = document.getElementById('ruleThresholdInput');
+      const tplThenOut = document.getElementById('ruleThenOutputSelect');
+      const tplThenState = document.getElementById('ruleThenStateSelect');
+      const tplElseOut = document.getElementById('ruleElseOutputSelect');
+      const tplElseState = document.getElementById('ruleElseStateSelect');
+      
+      if (val === 'temp_exhaust') {
+        if(tplName) tplName.value = 'Auto Exhaust (Temp > 35°C)'; if(tplOp) tplOp.value = '>'; if(tplThresh) tplThresh.value = '35';
+        if(tplThenOut) tplThenOut.value = 'fan'; if(tplThenState) tplThenState.value = 'ON'; if(tplElseOut) tplElseOut.value = 'fan'; if(tplElseState) tplElseState.value = 'OFF';
+      } else if (val === 'gas_valve') {
+        if(tplName) tplName.value = 'Gas Leak Auto-Cutoff'; if(tplOp) tplOp.value = '>'; if(tplThresh) tplThresh.value = '400';
+        if(tplThenOut) tplThenOut.value = 'valve'; if(tplThenState) tplThenState.value = 'OFF'; if(tplElseOut) tplElseOut.value = 'valve'; if(tplElseState) tplElseState.value = 'ON';
+      } else if (val === 'motion_lights') {
+        if(tplName) tplName.value = 'PIR Motion Security Lights'; if(tplOp) tplOp.value = '=='; if(tplThresh) tplThresh.value = '1';
+        if(tplThenOut) tplThenOut.value = 'floodlights'; if(tplThenState) tplThenState.value = 'ON'; if(tplElseOut) tplElseOut.value = 'floodlights'; if(tplElseState) tplElseState.value = 'OFF';
+      } else if (val === 'door_alarm') {
+        if(tplName) tplName.value = 'Door Intrusion Alarm'; if(tplOp) tplOp.value = '=='; if(tplThresh) tplThresh.value = '1';
+        if(tplThenOut) tplThenOut.value = 'siren'; if(tplThenState) tplThenState.value = 'ON'; if(tplElseOut) tplElseOut.value = 'siren'; if(tplElseState) tplElseState.value = 'OFF';
+      } else if (val === 'voltage_trip') {
+        if(tplName) tplName.value = 'High Voltage Grid Trip'; if(tplOp) tplOp.value = '>'; if(tplThresh) tplThresh.value = '250';
+        if(tplThenOut) tplThenOut.value = 'breaker'; if(tplThenState) tplThenState.value = 'OFF'; if(tplElseOut) tplElseOut.value = 'breaker'; if(tplElseState) tplElseState.value = 'ON';
+      }
+    });
+  }
 
   // Form: Submit New Rule
   formAddRule?.addEventListener('submit', (e) => {
     e.preventDefault();
+    const editId = document.getElementById('editRuleId')?.value;
     const name = document.getElementById('newRuleName')?.value.trim() || 'Custom Automation Rule';
     const sensorId = document.getElementById('ruleSensorSelect')?.value;
     const operator = document.getElementById('ruleOperatorSelect')?.value || '>';
@@ -5080,8 +5273,7 @@ function initControlsAndAutomationStudio() {
     const elseOutput = document.getElementById('ruleElseOutputSelect')?.value || 'fan';
     const elseState = document.getElementById('ruleElseStateSelect')?.value || 'OFF';
 
-    const newRule = {
-      id: Date.now(),
+    const ruleData = {
       name,
       sensorId,
       operator,
@@ -5096,7 +5288,16 @@ function initControlsAndAutomationStudio() {
       lastTriggered: 'Ready & Armed'
     };
 
-    state.automationRules.push(newRule);
+    if (editId) {
+      const idx = state.automationRules.findIndex(r => String(r.id) === String(editId));
+      if (idx !== -1) {
+        state.automationRules[idx] = { ...state.automationRules[idx], ...ruleData };
+      }
+    } else {
+      ruleData.id = Date.now();
+      state.automationRules.push(ruleData);
+    }
+
     try {
       localStorage.setItem('sanctuary_automation_rules', JSON.stringify(state.automationRules));
     } catch (_) {}
@@ -5104,7 +5305,7 @@ function initControlsAndAutomationStudio() {
     renderAutomationRulesList();
     evaluateAutomationRules();
     closeAddRuleModal();
-    showToast(`⚡ Automation Rule "${name}" created and armed!`, 'success');
+    showToast(`⚡ Automation Rule "${name}" saved!`, 'success');
   });
 
   // 4. WHAT-IF Simulation Sandbox Listeners
@@ -5211,7 +5412,8 @@ function renderAutomationRulesList() {
             Last Action: <strong style="color: var(--accent);">${rule.lastTriggered || 'Idle (Awaiting Stream)'}</strong>
           </span>
           <div style="display: flex; gap: 6px;">
-            <button class="btn btn-secondary btn-xs btn-test-rule" data-id="${rule.id}">⚡ Test Fire</button>
+            <button class="btn btn-secondary btn-xs btn-test-rule" data-id="${rule.id}">🧪 Test Fire</button>
+            <button class="btn btn-secondary btn-xs btn-edit-rule" data-id="${rule.id}">✏️ Edit</button>
             <button class="btn btn-secondary btn-xs btn-delete-rule" data-id="${rule.id}" style="color: #ef4444;">🗑️</button>
           </div>
         </div>
@@ -5240,6 +5442,47 @@ function renderAutomationRulesList() {
       if (!rule) return;
 
       applyRuleAction(rule.thenAction || `${rule.thenOutput}_on`);
+      rule.lastTriggered = `⚡ Manual Test Fired (${new Date().toLocaleTimeString()})`;
+      updateRoomOutputsUI();
+      renderAutomationRulesList();
+      showToast(`🔥 Fired THEN action for "${rule.name}"!`, 'success');
+      playChimeSound();
+    });
+  });
+
+  // Attach Edit listener
+  container.querySelectorAll('.btn-edit-rule').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const rule = state.automationRules.find(r => String(r.id) === String(btn.dataset.id));
+      if (!rule) return;
+      const modalAddRule = document.getElementById('modalAddRule');
+      if (modalAddRule) {
+        if(document.getElementById('editRuleId')) document.getElementById('editRuleId').value = rule.id;
+        if(document.getElementById('newRuleName')) document.getElementById('newRuleName').value = rule.name;
+        if(document.getElementById('ruleTemplateSelect')) document.getElementById('ruleTemplateSelect').value = '';
+        if(document.getElementById('ruleSensorSelect')) document.getElementById('ruleSensorSelect').value = rule.sensorId;
+        if(document.getElementById('ruleOperatorSelect')) document.getElementById('ruleOperatorSelect').value = rule.operator;
+        if(document.getElementById('ruleThresholdInput')) document.getElementById('ruleThresholdInput').value = rule.value || rule.threshold;
+        if(document.getElementById('ruleThenOutputSelect')) document.getElementById('ruleThenOutputSelect').value = rule.thenOutput;
+        if(document.getElementById('ruleThenStateSelect')) document.getElementById('ruleThenStateSelect').value = rule.thenState;
+        if(document.getElementById('ruleElseOutputSelect')) document.getElementById('ruleElseOutputSelect').value = rule.elseOutput;
+        if(document.getElementById('ruleElseStateSelect')) document.getElementById('ruleElseStateSelect').value = rule.elseState;
+        modalAddRule.classList.add('active');
+      }
+    });
+  });
+
+  // Attach Delete listener
+  container.querySelectorAll('.btn-delete-rule').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.id;
+      state.automationRules = state.automationRules.filter(r => String(r.id) !== String(id));
+      try { localStorage.setItem('sanctuary_automation_rules', JSON.stringify(state.automationRules)); } catch (_) {}
+      renderAutomationRulesList();
+      showToast('Automation rule removed.', 'info');
+    });
+  });
+}Action(rule.thenAction || `${rule.thenOutput}_on`);
       rule.lastTriggered = `⚡ Manual Test Fired (${new Date().toLocaleTimeString()})`;
       updateRoomOutputsUI();
       renderAutomationRulesList();
@@ -6377,13 +6620,13 @@ function initSvgSensorDrag() {
   checkSensorInterference();
 }
 
-/** Renders the obstacle management panel inside floorplanWrapper */
+/** Renders the obstacle management panel inside monitor-sidebar */
 function renderObstaclePanel() {
   const panelId = 'obstacleControlPanel';
   const existing = document.getElementById(panelId);
   if (existing) existing.remove();
 
-  const wrapper = document.getElementById('floorplanWrapper');
+  const wrapper = document.querySelector('.monitor-sidebar');
   if (!wrapper) return;
 
   const OBS_TYPES = [
@@ -6396,34 +6639,49 @@ function renderObstaclePanel() {
     { value: 'other',     label: '⚠️ Other EMI Source',color: 'rgba(239,68,68,0.12)', border: '#f97316', radius: 45 }
   ];
 
+  const SENSOR_TYPES = [
+    { value: 'marker-cam', label: '📷 Camera' },
+    { value: 'marker-pir', label: '🏃 PIR Motion' },
+    { value: 'marker-dht', label: '🌡️ Temp/Hum' },
+    { value: 'marker-gas', label: '💨 Gas/Smoke' },
+    { value: 'marker-reed', label: '🚪 Door Reed' }
+  ];
+
   const panel = document.createElement('div');
   panel.id = panelId;
-  panel.className = 'obstacle-panel';
+  panel.className = 'card monitor-vitals-card';
+  panel.style.marginTop = '15px';
   panel.innerHTML = `
-    <div class="obstacle-panel-header">
-      <span style="font-weight:700;font-size:0.8rem;">🔧 Interference & Obstacles</span>
+    <div class="card-header" style="margin-bottom: 8px;">
+      <h3 class="card-title">🔧 Virtual Map Editor</h3>
       <button class="btn btn-sm" id="btnToggleObsPanel" title="Toggle Panel" style="padding:2px 8px;font-size:0.75rem;">▲ Hide</button>
     </div>
     <div id="obsPanelBody">
+      <label class="input-label" style="font-size:0.75rem;">Place Interference/Obstacle</label>
       <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:6px;">
         <select id="obsTypeSelect" class="input-control" style="font-size:0.72rem;padding:3px 6px;flex:1;min-width:140px;">
           ${OBS_TYPES.map(t => `<option value="${t.value}">${t.label}</option>`).join('')}
         </select>
         <input id="obsLabelInput" class="input-control" placeholder="Label (optional)" style="font-size:0.72rem;padding:3px 6px;flex:1;min-width:100px;">
-        <button class="btn btn-primary btn-sm" id="btnAddObstacle" style="white-space:nowrap;">➕ Add to Map</button>
+        <button class="btn btn-primary btn-sm" id="btnAddObstacle" style="white-space:nowrap;">➕ Add</button>
       </div>
-      <div id="obstacleList" style="display:flex;flex-direction:column;gap:4px;max-height:110px;overflow-y:auto;">
+
+      <label class="input-label" style="font-size:0.75rem;margin-top:10px;">Place Sensor from Library</label>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:10px;">
+        <select id="sensorTypeSelect" class="input-control" style="font-size:0.72rem;padding:3px 6px;flex:1;min-width:140px;">
+          ${SENSOR_TYPES.map(t => `<option value="${t.value}">${t.label}</option>`).join('')}
+        </select>
+        <button class="btn btn-primary btn-sm" id="btnAddSensorMap" style="white-space:nowrap;">➕ Add Sensor</button>
+      </div>
+
+      <div id="obstacleList" style="display:flex;flex-direction:column;gap:4px;max-height:110px;overflow-y:auto; border-top:1px solid var(--border-color); padding-top:6px;">
         ${state.obstacles.length === 0 ? '<span style="font-size:0.72rem;color:var(--text-muted);">No obstacles placed yet</span>' : state.obstacles.map(obs => `
-          <div class="obs-list-item" data-obs-id="${obs.id}">
+          <div class="obs-list-item" data-obs-id="${obs.id}" style="display:flex;align-items:center;gap:6px;">
             <span style="font-size:0.9em;">${{ wifi:'📶',microwave:'🔴',bluetooth:'🔷',zigbee:'🔶',wall:'🧱',motor:'⚙️',other:'⚠️' }[obs.type] || '⚠️'}</span>
             <span style="flex:1;font-size:0.72rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${obs.label}</span>
             <span style="font-size:0.68rem;color:var(--text-muted);">${Math.round(obs.x)},${Math.round(obs.y)}</span>
             <button class="btn-obs-del" data-obs-id="${obs.id}" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:0.75rem;padding:0 2px;">✕</button>
           </div>`).join('')}
-      </div>
-      <div style="margin-top:6px;font-size:0.67rem;color:var(--text-muted);">
-        💡 Drag sensor markers freely on the floor plan. Obstacles show interference zones.
-        <span style="color:#f59e0b;">⚠️ = sensor in interference range</span>
       </div>
     </div>
   `;
@@ -6464,6 +6722,30 @@ function renderObstaclePanel() {
     renderObstaclesOnSvg();
     renderObstaclePanel();
     showToast(`Interference zone "${userLabel}" added to floor plan`, 'success');
+  });
+
+  // Add Sensor Map button
+  document.getElementById('btnAddSensorMap')?.addEventListener('click', () => {
+    const typeEl = document.getElementById('sensorTypeSelect');
+    const markerId = typeEl?.value;
+    if (!markerId) return;
+    
+    // Set default coordinates in center of map if not currently tracked
+    state.sensorPositions[markerId] = {
+      x: 450 + Math.random() * 80 - 40,
+      y: 280 + Math.random() * 80 - 40
+    };
+    
+    // Find the sensor group in SVG and update its position and make it visible
+    const markerEl = document.getElementById(markerId);
+    if (markerEl) {
+      markerEl.setAttribute('transform', `translate(${state.sensorPositions[markerId].x}, ${state.sensorPositions[markerId].y})`);
+      markerEl.style.display = 'block'; // Ensure it is visible if previously hidden
+      markerEl.style.opacity = '1';
+    }
+    
+    checkSensorInterference();
+    showToast(`Sensor marker added to floor plan`, 'success');
   });
 
   // Delete from list

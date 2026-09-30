@@ -832,6 +832,14 @@
             <button class="btn btn-primary" id="btnDownloadPdf">📥 Download PDF</button>
             <button class="btn btn-secondary" id="btnPreviewReport">👁️ Preview</button>
           </div>
+          <div style="margin-top: 18px; display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--border-color); padding-top: 12px;">
+            <label class="input-label">User Settings Backup & Reuse</label>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn btn-secondary btn-sm" id="btnExportSettings" style="flex: 1;">💾 Export Backup</button>
+              <button class="btn btn-secondary btn-sm" id="btnImportSettings" style="flex: 1;">📂 Import Backup</button>
+              <input type="file" id="fileImportSettings" style="display: none;" accept=".json">
+            </div>
+          </div>
         </div>
 
         <div class="card report-preview-card">
@@ -1267,10 +1275,14 @@
             </div>
 
             <!-- Action Row -->
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; margin-bottom: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
               <label class="switch-container" style="display: flex; align-items: center; gap: 8px; font-size: 0.82rem; cursor: pointer;">
                 <input type="checkbox" id="examinerAutoAnalyze" checked>
-                <span>Auto-examine incoming serial stream</span>
+                <span>Auto-examine stream</span>
+              </label>
+              <label class="switch-container" style="display: flex; align-items: center; gap: 8px; font-size: 0.82rem; cursor: pointer;">
+                <input type="checkbox" id="examinerAutoRefreshStream">
+                <span>🔄 Auto-refresh Telemetry</span>
               </label>
               <button class="btn btn-primary btn-sm" id="btnRunExaminerAnalyze">🔬 Examine & Match</button>
             </div>
@@ -2237,6 +2249,50 @@
       </form>
     </div>
   </div>
+  <!-- Modal: Alarm Detail View -->
+  <div class="modal-overlay" id="modalAlarmDetail">
+    <div class="modal-box" style="max-width: 500px;">
+      <div class="modal-header">
+        <h3 class="modal-title">🚨 Incident Report Details</h3>
+        <button class="modal-close" id="btnCloseAlarmDetail">&times;</button>
+      </div>
+      <div class="modal-body" id="alarmDetailContent" style="line-height: 1.5;">
+        <!-- Dynamically populated -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btnDismissAlarmDetail">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Gallery Image Editor -->
+  <div class="modal-overlay" id="modalGalleryEditor">
+    <div class="modal-box" style="max-width: 500px;">
+      <div class="modal-header">
+        <h3 class="modal-title">🖼️ Manage Gallery Image</h3>
+        <button class="modal-close" id="btnCloseGalleryEditor">&times;</button>
+      </div>
+      <div class="modal-body" style="text-align: center;">
+        <img id="galleryEditPreview" src="" alt="Preview" style="max-width: 100%; max-height: 250px; border-radius: 8px; margin-bottom: 15px;">
+        <div class="form-group" style="text-align: left;">
+          <label class="input-label">Image Title / Description</label>
+          <input type="text" class="input-control" id="galleryEditTitle" placeholder="e.g. Intruder at backdoor">
+        </div>
+        <div class="form-group" style="text-align: left;">
+          <label class="input-label">Location / Tag</label>
+          <input type="text" class="input-control" id="galleryEditTag" placeholder="e.g. Living Room Camera">
+        </div>
+      </div>
+      <div class="modal-footer" style="justify-content: space-between;">
+        <button class="btn btn-danger" id="btnDeleteGalleryImg">🗑️ Delete Image</button>
+        <div>
+          <button class="btn btn-secondary" id="btnCancelGalleryEditor">Cancel</button>
+          <button class="btn btn-primary" id="btnSaveGalleryImg">💾 Save Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal: Add Other Cloud / Server Platform -->
   <div class="modal-overlay" id="modalAddCloudServer">
     <div class="modal-box" style="max-width: 540px;">
@@ -2308,87 +2364,7 @@
     </div>
   </div>
 
-  <!-- Modal: Add / Edit Room -->
-  <div class="modal-overlay" id="addRoomModal">
-    <div class="modal-box" style="max-width: 480px;">
-      <div class="modal-header">
-        <h3 class="modal-title">🏠 Add New Facility Room / Zone</h3>
-        <button class="modal-close" id="btnCloseRoomModal">&times;</button>
-      </div>
-      <form id="formAddRoom" class="modal-body">
-        <div class="form-group">
-          <label class="input-label">Room / Zone Name</label>
-          <input type="text" class="input-control" id="newRoomName" placeholder="e.g. Server Room B" required>
-        </div>
-        <div class="form-group">
-          <label class="input-label">Room Icon</label>
-          <select class="input-control" id="newRoomIcon">
-            <option value="🏠">🏠 Generic Room</option>
-            <option value="🛏️">🛏️ Bedroom</option>
-            <option value="🍳">🍳 Kitchen</option>
-            <option value="💻">💻 Office / Server</option>
-            <option value="🏭">🏭 Industrial / Factory</option>
-            <option value="🌿">🌿 Greenhouse / Garden</option>
-            <option value="🗼">🗼 Tower / Mast</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="input-label">Security Clearance Level</label>
-          <select class="input-control" id="newRoomClearance">
-            <option value="Public">Public Access</option>
-            <option value="Restricted">Restricted (Staff Only)</option>
-            <option value="High Security">High Security (Clearance Req)</option>
-          </select>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" id="btnCancelRoomModal">Cancel</button>
-          <button type="submit" class="btn btn-primary">➕ Add Room</button>
-        </div>
-      </form>
-    </div>
-  </div>
 
-  <!-- Modal: Add / Map Sensor -->
-  <div class="modal-overlay" id="addSensorModal">
-    <div class="modal-box" style="max-width: 520px;">
-      <div class="modal-header">
-        <h3 class="modal-title">🔌 Add / Map New Sensor</h3>
-        <button class="modal-close" id="btnCloseSensorModal">&times;</button>
-      </div>
-      <form id="formAddSensor" class="modal-body">
-        <div class="form-group">
-          <label class="input-label">Sensor Model / Type</label>
-          <select class="input-control" id="newSensorName" required>
-            <option value="">-- Select Sensor Model --</option>
-            <option value="DHT22">DHT22 Temperature & Humidity</option>
-            <option value="MQ-2">MQ-2 Gas / Smoke</option>
-            <option value="PIR">PIR Motion Detector</option>
-            <option value="HC-SR04">HC-SR04 Ultrasonic</option>
-            <option value="ZMPT101B">ZMPT101B AC Voltage</option>
-            <option value="Magnetic Reed">Magnetic Door Reed</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="input-label">Assign to Room / Zone</label>
-          <select class="input-control" id="newSensorRoom" required>
-            <!-- Dynamically populated via JS -->
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="input-label">Physical Hardware Pin Mapping</label>
-          <input type="text" class="input-control" id="newSensorPin" placeholder="e.g. GPIO 13, D2, PA0" required>
-        </div>
-        <div class="form-group">
-          <label class="input-label">Critical Alert Threshold (Optional)</label>
-          <input type="number" class="input-control" id="newSensorThreshold" placeholder="e.g. 50">
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" id="btnCancelSensorModal">Cancel</button>
-          <button type="submit" class="btn btn-primary">💾 Map Sensor</button>
-        </div>
-      </form>
-    </div>
-  </div>
 
   <!-- Modal: Add / Configure IF / ELSE Automation Rule -->
   <div class="modal-overlay" id="modalAddRule">
@@ -2398,6 +2374,18 @@
         <button class="modal-close" id="btnCloseAddRuleModal">&times;</button>
       </div>
       <form id="formAddRule" class="modal-body">
+        <input type="hidden" id="editRuleId" value="">
+        <div class="form-group">
+          <label class="input-label">Rule Template</label>
+          <select class="input-control" id="ruleTemplateSelect" style="margin-bottom: 10px;">
+            <option value="">-- Start from scratch --</option>
+            <option value="temp_exhaust">Auto Exhaust (Temp > 35°C)</option>
+            <option value="gas_valve">Gas Leak Auto-Cutoff</option>
+            <option value="motion_lights">PIR Motion Security Lights</option>
+            <option value="door_alarm">Door Intrusion Alarm</option>
+            <option value="voltage_trip">High Voltage Grid Trip</option>
+          </select>
+        </div>
         <div class="form-group">
           <label class="input-label">Rule Name & Purpose</label>
           <input type="text" class="input-control" id="newRuleName" placeholder="e.g. Emergency Smoke Exhaust & Pipeline Isolation" required>
