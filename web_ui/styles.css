@@ -3980,67 +3980,79 @@ body.monitor-fullscreen-mode #houseSvg {
 
   /* Monitor Tab Mobile Layout */
   .monitor-grid {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 12px;
+    display: grid !important;
+    grid-template-columns: 1fr 150px !important;
+    height: calc(100vh - 90px) !important;
+    overflow: hidden;
+    gap: 6px;
   }
   
-  /* System Overview Side-panel (Awaiting board, etc) */
+  /* System Overview Side-panel */
   .monitor-sidebar {
-    order: 3; /* Move below vitals */
     display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+    flex-direction: column;
+    gap: 6px;
+    overflow-y: auto;
+    padding-right: 2px;
   }
   .monitor-sidebar > .card {
-    flex: 1 1 calc(50% - 4px);
+    flex: none;
     margin-bottom: 0 !important;
+    padding: 6px !important;
   }
 
   /* Virtual House Twin */
   .floorplan-hero-card {
-    order: 1; /* Top */
-    padding: 10px !important;
-    border-radius: var(--radius-md) !important;
+    padding: 4px !important;
+    border-radius: var(--radius-sm) !important;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+  .floorplan-instruction {
+    display: none; /* Hide instruction to save space */
   }
   
   /* Scale down SVG to fit within screen */
   .floorplan-hero-wrapper {
-    padding: 4px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
+    padding: 0;
+    overflow: hidden;
     width: 100%;
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
   #houseSvg {
-    min-width: 800px;
-    width: 800px;
-    height: auto;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
     transform: none;
-    transform-origin: top left;
+    transform-origin: center center;
   }
   
   /* Camera Card */
-  .cam-card {
-    order: 2; /* Below house */
+  .viewfinder-frame canvas {
+    width: 100% !important;
+    height: auto !important;
   }
 
   /* Vitals */
   .monitor-vitals-card {
-    order: 4; /* Below overview */
     display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+    flex-direction: column;
+    gap: 4px;
   }
   .vital-row {
-    flex: 1 1 calc(50% - 4px);
     border: 1px solid var(--border-light);
     border-radius: var(--radius-sm);
-    padding: 6px;
+    padding: 4px;
+    display: flex;
     flex-direction: column;
     align-items: flex-start;
   }
   .vital-value {
-    margin-top: 4px;
+    margin-top: 2px;
+    font-size: 0.9rem !important;
   }
 }
