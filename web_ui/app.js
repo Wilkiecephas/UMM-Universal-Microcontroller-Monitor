@@ -13,6 +13,8 @@ const state = window.state = {
   facilityName: 'KyU Telemetry Lab 4',
   profileName: 'Smart Room Monitoring Level 2',
   currentTheme: 'home',
+  targetAcTemp: 24,
+  activeAcSchedule: '4H',
   testSimulationMode: false,
   
   // Hardware Connection
@@ -2130,6 +2132,68 @@ function updateAllViews() {
     txtRadarStatus.textContent = isRadarActive ? `RADAR: TARGET ${t.radarSpeed ? t.radarSpeed.toFixed(1) : '1.4'}m/s` : 'Radar: Passive Scan';
     txtRadarStatus.style.fill = isRadarActive ? '#ef4444' : '#64748b';
   }
+
+  
+  // Sync Middle Column Live Telemetry
+  // Temperature & Ambient Readout
+  const midAmb = document.getElementById('midAmbientReadout');
+  if (midAmb) {
+    const tVal = (t.temp !== null) ? t.temp.toFixed(1) : '24.2';
+    const hVal = (t.hum !== null) ? Math.round(t.hum) : '58';
+    midAmb.textContent = `Ambient: ${tVal}°C • ${hVal}% RH`;
+  }
+
+  // Distance & Motion
+  const midDist = document.getElementById('midDistReading');
+  const midDistBar = document.getElementById('midDistBar');
+  const midDistStatusText = document.getElementById('midDistStatusText');
+  const dVal = (t.distance !== null) ? t.distance : 24.5;
+  if (midDist) midDist.textContent = `${dVal.toFixed(1)} cm`;
+  if (midDistBar) midDistBar.style.width = Math.min(100, Math.max(5, (dVal / 200) * 100)) + '%';
+  if (midDistStatusText) midDistStatusText.textContent = (dVal < 30) ? 'Near Obstacle Alert' : 'Clear Zone';
+
+  const midMotion = document.getElementById('midMotionStatus');
+  if (midMotion) {
+    midMotion.textContent = t.motion ? '⚠️ Motion Detected!' : '● PIR Secure';
+    midMotion.className = t.motion ? 'badge badge-warning' : 'badge badge-peaceful';
+  }
+
+  // Radar
+  const midRadarSpeed = document.getElementById('midRadarSpeedVal');
+  const midRadarBadge = document.getElementById('midRadarStatusBadge');
+  const rSpeed = (t.radarSpeed !== undefined && t.radarSpeed > 0) ? t.radarSpeed.toFixed(1) : (t.radarDetected ? '1.8' : '0.0');
+  if (midRadarSpeed) midRadarSpeed.textContent = `${rSpeed} m/s`;
+  if (midRadarBadge) {
+    midRadarBadge.textContent = t.radarDetected ? '🎯 TARGET DETECTED' : 'Scanning Active';
+    midRadarBadge.className = t.radarDetected ? 'text-warn' : 'text-cyan';
+  }
+
+  // Alarm & Siren
+  const midAlarmStatus = document.getElementById('midAlarmStatusText');
+  const midSirenActive = document.getElementById('midSirenActiveText');
+  const midAlarmIcon = document.getElementById('midAlarmIcon');
+  const isAlarmBreach = Boolean(t.doorOpen || (t.gas > 350) || state.telemetry.buzzer);
+  if (midAlarmStatus) {
+    midAlarmStatus.textContent = isAlarmBreach ? 'ALARM BREACH!' : (state.telemetry.nightGuard ? 'System Armed' : 'Disarmed');
+    midAlarmStatus.style.color = isAlarmBreach ? '#ef4444' : 'var(--text-primary)';
+  }
+  if (midSirenActive) {
+    midSirenActive.textContent = state.telemetry.buzzer ? 'SIREN SOUNDING!' : (isAlarmBreach ? 'Alarm Triggered' : 'Siren Standby');
+    midSirenActive.style.color = state.telemetry.buzzer ? '#ef4444' : 'var(--text-muted)';
+  }
+  if (midAlarmIcon) {
+    midAlarmIcon.textContent = state.telemetry.buzzer ? '🚨' : (isAlarmBreach ? '⚠️' : '🛡️');
+  }
+
+  // Energy & Power
+  const midVolt = document.getElementById('midVoltageVal');
+  const midCurrent = document.getElementById('midCurrentVal');
+  const midPower = document.getElementById('midPowerVal');
+  const midKwh = document.getElementById('midKwhVal');
+  if (midVolt) midVolt.textContent = (t.volt !== null ? t.volt.toFixed(1) : '238.4') + ' V AC';
+  if (midCurrent) midCurrent.textContent = (t.current !== null ? t.current.toFixed(2) : '0.85') + ' A';
+  if (midPower) midPower.textContent = (t.power !== null ? Math.round(t.power) : '203') + ' W';
+  if (midKwh) midKwh.textContent = (t.kwh !== undefined ? t.kwh.toFixed(2) : '1.42') + ' kWh';
 
   // 8. Monitor Quick Vitals
   if (el.vitalComfort) {
@@ -6932,6 +6996,171 @@ function initOnboarding() {
 // 19. INITIALIZE SANCTUARY OS
 // =============================================================================
 
+
+// =============================================================================
+// MIDDLE COLUMN CONTROLS: TEMP, TIME, MODES (HOT/COLD/DRY/HUMID/ENERGY),
+// DISTANCE & MOTION, RADAR, ALARM, AND ENERGY TELEMETRY
+// =============================================================================
+function initMiddleColumnControls() {
+  state.targetAcTemp = state.targetAcTemp || 24;
+
+  const updateDialArc = (temp) => {
+    const minT = 15, maxT = 43;
+    const clamped = Math.max(minT, Math.min(maxT, temp));
+    const pct = (clamped - minT) / (maxT - minT);
+    const rad = Math.PI * (1 - pct);
+    const x = (50 - 40 * Math.cos(rad)).toFixed(1);
+    const y = (50 - 40 * Math.sin(rad)).toFixed(1);
+
+    const arcActive = document.getElementById('midDialArcActive');
+    const knob = document.getElementById('midDialKnob');
+    const tempDisp = document.getElementById('middleDialTemp');
+
+    if (arcActive) arcActive.setAttribute('d', `M 10 50 A 40 40 0 0 1 ${x} ${y}`);
+    if (knob) {
+      knob.setAttribute('cx', x);
+      knob.setAttribute('cy', y);
+    }
+    if (tempDisp) tempDisp.textContent = `${Math.round(temp)}°`;
+  };
+
+  // Temp Adjuster Buttons
+  document.getElementById('btnTempDown')?.addEventListener('click', () => {
+    if (state.targetAcTemp > 16) {
+      state.targetAcTemp -= 1;
+      updateDialArc(state.targetAcTemp);
+      showToast(`Target Climate Setpoint: ${state.targetAcTemp}°C`, 'info');
+    }
+  });
+
+  document.getElementById('btnTempUp')?.addEventListener('click', () => {
+    if (state.targetAcTemp < 32) {
+      state.targetAcTemp += 1;
+      updateDialArc(state.targetAcTemp);
+      showToast(`Target Climate Setpoint: ${state.targetAcTemp}°C`, 'info');
+    }
+  });
+
+  // Time / Run Schedule Pills (1H, 2H, 4H, 6H, 8H)
+  const pills = document.querySelectorAll('#midTimePillGroup .neon-pill');
+  pills.forEach(pill => {
+    pill.addEventListener('click', () => {
+      pills.forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      const timeVal = pill.dataset.time || pill.textContent.trim();
+      state.activeAcSchedule = timeVal;
+      const txt = document.getElementById('midTimeScheduleTxt');
+      if (txt) txt.textContent = `Active: ${timeVal} Schedule`;
+      showToast(`⏱️ Climate Run Timer set to ${timeVal}`, 'info');
+    });
+  });
+
+  // Mode Selectors: Hot, Cold, Dry, Humid, Energy
+  const modeBtns = document.querySelectorAll('#midModeSelectors .neon-btn-square');
+  modeBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      modeBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const mode = btn.dataset.mode || 'cold';
+      state.roomOutputs.acMode = mode;
+
+      const modeLabelMap = {
+        hot: 'Heating (Hot)',
+        cold: 'Cooling (Cold)',
+        dry: 'Dry Air',
+        humid: 'Humidifying',
+        energy: 'Eco Energy'
+      };
+
+      const modeColorMap = {
+        hot: '#f59e0b',
+        cold: '#06b6d4',
+        dry: '#10b981',
+        humid: '#3b82f6',
+        energy: '#eab308'
+      };
+
+      const modeLabel = document.getElementById('middleDialMode');
+      if (modeLabel) {
+        modeLabel.textContent = mode.charAt(0).toUpperCase() + mode.slice(1);
+        modeLabel.style.color = modeColorMap[mode] || '#a855f7';
+      }
+
+      const arc = document.getElementById('midDialArcActive');
+      const knob = document.getElementById('midDialKnob');
+      if (arc) arc.style.stroke = modeColorMap[mode] || 'var(--accent-neon)';
+      if (knob) knob.style.stroke = modeColorMap[mode] || 'var(--accent-neon)';
+
+      showToast(`🌀 Climate Mode engaged: ${modeLabelMap[mode] || mode.toUpperCase()}`, 'success');
+    });
+  });
+
+  // AC Power Toggle
+  document.getElementById('btnAcPowerToggle')?.addEventListener('click', (e) => {
+    const btn = e.currentTarget;
+    const isActive = btn.classList.toggle('active');
+    state.roomOutputs.acPower = isActive;
+    showToast(isActive ? '❄️ AC System Powered ON' : '⏸️ AC System Powered OFF', isActive ? 'success' : 'info');
+  });
+
+  // Exhaust Fan Toggle
+  document.getElementById('btnMiddleFanToggle')?.addEventListener('click', () => {
+    state.telemetry.fanOn = !state.telemetry.fanOn;
+    state.roomOutputs.fan = state.telemetry.fanOn;
+    showToast(state.telemetry.fanOn ? '💨 Exhaust Fan Engaged' : '⏹️ Exhaust Fan Standby', 'info');
+    updateAllViews();
+  });
+
+  // Eco Auto Toggle
+  document.getElementById('btnMiddleAutoEco')?.addEventListener('click', () => {
+    const energyBtn = document.getElementById('btnModeEnergy');
+    if (energyBtn) energyBtn.click();
+  });
+
+  // Distance & Motion Simulate Button
+  document.getElementById('btnMidSimMotion')?.addEventListener('click', () => {
+    state.telemetry.motion = true;
+    state.telemetry.radarDetected = true;
+    state.telemetry.radarSpeed = 1.6;
+    playChimeSound();
+    updateAllViews();
+    showToast('🚶 Human presence simulated in zone!', 'warning');
+    setTimeout(() => {
+      state.telemetry.motion = false;
+      state.telemetry.radarDetected = false;
+      state.telemetry.radarSpeed = 0.0;
+      updateAllViews();
+    }, 4500);
+  });
+
+  // Radar Arm Toggle
+  document.getElementById('btnMidRadarToggle')?.addEventListener('click', (e) => {
+    const btn = e.currentTarget;
+    const isArmed = btn.classList.toggle('active');
+    showToast(isArmed ? '📡 RCWL-0516 Doppler Radar Armed' : '📡 Radar Disarmed', 'info');
+  });
+
+  // Alarm Siren Test / Mute Button
+  document.getElementById('btnMidTestSiren')?.addEventListener('click', () => {
+    state.telemetry.buzzer = !state.telemetry.buzzer;
+    playBuzzerTone();
+    showToast(state.telemetry.buzzer ? '🚨 Piezo Siren Triggered (ALARM TEST)!' : '🔕 Siren Muted & Reset to Standby', state.telemetry.buzzer ? 'warning' : 'info');
+    updateAllViews();
+  });
+
+  // Alarm Arm Toggle
+  document.getElementById('btnMidAlarmArmToggle')?.addEventListener('click', (e) => {
+    const btn = e.currentTarget;
+    const isArmed = btn.classList.toggle('active');
+    state.telemetry.nightGuard = isArmed;
+    showToast(isArmed ? '🛡️ Perimeter Alarm System ARMED' : '🔓 Alarm System DISARMED', isArmed ? 'success' : 'alert');
+    updateAllViews();
+  });
+
+  // Initialize dial position
+  updateDialArc(state.targetAcTemp);
+}
+
 function bootSanctuaryOS() {
   // Restore user data from localStorage (browser as persistent database)
   try { var sv = localStorage.getItem('sanctuary_configured_sensors'); if (sv) { var p = JSON.parse(sv); if (Array.isArray(p) && p.length > 0) state.configuredSensors = p; } } catch(_) {}
@@ -6958,6 +7187,7 @@ function bootSanctuaryOS() {
   try { initCustomCloudManager(); } catch (e) { console.error('Custom Cloud Manager error:', e); }
   try { initUniversalConnectivityAndQuickConnect(); } catch (e) { console.error('Universal Connectivity error:', e); }
   try { initSvgFloorPlan(); } catch (e) { console.error('SVG Floor Plan error:', e); }
+  try { initMiddleColumnControls(); } catch (e) { console.error('Middle Column error:', e); }
   try { initOnboarding(); } catch (e) { console.error('Onboarding error:', e); }
 
   updateAllViews();

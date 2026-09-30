@@ -563,96 +563,198 @@
           </div>
         </div>
 
-        <!-- Middle Column: Smart Comfort Dial, Room Climate, Security Guards -->
+        <!-- Middle Column: Smart Comfort Dial, Room Climate, Radar, Distance & Motion, Alarm, Energy -->
         <div class="monitor-middle-col" id="monitorMiddleCol">
-          <!-- Room Climate & AC Card -->
-          <div class="card neon-card">
+          
+          <!-- Card 1: Room Climate & AC Controller (Temp, Time, Hot, Cold, Dry, Humid, Energy) -->
+          <div class="card neon-card" id="middleClimateCard">
             <div class="card-header neon-card-header">
               <div class="card-icon-title">
                 <div>
-                  <h3 class="card-title">Room Climate & AC</h3>
-                  <span class="pin-tag">Living Room</span>
+                  <h3 class="card-title">Room Climate &amp; AC</h3>
+                  <span class="pin-tag" id="midClimateRoomTag">Master Haven &bull; DHT22</span>
                 </div>
               </div>
-              <button class="btn-neon-toggle active"><i data-lucide="power" class="lc-icon"></i></button>
+              <button class="btn-neon-toggle active" id="btnAcPowerToggle" title="Toggle AC Power"><i data-lucide="power" class="lc-icon"></i></button>
             </div>
+            
             <div class="neon-card-body">
+              <!-- Temperature SVG Dial & Setpoint Controls -->
               <div class="neon-dial-container">
-                <svg viewBox="0 0 100 50" class="neon-arc-svg">
+                <svg viewBox="0 0 100 50" class="neon-arc-svg" id="midNeonArcSvg">
                   <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="var(--bg-card-subtle)" stroke-width="8" stroke-linecap="round"/>
-                  <path d="M 10 50 A 40 40 0 0 1 50 10" fill="none" stroke="var(--accent-neon)" stroke-width="8" stroke-linecap="round" class="neon-arc-active"/>
-                  <circle cx="50" cy="10" r="5" fill="#fff" stroke="var(--accent-neon)" stroke-width="2" class="neon-dial-knob"/>
+                  <path id="midDialArcActive" d="M 10 50 A 40 40 0 0 1 54 10" fill="none" stroke="var(--accent-neon)" stroke-width="8" stroke-linecap="round" class="neon-arc-active"/>
+                  <circle id="midDialKnob" cx="54" cy="10" r="5" fill="#fff" stroke="var(--accent-neon)" stroke-width="2" class="neon-dial-knob"/>
                 </svg>
                 <div class="neon-dial-value">
-                  <h2>27°</h2>
-                  <span>Cooling</span>
+                  <h2 id="middleDialTemp">24°</h2>
+                  <span id="middleDialMode">Cold</span>
                 </div>
               </div>
-              <div class="neon-dial-labels">
-                <span>15°C</span>
-                <span>43°C</span>
+
+              <!-- Setpoint Adjuster & Live Ambient Temp -->
+              <div class="neon-temp-adj-row">
+                <button class="btn-icon-subtle btn-temp-adj" id="btnTempDown" title="Decrease Target Temp">◀</button>
+                <div class="neon-dial-labels" style="padding: 0; margin-bottom: 0;">
+                  <span id="midAmbientReadout">Ambient: 24.2°C &bull; 58% RH</span>
+                </div>
+                <button class="btn-icon-subtle btn-temp-adj" id="btnTempUp" title="Increase Target Temp">▶</button>
               </div>
-              <div class="neon-time-selectors">
-                <span class="neon-label">TIME</span>
-                <div class="neon-pill-group">
-                  <button class="neon-pill"><i data-lucide="timer" class="lc-icon"></i></button>
-                  <button class="neon-pill">2H</button>
-                  <button class="neon-pill active">4H</button>
-                  <button class="neon-pill">6H</button>
-                  <button class="neon-pill">8H</button>
+
+              <!-- Time / Uptime Schedule Selectors -->
+              <div class="neon-time-selectors" style="margin-top: 14px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                  <span class="neon-label" style="margin-bottom:0;">TIME / RUN SCHEDULE</span>
+                  <span class="text-muted" id="midTimeScheduleTxt" style="font-size:0.75rem; font-weight:600;">Active: 4H Schedule</span>
+                </div>
+                <div class="neon-pill-group" id="midTimePillGroup">
+                  <button class="neon-pill" data-time="1H" id="pillTime1H">1H</button>
+                  <button class="neon-pill" data-time="2H" id="pillTime2H">2H</button>
+                  <button class="neon-pill active" data-time="4H" id="pillTime4H">4H</button>
+                  <button class="neon-pill" data-time="6H" id="pillTime6H">6H</button>
+                  <button class="neon-pill" data-time="8H" id="pillTime8H">8H</button>
                 </div>
               </div>
-              <div class="neon-mode-selectors">
-                <button class="neon-btn-square"><span class="neon-icon yellow"><i data-lucide="sun" class="lc-icon"></i></span>Hot</button>
-                <button class="neon-btn-square active"><span class="neon-icon cyan"><i data-lucide="snowflake" class="lc-icon"></i></span>Cold</button>
-                <button class="neon-btn-square"><span class="neon-icon green"><i data-lucide="leaf" class="lc-icon"></i></span>Dry Air</button>
-                <button class="neon-btn-square"><span class="neon-icon blue"><i data-lucide="droplets" class="lc-icon"></i></span>Humid</button>
-                <button class="neon-btn-square"><span class="neon-icon yellow">⚡</span>Energy</button>
+
+              <!-- Mode Selectors: Hot, Cold, Dry, Humid, Energy -->
+              <div class="neon-mode-selectors" id="midModeSelectors">
+                <button class="neon-btn-square" id="btnModeHot" data-mode="hot" title="Heating Mode">
+                  <span class="neon-icon yellow"><i data-lucide="sun" class="lc-icon"></i></span>Hot
+                </button>
+                <button class="neon-btn-square active" id="btnModeCold" data-mode="cold" title="Cooling Mode">
+                  <span class="neon-icon cyan"><i data-lucide="snowflake" class="lc-icon"></i></span>Cold
+                </button>
+                <button class="neon-btn-square" id="btnModeDry" data-mode="dry" title="Dehumidify Mode">
+                  <span class="neon-icon green"><i data-lucide="wind" class="lc-icon"></i></span>Dry
+                </button>
+                <button class="neon-btn-square" id="btnModeHumid" data-mode="humid" title="Humidifier Mode">
+                  <span class="neon-icon blue"><i data-lucide="droplets" class="lc-icon"></i></span>Humid
+                </button>
+                <button class="neon-btn-square" id="btnModeEnergy" data-mode="energy" title="Energy Saver Eco Mode">
+                  <span class="neon-icon amber">⚡</span>Energy
+                </button>
               </div>
+
+              <!-- Bottom Actions -->
               <div class="neon-bottom-actions">
-                <button class="neon-action-btn"><span class="neon-icon"><i data-lucide="power" class="lc-icon"></i></span> Switch off</button>
-                <button class="neon-action-btn primary"><span class="neon-icon"><i data-lucide="settings" class="lc-icon"></i></span> Setting</button>
+                <button class="neon-action-btn" id="btnMiddleFanToggle"><span class="neon-icon"><i data-lucide="fan" class="lc-icon"></i></span> <span id="midFanActionText">Exhaust Fan</span></button>
+                <button class="neon-action-btn primary" id="btnMiddleAutoEco"><span class="neon-icon"><i data-lucide="zap" class="lc-icon"></i></span> Eco Auto</button>
               </div>
             </div>
           </div>
           
-          <!-- Smaller Cards Grid -->
+          <!-- Smaller Cards Grid 1: Distance & Motion + Microwave Radar -->
           <div class="neon-small-cards-grid">
-            <!-- Door Guard -->
-            <div class="card neon-card small">
+            
+            <!-- Card 2: Distance & Motion (HC-SR04 & HC-SR501 PIR) -->
+            <div class="card neon-card small" id="cardMidDistanceMotion">
               <div class="card-header neon-card-header">
                 <div>
-                  <h3 class="card-title">Door & Radar Guard</h3>
-                  <span class="pin-tag">Front Entrance</span>
+                  <h3 class="card-title">Distance &amp; Motion</h3>
+                  <span class="pin-tag">HC-SR04 &bull; PIR</span>
                 </div>
-                <button class="btn-neon-toggle active"><i data-lucide="power" class="lc-icon"></i></button>
+                <button class="btn-icon-subtle" id="btnMidSimMotion" title="Simulate Motion" style="padding:2px 6px; font-size:0.75rem;"><i data-lucide="person-standing" class="lc-icon"></i></button>
               </div>
-              <div class="neon-card-center">
-                <span style="font-size: 2rem;">📡</span>
+              <div class="neon-card-center" style="flex-direction:column; gap:6px;">
+                <div style="display:flex; justify-content:space-between; width:100%; align-items:baseline;">
+                  <span class="text-muted" style="font-size:0.72rem; font-weight:700;">PROXIMITY</span>
+                  <h4 id="midDistReading" style="font-size:1.35rem; font-weight:800; margin:0;">24.5 cm</h4>
+                </div>
+                <div class="mid-dist-bar-track">
+                  <div class="mid-dist-bar-fill" id="midDistBar" style="width: 12%;"></div>
+                </div>
               </div>
-              <div class="neon-card-footer">
-                <h4>180 cm</h4>
-                <span class="text-green">Door Clear • Secure</span>
+              <div class="neon-card-footer" style="margin-top:6px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <span id="midMotionStatus" class="badge badge-peaceful" style="font-size:0.72rem;">● PIR Secure</span>
+                  <span id="midDistStatusText" class="text-muted" style="font-size:0.7rem;">Clear Zone</span>
+                </div>
               </div>
             </div>
-            <!-- Ambient Lighting -->
-            <div class="card neon-card small">
+
+            <!-- Card 3: Microwave Radar (RCWL-0516 5.8GHz) -->
+            <div class="card neon-card small" id="cardMidRadar">
               <div class="card-header neon-card-header">
                 <div>
-                  <h3 class="card-title">Ambient Lighting</h3>
-                  <span class="pin-tag">Living Room</span>
+                  <h3 class="card-title">Microwave Radar</h3>
+                  <span class="pin-tag">RCWL-0516 &bull; 5.8GHz</span>
                 </div>
-                <button class="btn-neon-toggle active"><i data-lucide="power" class="lc-icon"></i></button>
+                <button class="btn-neon-toggle active" id="btnMidRadarToggle" title="Arm / Disarm Radar"><i data-lucide="radar" class="lc-icon"></i></button>
               </div>
-              <div class="neon-card-center">
-                <span style="font-size: 2rem; filter: drop-shadow(0 0 10px #fbbf24);">💡</span>
+              <div class="neon-card-center" style="flex-direction:column; align-items:center; justify-content:center;">
+                <div class="mid-radar-sweep-icon">
+                  <span style="font-size: 1.8rem;">📡</span>
+                  <span class="mid-radar-ping-ring"></span>
+                </div>
+                <h4 id="midRadarSpeedVal" style="font-size:1.25rem; font-weight:800; margin:4px 0 0 0;">0.0 m/s</h4>
               </div>
-              <div class="neon-card-footer">
-                <h4>82% Bright</h4>
-                <span class="text-muted">Natural Daylight Mode</span>
+              <div class="neon-card-footer" style="margin-top:6px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <span id="midRadarStatusBadge" class="text-cyan" style="font-size:0.72rem; font-weight:700;">Scanning Active</span>
+                  <span class="text-muted" style="font-size:0.7rem;">Doppler</span>
+                </div>
               </div>
             </div>
+
           </div>
+
+          <!-- Smaller Cards Grid 2: Security Alarm & Siren + Grid Energy & Power -->
+          <div class="neon-small-cards-grid">
+            
+            <!-- Card 4: Security Alarm & Siren Guard -->
+            <div class="card neon-card small" id="cardMidAlarm">
+              <div class="card-header neon-card-header">
+                <div>
+                  <h3 class="card-title">Alarm &amp; Siren</h3>
+                  <span class="pin-tag">Piezo Buzzer</span>
+                </div>
+                <button class="btn-neon-toggle active" id="btnMidAlarmArmToggle" title="System Armed"><i data-lucide="shield-check" class="lc-icon"></i></button>
+              </div>
+              <div class="neon-card-center" style="flex-direction:column; align-items:center; justify-content:center;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span style="font-size: 1.8rem;" id="midAlarmIcon">🚨</span>
+                  <div>
+                    <h4 id="midAlarmStatusText" style="font-size:1.05rem; font-weight:800; margin:0;">System Armed</h4>
+                    <span id="midSirenActiveText" class="text-muted" style="font-size:0.72rem;">Siren Standby</span>
+                  </div>
+                </div>
+              </div>
+              <div class="neon-card-footer" style="margin-top:6px;">
+                <button class="btn btn-secondary btn-xs" id="btnMidTestSiren" style="width:100%; justify-content:center;">
+                  <i data-lucide="volume-2" class="lc-icon"></i> Test Alarm Siren
+                </button>
+              </div>
+            </div>
+
+            <!-- Card 5: Energy & Mains Power Telemetry -->
+            <div class="card neon-card small" id="cardMidEnergy">
+              <div class="card-header neon-card-header">
+                <div>
+                  <h3 class="card-title">Energy &amp; Power</h3>
+                  <span class="pin-tag">ZMPT &bull; ACS712</span>
+                </div>
+                <span class="badge badge-peaceful" style="font-size:0.68rem;">⚡ 94% Eco</span>
+              </div>
+              <div class="neon-card-center" style="flex-direction:column; justify-content:center; gap:4px;">
+                <div style="display:flex; justify-content:space-between; width:100%;">
+                  <span class="text-muted" style="font-size:0.72rem;">Active Load</span>
+                  <h4 id="midPowerVal" style="font-size:1.15rem; font-weight:800; margin:0; color:var(--accent-primary);">203 W</h4>
+                </div>
+                <div style="display:flex; justify-content:space-between; width:100%; font-size:0.72rem; color:var(--text-secondary);">
+                  <span id="midVoltageVal">238.4 V AC</span>
+                  <span id="midCurrentVal">0.85 A</span>
+                </div>
+              </div>
+              <div class="neon-card-footer" style="margin-top:6px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <span class="text-muted" style="font-size:0.7rem;">Cumulative</span>
+                  <strong id="midKwhVal" style="font-size:0.78rem; color:var(--text-primary);">1.42 kWh</strong>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
         </div>
 
         <!-- Right Side: Live Camera Viewfinder Directly on Monitor + Quick Vitals -->
