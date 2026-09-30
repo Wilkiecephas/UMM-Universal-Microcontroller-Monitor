@@ -1,4 +1,4 @@
-/**
+﻿/**
  * SANCTUARY OS - CLEAN, UNCLUTTERED HOME MONITOR & UNIVERSAL ENGINE
  * Multi-Board Web Serial Engine (ESP32, Arduino, SparkFun),
  * 10 Theme Environments, Interactive Room Inspector Drawer,
@@ -6832,7 +6832,14 @@ window.WebSocket = function(url, protocols) {
 // 19. INITIALIZE SANCTUARY OS
 // =============================================================================
 
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', function() {
+
+  // Restore user data from localStorage (browser as persistent database)
+  try { var sv = localStorage.getItem('sanctuary_configured_sensors'); if (sv) { var p = JSON.parse(sv); if (Array.isArray(p) && p.length > 0) state.configuredSensors = p; } } catch(_) {}
+  try { var rv = localStorage.getItem('sanctuary_automation_rules'); if (rv) { var q = JSON.parse(rv); if (Array.isArray(q)) state.automationRules = q; } } catch(_) {}
+  try { var rm = localStorage.getItem('sanctuary_rooms'); if (rm) { var r = JSON.parse(rm); if (Array.isArray(r) && r.length > 0) state.rooms = r; } } catch(_) {}
+  try { var fn = localStorage.getItem('sanctuary_lab_name'); if (fn) state.facilityName = fn; } catch(_) {}
+
   try { initThemes(); } catch (e) { console.error('Theme init error:', e); }
   try { initRouter(); } catch (e) { console.error('Router init error:', e); }
   try { initLiveCamera(); } catch (e) { console.error('Camera init error:', e); }
@@ -6855,114 +6862,107 @@ window.addEventListener('DOMContentLoaded', () => {
   try { initOnboarding(); } catch (e) { console.error('Onboarding error:', e); }
 
   updateAllViews();
-  showToast(`🏡 Sanctuary OS loaded. Facility: "${state.facilityName}"`, 'info');
+  showToast('Sanctuary OS loaded. Facility: ' + state.facilityName + ' - ' + state.configuredSensors.length + ' sensors active', 'info');
+});
 });
 
 // =============================================================================
 // COLUMN FULLSCREEN SCROLL-SNAP OVERLAY
 // Opens when any of the 3 monitor columns are clicked.
 // Scroll-snaps between: Panel1=Master Haven, Panel2=Controls, Panel3=Camera
+
+// =============================================================================
+// COLUMN FULLSCREEN SCROLL-SNAP OVERLAY
+// Only triggered by dedicated expand buttons — NOT by clicking anywhere on column.
+// All buttons, inputs, selects inside columns work normally.
 // =============================================================================
 (function initColFullscreen() {
-  const overlay    = document.getElementById('colFullscreenOverlay');
-  const fsScroll   = document.getElementById('colFsScroll');
-  const closeBtn   = document.getElementById('colFsClose');
-  const floorCard  = document.getElementById('floorplanHeroCard');
-  const midCol     = document.getElementById('monitorMiddleCol');
-  const sidebar    = document.querySelector('.monitor-sidebar');
+  const overlay   = document.getElementById('colFullscreenOverlay');
+  const fsScroll  = document.getElementById('colFsScroll');
+  const closeBtn  = document.getElementById('colFsClose');
 
-  const panel1     = document.getElementById('colFsPanel1');
-  const panel2     = document.getElementById('colFsPanel2');
-  const panel3     = document.getElementById('colFsPanel3');
-  const fsFlSlot   = document.getElementById('colFsFloorplanSlot');
-  const fsMidSlot  = document.getElementById('colFsMiddleSlot');
-  const fsSbSlot   = document.getElementById('colFsSidebarSlot');
+  const panel1    = document.getElementById('colFsPanel1');
+  const panel2    = document.getElementById('colFsPanel2');
+  const panel3    = document.getElementById('colFsPanel3');
+  const fsFlSlot  = document.getElementById('colFsFloorplanSlot');
+  const fsMidSlot = document.getElementById('colFsMiddleSlot');
+  const fsSbSlot  = document.getElementById('colFsSidebarSlot');
 
-  const houseSvg   = document.getElementById('houseSvg');
-  const fpWrapper  = document.getElementById('floorplanWrapper');
+  if (!overlay) return;
 
-  // Bring the real SVG into the fullscreen floorplan slot
   function mountFloorplan() {
-    if (houseSvg && fpWrapper) {
-      fsFlSlot.appendChild(fpWrapper.cloneNode(true));
-      // actual live SVG
-      const clone = fsFlSlot.querySelector('#houseSvg');
-      if (clone) {
-        clone.removeAttribute('id'); // prevent duplicate ids
-        clone.style.width  = '100%';
-        clone.style.height = '100%';
+    fsFlSlot.innerHTML = '';
+    const fpWrapper = document.getElementById('floorplanWrapper');
+    if (fpWrapper) {
+      const clone = fpWrapper.cloneNode(true);
+      clone.style.display = 'flex';
+      clone.style.flex    = '1';
+      clone.style.height  = '100%';
+      clone.style.width   = '100%';
+      clone.style.removeProperty('display'); // un-hide
+      const svgClone = clone.querySelector('svg');
+      if (svgClone) {
+        svgClone.style.width  = '100%';
+        svgClone.style.height = '100%';
+        svgClone.removeAttribute('id');
       }
+      fsFlSlot.appendChild(clone);
     }
   }
 
-  // Clone middle column cards into panel 2
   function mountMiddle() {
     fsMidSlot.innerHTML = '';
+    const midCol = document.getElementById('monitorMiddleCol');
     if (midCol) {
-      Array.from(midCol.children).forEach(el => {
-        fsMidSlot.appendChild(el.cloneNode(true));
-      });
+      const clone = midCol.cloneNode(true);
+      clone.style.cursor = 'default';
+      clone.removeAttribute('title');
+      Array.from(clone.children).forEach(function(el) { fsMidSlot.appendChild(el); });
     }
   }
 
-  // Clone sidebar cards into panel 3
   function mountSidebar() {
     fsSbSlot.innerHTML = '';
+    const sidebar = document.querySelector('.monitor-sidebar');
     if (sidebar) {
-      Array.from(sidebar.children).forEach(el => {
+      Array.from(sidebar.children).forEach(function(el) {
         fsSbSlot.appendChild(el.cloneNode(true));
       });
     }
   }
 
   function openOverlay(startPanel) {
-    if (!overlay) return;
     mountFloorplan();
     mountMiddle();
     mountSidebar();
     overlay.classList.add('active');
     document.body.style.overflow = 'hidden';
-
-    // Scroll to the right panel immediately (no animation for instant jump)
-    requestAnimationFrame(() => {
-      const panels = { 1: panel1, 2: panel2, 3: panel3 };
-      const target = panels[startPanel];
-      if (target) {
-        fsScroll.scrollTo({ top: target.offsetTop, behavior: 'instant' });
-      }
+    requestAnimationFrame(function() {
+      var panels = { 1: panel1, 2: panel2, 3: panel3 };
+      var target = panels[startPanel];
+      if (target && fsScroll) fsScroll.scrollTo({ top: target.offsetTop, behavior: 'instant' });
     });
   }
 
   function closeOverlay() {
-    if (!overlay) return;
     overlay.classList.remove('active');
     document.body.style.overflow = '';
-    // Clear slots
-    setTimeout(() => {
-      fsFlSlot.innerHTML  = '';
-      fsMidSlot.innerHTML = '';
-      fsSbSlot.innerHTML  = '';
+    setTimeout(function() {
+      if (fsFlSlot)  fsFlSlot.innerHTML  = '';
+      if (fsMidSlot) fsMidSlot.innerHTML = '';
+      if (fsSbSlot)  fsSbSlot.innerHTML  = '';
     }, 400);
   }
 
-  // Click triggers � click on column opens at relevant panel
-  if (floorCard) floorCard.addEventListener('click', (e) => {
-    if (e.target.closest('button')) return; // don't intercept button clicks
-    openOverlay(1);
-  });
-  if (midCol) midCol.addEventListener('click', (e) => {
-    if (e.target.closest('button')) return;
-    openOverlay(2);
-  });
-  if (sidebar) sidebar.addEventListener('click', (e) => {
-    if (e.target.closest('button')) return;
-    openOverlay(3);
-  });
+  // Only open via dedicated expand buttons
+  var btnExpand = document.getElementById('btnExpandFloorplan');
+  var btnFull   = document.getElementById('btnOpenFloorplanFull');
 
+  if (btnExpand) btnExpand.addEventListener('click', function(e) { e.stopPropagation(); openOverlay(1); });
+  if (btnFull)   btnFull.addEventListener('click',   function(e) { e.stopPropagation(); openOverlay(1); });
   if (closeBtn)  closeBtn.addEventListener('click',  closeOverlay);
 
-  // ESC key to close
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && overlay && overlay.classList.contains('active')) closeOverlay();
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && overlay.classList.contains('active')) closeOverlay();
   });
 })();
