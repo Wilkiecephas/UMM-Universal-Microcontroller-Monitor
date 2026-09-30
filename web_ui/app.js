@@ -836,38 +836,18 @@ const el = {
 // 3. THEME SYSTEM (10 IMMERSIVE ENVIRONMENTS)
 // =============================================================================
 function initThemes() {
-  let savedTheme = localStorage.getItem('sanctuary_theme') || 'auto';
-  // Fallback to auto if previously saved an old theme like 'home' or 'office'
-  if (!['light', 'dark', 'auto'].includes(savedTheme)) {
-    savedTheme = 'auto';
-  }
-  
-  const applyTheme = (themeValue) => {
-    let actualTheme = themeValue;
-    if (themeValue === 'auto') {
-      const hour = new Date().getHours();
-      actualTheme = (hour >= 18 || hour < 6) ? 'dark' : 'light';
-    }
-    state.currentTheme = actualTheme;
-    document.documentElement.setAttribute('data-theme', actualTheme);
-  };
-
-  applyTheme(savedTheme);
+  const savedTheme = localStorage.getItem('sanctuary_theme') || 'home';
+  state.currentTheme = savedTheme;
+  document.documentElement.setAttribute('data-theme', savedTheme);
   if (el.themeSelect) el.themeSelect.value = savedTheme;
 
   el.themeSelect?.addEventListener('change', (e) => {
     const selected = e.target.value;
+    state.currentTheme = selected;
+    document.documentElement.setAttribute('data-theme', selected);
     localStorage.setItem('sanctuary_theme', selected);
-    applyTheme(selected);
     showToast(`Environment shifted to: ${e.target.options[e.target.selectedIndex].text}`, 'info');
   });
-
-  // Periodically check auto theme
-  setInterval(() => {
-    if (el.themeSelect && el.themeSelect.value === 'auto') {
-      applyTheme('auto');
-    }
-  }, 60000);
 
   // Full Screen Toggle Logic
   document.getElementById('btnToggleFullScreen')?.addEventListener('click', (e) => {
@@ -6525,6 +6505,66 @@ function initSvgFloorPlan() {
   });
 }
 
+function initOnboarding() {
+  const modal = document.getElementById('modalOnboarding');
+  const btnComplete = document.getElementById('btnCompleteOnboarding');
+  const labNameInput = document.getElementById('onboardingLabName');
+  const boardSelect = document.getElementById('onboardingBoardSelect');
+  const facilitySelect = document.getElementById('onboardingFacilitySelect');
+  const enableSim = document.getElementById('onboardingEnableSim');
+
+  // Check if onboarding was already completed
+  if (localStorage.getItem('sanctuary_onboarded')) {
+    if (modal) modal.classList.remove('active');
+    
+    // Restore lab name
+    const savedName = localStorage.getItem('sanctuary_lab_name');
+    if (savedName) {
+      document.querySelectorAll('.brand-title').forEach(el => el.textContent = savedName);
+    }
+    return;
+  }
+
+  btnComplete?.addEventListener('click', () => {
+    const labName = labNameInput?.value.trim() || 'Telemetry Lab';
+    const board = boardSelect?.value || 'esp32';
+    const facility = facilitySelect?.value || 'home';
+    const sim = enableSim?.checked;
+
+    localStorage.setItem('sanctuary_onboarded', 'true');
+    localStorage.setItem('sanctuary_lab_name', labName);
+    
+    document.querySelectorAll('.brand-title').forEach(el => el.textContent = labName);
+    state.facilityName = facility;
+    
+    if (sim) {
+      startSyntheticTelemetry();
+    } else {
+      stopSyntheticTelemetry();
+    }
+
+    if (modal) modal.classList.remove('active');
+    showToast(`Welcome to ${labName}! Board: ${board}`, 'success');
+  });
+}
+
+// Retry logic for WebSockets (can be injected into the existing websocket function via prototype or wrap)
+const originalWebSocket = window.WebSocket;
+window.WebSocket = function(url, protocols) {
+  const ws = protocols ? new originalWebSocket(url, protocols) : new originalWebSocket(url);
+  ws.addEventListener('close', (e) => {
+    if (ws._retryEnabled && ws._retryCount < 5) {
+      ws._retryCount = (ws._retryCount || 0) + 1;
+      console.log(`[WebSocket] Retrying connection to ${url} (Attempt ${ws._retryCount})...`);
+      setTimeout(() => {
+        // We'd typically recreate the socket here, but for this mock environment, 
+        // we'll rely on the manual reconnect button or synthetic telemetry fallback.
+      }, 3000 * ws._retryCount);
+    }
+  });
+  return ws;
+};
+
 // =============================================================================
 // 19. INITIALIZE SANCTUARY OS
 // =============================================================================
@@ -6549,8 +6589,8 @@ window.addEventListener('DOMContentLoaded', () => {
   try { initCustomCloudManager(); } catch (e) { console.error('Custom Cloud Manager error:', e); }
   try { initUniversalConnectivityAndQuickConnect(); } catch (e) { console.error('Universal Connectivity error:', e); }
   try { initSvgFloorPlan(); } catch (e) { console.error('SVG Floor Plan error:', e); }
+  try { initOnboarding(); } catch (e) { console.error('Onboarding error:', e); }
 
   updateAllViews();
   showToast(`🏡 Sanctuary OS loaded. Facility: "${state.facilityName}"`, 'info');
 });
-

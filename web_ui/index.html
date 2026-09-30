@@ -45,13 +45,20 @@
           </select>
         </div>
 
-        <!-- Theme Environment Selector -->
+        <!-- 10 Theme Environment Selector -->
         <div class="header-control-box" title="Select Theme Environment">
           <span style="font-size: 0.85rem;">🎨</span>
           <select class="theme-select" id="themeSelect">
-            <option value="light" selected>☀️ Light Mode</option>
-            <option value="dark">🌙 Dark Mode</option>
-            <option value="auto">⏱️ Auto (Switch at Night)</option>
+            <option value="home" selected>🏡 Home Theme</option>
+            <option value="office">💼 Office</option>
+            <option value="workshop">🔨 Workshop</option>
+            <option value="space">🚀 Space</option>
+            <option value="cyber">⚡ Cyber</option>
+            <option value="lab">🔬 Lab</option>
+            <option value="garden">🌿 Garden</option>
+            <option value="night">🌙 Night</option>
+            <option value="ocean">🌊 Ocean</option>
+            <option value="industrial">🏭 Industrial</option>
           </select>
         </div>
 
@@ -2545,6 +2552,54 @@
     </div>
   </div>
   <script src="sensorTemplatesCatalog.js"></script>
+  <!-- Modal: Onboarding & Setup -->
+  <div class="modal-overlay active" id="modalOnboarding">
+    <div class="modal-box" style="max-width: 700px; text-align: left;">
+      <div class="modal-header">
+        <h3 class="modal-title">👋 Welcome to Sanctuary OS</h3>
+      </div>
+      <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+        <p style="margin-bottom: 16px; color: var(--text-muted);">Please configure your initial workspace environment, device models, and facility type. You can edit this later.</p>
+        
+        <div class="form-group">
+          <label class="input-label">Workspace / Lab Name</label>
+          <input type="text" class="input-control" id="onboardingLabName" value="Kyu Telemetry Lab 4" required>
+        </div>
+
+        <div class="form-group">
+          <label class="input-label">Primary Board Architecture</label>
+          <select class="input-control" id="onboardingBoardSelect">
+            <option value="esp32">ESP32-WROOM (Default)</option>
+            <option value="esp8266">ESP8266 NodeMCU</option>
+            <option value="arduino_mega">Arduino Mega 2560</option>
+            <option value="raspberry_pi">Raspberry Pi 4 / 5</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="input-label">Facility Twin Model</label>
+          <select class="input-control" id="onboardingFacilitySelect">
+            <option value="home">🏡 Smart Home / Residential</option>
+            <option value="telecom">🗼 Telecom Cell Tower</option>
+            <option value="industrial">🏭 Industrial Factory</option>
+            <option value="greenhouse">🌿 Botanical Greenhouse</option>
+          </select>
+        </div>
+        
+        <div class="form-group" style="margin-top: 16px;">
+          <label class="switch" style="display:inline-block; vertical-align:middle; margin-right:8px;">
+            <input type="checkbox" id="onboardingEnableSim" checked>
+            <span class="slider round"></span>
+          </label>
+          <span style="font-size:0.9rem; color:var(--text-main);">Enable Test/Simulation Data Generation</span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="btnCompleteOnboarding">🚀 Launch Sanctuary OS</button>
+      </div>
+    </div>
+  </div>
+
   <script src="app.js"></script>
 </body>
 </html>
