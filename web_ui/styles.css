@@ -588,27 +588,19 @@ body {
    MONITOR GRID: HERO FLOOR PLAN (LEFT) + CAMERA STREAM & VITALS (RIGHT)
    ========================================================================== */
 .monitor-grid {
-  position: relative;
-  display: block;
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 18px;
+  align-items: stretch;
+  height: calc(100vh - 140px); /* Fit to screen */
 }
 
 .monitor-sidebar {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 320px;
-  max-height: calc(100% - 32px);
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 14px;
-  z-index: 10;
-  /* Add subtle styling for the overlay */
-  background: rgba(0, 0, 0, 0.02);
-  padding: 10px;
-  border-radius: var(--radius-lg);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  overflow-y: auto;
+  padding-right: 4px;
 }
 
 .monitor-sidebar::-webkit-scrollbar {
@@ -771,6 +763,7 @@ body {
 @media (max-width: 1080px) {
   .monitor-grid {
     grid-template-columns: 1fr;
+    height: auto;
   }
 }
 
@@ -784,6 +777,9 @@ body {
   padding: 18px 24px 24px 24px;
   box-shadow: var(--card-glow);
   position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .floorplan-instruction {
@@ -799,6 +795,7 @@ body {
   border-radius: var(--radius-lg);
   padding: 16px;
   display: flex;
+  flex: 1;
   justify-content: center;
   align-items: center;
   overflow: hidden;
