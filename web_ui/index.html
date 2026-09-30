@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" data-theme="home">
 <head>
   <meta charset="UTF-8">
@@ -209,18 +209,220 @@
       <!-- Monitor Main View: Floor Plan + Controls + Camera (3 Columns) -->
       <div class="monitor-grid">
         
-        <!-- Column 1: Rooms Overview — Live sensor values per room, click any room card to expand -->
-        <div class="rooms-col" id="roomsOverviewCol" title="Click a room to expand">
+        <!-- Column 1: Virtual House Twin & Room Monitors -->
+        <div class="rooms-col" id="roomsOverviewCol">
           <!-- Column Header -->
           <div class="rooms-col-header">
             <div>
-              <h2 class="rooms-col-title">🏛️ Rooms Overview</h2>
-              <span class="rooms-col-sub" id="roomsColFacilityName">Master Haven · All Zones</span>
+              <h2 class="rooms-col-title">🏛️ Virtual House Twin</h2>
+              <span class="rooms-col-sub" id="roomsColFacilityName">Master Haven · 2D Spatial Layout</span>
             </div>
-            <button class="btn-neon-toggle active" id="btnExpandFloorplan" title="Open full floorplan"><i data-lucide="expand" class="lc-icon"></i></button>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <button class="btn btn-secondary btn-xs" id="btnToggleFloorView" title="Toggle Floorplan / Room Cards"><i data-lucide="layout-grid" class="lc-icon"></i> <span id="txtToggleFloor">Room Cards</span></button>
+              <button class="btn-neon-toggle active" id="btnExpandFloorplan" title="Open Fullscreen 3-Column Experience"><i data-lucide="expand" class="lc-icon"></i></button>
+            </div>
           </div>
 
-          <!-- Room Cards — rendered dynamically by JS, defaults below -->
+          <!-- Hero Floorplan Card: Radar, PIR, Ultrasonic, Cam, Buzzer, Colors & Obstacles -->
+          <div class="floorplan-hero-card" id="floorplanHeroCard">
+            <!-- Map Interactive Toolbar -->
+            <div class="floorplan-toolbar">
+              <div class="floorplan-toolbar-left">
+                <span class="badge badge-peaceful" id="floorplanStatusBadge">⚡ Spatial Twin Active</span>
+                <button class="btn btn-secondary btn-xs" id="btnColAddSensor" title="Add Sensor to Map"><i data-lucide="plus" class="lc-icon"></i> Sensor</button>
+                <button class="btn btn-secondary btn-xs" id="btnColAddObstacle" title="Add RF Interference Obstacle"><i data-lucide="radio" class="lc-icon"></i> Obstacle</button>
+              </div>
+              <div class="floorplan-toolbar-right">
+                <button class="btn-icon-subtle" id="btnResetMapMarkers" title="Reset Sensor Coordinates"><i data-lucide="rotate-ccw" class="lc-icon"></i></button>
+                <button class="btn-icon-subtle" id="btnOpenFloorplanFull" title="Full Twin Overlay"><i data-lucide="maximize-2" class="lc-icon"></i></button>
+              </div>
+            </div>
+
+            <!-- Active Floor Plan SVG Twin -->
+            <div id="floorplanWrapper" class="floorplan-wrapper-active">
+              <svg id="houseSvg" viewBox="0 0 900 560" preserveAspectRatio="xMidYMid meet">
+                <defs>
+                  <filter id="alarmGlow" x="-30%" y="-30%" width="160%" height="160%">
+                    <feGaussianBlur stdDeviation="14" result="blur"/>
+                    <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+                  </filter>
+                  <linearGradient id="camFovGrad" x1="100%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#10b981" stop-opacity="0.32"/>
+                    <stop offset="60%" stop-color="#10b981" stop-opacity="0.10"/>
+                    <stop offset="100%" stop-color="#10b981" stop-opacity="0.02"/>
+                  </linearGradient>
+                  <radialGradient id="ultraSonarGrad" cx="0%" cy="50%" r="100%">
+                    <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.35"/>
+                    <stop offset="60%" stop-color="#3b82f6" stop-opacity="0.12"/>
+                    <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.02"/>
+                  </radialGradient>
+                  <radialGradient id="radarSweepGrad" cx="0%" cy="0%" r="100%">
+                    <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.4"/>
+                    <stop offset="100%" stop-color="#06b6d4" stop-opacity="0.02"/>
+                  </radialGradient>
+                </defs>
+
+                <rect x="20" y="20" width="860" height="520" rx="18" class="house-outer-wall"/>
+
+                <!-- Room 1: Front Entrance & Porch (Reed Switch Barrier) -->
+                <g class="room-group clickable-room" id="room-porch" data-room="Front Entrance">
+                  <rect x="35" y="35" width="240" height="230" rx="12" class="room-floor room-floor-porch"/>
+                  <text x="50" y="65" class="room-label" id="lblRoomEntrance">Front Entrance & Porch</text>
+                  <text x="50" y="85" class="room-sublabel">Magnetic Reed Switch · Perimeter</text>
+                  <path d="M 35 150 L 35 220" class="door-frame" />
+                  <line id="doorSwing" x1="35" y1="150" x2="35" y2="220" class="door-leaf" />
+                  <g id="marker-reed" class="sensor-marker" transform="translate(70, 180)">
+                    <title>🚪 Reed Switch – Drag to reposition</title>
+                    <circle r="16" class="marker-circle reed-circle"/>
+                    <text y="5" text-anchor="middle" class="marker-icon">🚪</text>
+                  </g>
+                  <text x="100" y="185" class="marker-reading" id="txtReedStatus">Door Closed</text>
+                </g>
+
+                <!-- Room 2: Living Room (PIR Motion & ESP32-CAM) -->
+                <g class="room-group clickable-room" id="room-living" data-room="Living Room">
+                  <rect x="290" y="35" width="340" height="290" rx="12" class="room-floor room-floor-living"/>
+                  <text x="310" y="65" class="room-label" id="lblRoomLiving">Living Room</text>
+                  <text x="310" y="85" class="room-sublabel">ESP32-CAM Surveillance & Motion</text>
+                  <rect x="340" y="120" width="160" height="50" rx="8" class="furniture sofa"/>
+                  <rect x="360" y="190" width="120" height="35" rx="4" class="furniture table"/>
+                  
+                  <!-- Camera View Cone (ESP32-CAM) -->
+                  <path id="cameraCone" d="M 590 60 L 380 130 L 440 270 Z" class="camera-cone" fill="url(#camFovGrad)" />
+                  <line x1="410" y1="180" x2="530" y2="220" class="camera-scan-line" />
+                  
+                  <g id="marker-cam" class="sensor-marker" transform="translate(590, 60)">
+                    <title>📷 ESP32-CAM – Drag to reposition</title>
+                    <circle r="16" class="marker-circle cam-circle"/>
+                    <text y="5" text-anchor="middle" class="marker-icon">📷</text>
+                  </g>
+
+                  <!-- PIR Motion Coverage Sector -->
+                  <path id="pirCone" d="M 330 260 L 305 170 A 90 90 0 0 1 395 180 Z" class="pir-cone" />
+                  <g id="marker-pir" class="sensor-marker" transform="translate(330, 260)">
+                    <title>🚶 PIR Motion – Drag to reposition</title>
+                    <circle r="16" class="marker-circle pir-circle"/>
+                    <circle r="22" class="pir-pulse-ring"/>
+                    <text y="5" text-anchor="middle" class="marker-icon">🚶</text>
+                  </g>
+                  <text x="360" y="265" class="marker-reading" id="txtPirStatus">No Motion</text>
+                </g>
+
+                <!-- Room 3: Kitchen (MQ-2 Gas Safety & Exhaust) -->
+                <g class="room-group clickable-room" id="room-kitchen" data-room="Kitchen">
+                  <rect x="645" y="35" width="220" height="290" rx="12" class="room-floor room-floor-kitchen"/>
+                  <text x="660" y="65" class="room-label" id="lblRoomKitchen">Kitchen</text>
+                  <text x="660" y="85" class="room-sublabel">MQ-2 Gas & Exhaust Safety</text>
+                  <rect x="730" y="120" width="115" height="70" rx="6" class="furniture stove"/>
+                  <circle cx="760" cy="155" r="14" class="burner"/>
+                  <circle cx="805" cy="155" r="14" class="burner"/>
+                  
+                  <!-- Gas Diffusion Ring -->
+                  <circle id="gasHalo" cx="685" cy="155" r="28" fill="rgba(245, 158, 11, 0.08)" stroke="rgba(245, 158, 11, 0.2)" stroke-dasharray="3,3"/>
+                  <g id="marker-gas" class="sensor-marker" transform="translate(685, 155)">
+                    <title>💨 MQ-2 Gas – Drag to reposition</title>
+                    <circle r="16" class="marker-circle gas-circle"/>
+                    <text y="5" text-anchor="middle" class="marker-icon">💨</text>
+                  </g>
+                  <text x="660" y="240" class="marker-reading" id="txtGasStatus">Air: Clean</text>
+                  <g id="fanGraphic" class="fan-icon" transform="translate(820, 65)">
+                    <circle r="14" class="fan-housing"/>
+                    <path d="M 0 -8 L 0 8 M -8 0 L 8 0" class="fan-blades"/>
+                  </g>
+                  <text x="730" y="70" class="marker-subtle" id="txtFanStatus">Fan: Off</text>
+                </g>
+
+                <!-- Room 4: Master Bedroom (Master Haven: DHT22, Ultrasonic Sonar & Radar) -->
+                <g class="room-group clickable-room" id="room-bed" data-room="Master Haven">
+                  <rect x="35" y="280" width="380" height="245" rx="12" class="room-floor room-floor-haven"/>
+                  <text x="50" y="310" class="room-label" id="lblRoomBedroom">Master Haven</text>
+                  <text x="50" y="330" class="room-sublabel">Atmospheric Climate & Radar Haven</text>
+                  <rect x="70" y="360" width="130" height="135" rx="8" class="furniture bed"/>
+                  
+                  <!-- DHT22 Climate Sensor -->
+                  <g id="marker-dht" class="sensor-marker" transform="translate(260, 375)">
+                    <title>🌡️ DHT22 Climate – Drag to reposition</title>
+                    <circle r="16" class="marker-circle dht-circle"/>
+                    <text y="5" text-anchor="middle" class="marker-icon">🌡️</text>
+                  </g>
+                  <text x="290" y="372" class="marker-reading" id="txtTempReading">-- °C</text>
+                  <text x="290" y="390" class="marker-subtle" id="txtHumReading">-- %</text>
+                  
+                  <!-- HC-SR04 Ultrasonic Sonar & Distance Beam -->
+                  <g class="ultrasonic-visual-group" transform="translate(245, 435)">
+                    <path id="ultraSonarCone" d="M 0 0 L 70 -22 A 70 70 0 0 1 70 22 Z" class="ultra-sonar-cone" fill="url(#ultraSonarGrad)"/>
+                    <circle r="16" class="ultra-pulse-arc"/>
+                    <circle r="30" class="ultra-pulse-arc second"/>
+                    <g id="marker-ultra" class="sensor-marker">
+                      <title>📏 HC-SR04 Ultrasonic – Drag to reposition</title>
+                      <circle r="14" class="marker-circle ultra-circle"/>
+                      <text y="5" text-anchor="middle" class="marker-icon">📏</text>
+                    </g>
+                  </g>
+                  <text x="270" y="440" class="marker-subtle" id="txtDistReading">HC-SR04: 24.5 cm</text>
+
+                  <!-- Doppler Microwave Radar Scanner (RCWL-0516) -->
+                  <g id="marker-radar" class="sensor-marker radar-marker-group" transform="translate(245, 492)" title="RCWL-0516 Doppler Radar (5.8GHz)">
+                    <circle r="14" class="marker-circle radar-circle"/>
+                    <circle r="22" class="radar-pulse-ring"/>
+                    <circle r="34" class="radar-pulse-ring second"/>
+                    <line x1="0" y1="0" x2="22" y2="-12" class="radar-sweep-beam"/>
+                    <text y="5" text-anchor="middle" class="marker-icon">📡</text>
+                  </g>
+                  <text x="270" y="496" class="marker-subtle" id="txtRadarStatus">RCWL-0516: Scanning / Clear</text>
+                </g>
+
+                <!-- Room 5: Power Utility & Security Center (Mains, GSM & Piezo Buzzer Siren) -->
+                <g class="room-group clickable-room" id="room-utility" data-room="Power Utility">
+                  <rect x="430" y="340" width="435" height="185" rx="12" class="room-floor room-floor-utility"/>
+                  <text x="450" y="370" class="room-label" id="lblRoomUtility">Power & Communications Utility</text>
+                  <text x="450" y="390" class="room-sublabel">UEDCL Grid, SIM800L GSM & Siren Actuators</text>
+                  <rect x="455" y="420" width="85" height="85" rx="6" class="furniture panel-box"/>
+                  
+                  <!-- ZMPT101B Voltage -->
+                  <g id="marker-power" class="sensor-marker" transform="translate(565, 430)">
+                    <title>⚡ ZMPT101B Voltage – Drag to reposition</title>
+                    <circle r="15" class="marker-circle volt-circle"/>
+                    <text y="5" text-anchor="middle" class="marker-icon">⚡</text>
+                  </g>
+                  <text x="590" y="425" class="marker-reading" id="txtVoltageReading">-- V AC</text>
+                  <text x="590" y="443" class="marker-subtle" id="txtPowerReading">-- W</text>
+                  
+                  <!-- SIM800L GSM -->
+                  <g id="marker-gsm" class="sensor-marker" transform="translate(710, 430)">
+                    <title>📶 SIM800L GSM – Drag to reposition</title>
+                    <circle r="15" class="marker-circle gsm-circle"/>
+                    <text y="5" text-anchor="middle" class="marker-icon">📶</text>
+                  </g>
+                  <text x="735" y="425" class="marker-reading" id="txtGsmCarrier">SIM800L</text>
+                  <text x="735" y="443" class="marker-subtle" id="txtGsmStatus">SMS Armed</text>
+
+                  <!-- High-Decibel Piezo Buzzer Siren with Sound Waves -->
+                  <g id="marker-buzzer" class="sensor-marker buzzer-marker-group" transform="translate(565, 488)">
+                    <title>🚨 Piezo Buzzer Siren – Click to test, Drag to reposition</title>
+                    <circle r="15" class="marker-circle buzzer-circle"/>
+                    <circle r="22" class="buzzer-wave-ring"/>
+                    <circle r="32" class="buzzer-wave-ring second"/>
+                    <text y="5" text-anchor="middle" class="marker-icon">🚨</text>
+                  </g>
+                  <text x="590" y="485" class="marker-reading" id="txtBuzzerReading">Piezo Siren</text>
+                  <text x="590" y="502" class="marker-subtle" id="txtBuzzerStatus">Standby / Armed</text>
+                </g>
+              </svg>
+            </div>
+
+            <!-- Floorplan Legend Bar -->
+            <div class="floorplan-legend-bar">
+              <span class="fpl-item" title="RCWL-0516 Microwave Radar (5.8GHz)"><span class="fpl-dot fpl-radar"></span>Radar 5.8GHz</span>
+              <span class="fpl-item" title="HC-SR04 Ultrasonic Sonar"><span class="fpl-dot fpl-ultra"></span>Ultrasonic Sonar</span>
+              <span class="fpl-item" title="PIR Motion Detection Sector"><span class="fpl-dot fpl-pir"></span>PIR Motion</span>
+              <span class="fpl-item" title="ESP32-CAM Field of View"><span class="fpl-dot fpl-cam"></span>Live Cam FOV</span>
+              <span class="fpl-item" title="High-Decibel Piezo Siren"><span class="fpl-dot fpl-buzzer"></span>Piezo Siren</span>
+              <span class="fpl-item" title="RF Interference & Obstacles Layer"><span class="fpl-dot fpl-rf"></span>Interference Auras</span>
+            </div>
+          </div>
+
+          <!-- Room Cards (Quick Vitals Overview) -->
           <div class="rooms-cards-scroll" id="roomCardsContainer">
 
             <!-- Living Room Card -->
@@ -358,129 +560,6 @@
             <button class="neon-action-btn" id="btnOpenFloorplanFull" style="width:100%;margin-top:4px;">
               <i data-lucide="map" class="lc-icon"></i> Open Full Floorplan
             </button>
-          </div>
-
-          <!-- Hidden floorplan wrapper — used for fullscreen overlay -->
-          <div id="floorplanWrapper" style="display:none;">
-            <svg id="houseSvg" viewBox="0 0 900 560" preserveAspectRatio="xMidYMid meet">
-              <defs>
-                <filter id="alarmGlow" x="-30%" y="-30%" width="160%" height="160%">
-                  <feGaussianBlur stdDeviation="14" result="blur"/>
-                  <feComposite in="SourceGraphic" in2="blur" operator="over"/>
-                </filter>
-              </defs>
-
-              <rect x="20" y="20" width="860" height="520" rx="18" class="house-outer-wall"/>
-
-              <!-- Room 1: Front Entrance (Reed Switch) -->
-              <g class="room-group clickable-room" id="room-porch" data-room="Front Entrance">
-                <rect x="35" y="35" width="240" height="230" rx="12" class="room-floor"/>
-                <text x="50" y="65" class="room-label" id="lblRoomEntrance">Front Entrance</text>
-                <text x="50" y="85" class="room-sublabel">Magnetic Reed Switch</text>
-                <path d="M 35 150 L 35 220" class="door-frame" />
-                <line id="doorSwing" x1="35" y1="150" x2="35" y2="220" class="door-leaf" />
-                <g id="marker-reed" class="sensor-marker" transform="translate(70, 180)">
-                  <title>🚪 Reed Switch – Drag to reposition</title>
-                  <circle r="16" class="marker-circle reed-circle"/>
-                  <text y="5" text-anchor="middle" class="marker-icon">🚪</text>
-                </g>
-                <text x="100" y="185" class="marker-reading" id="txtReedStatus">Door Closed</text>
-              </g>
-
-              <!-- Room 2: Living Room (PIR & ESP32-CAM) -->
-              <g class="room-group clickable-room" id="room-living" data-room="Living Room">
-                <rect x="290" y="35" width="340" height="290" rx="12" class="room-floor"/>
-                <text x="310" y="65" class="room-label" id="lblRoomLiving">Living Room</text>
-                <text x="310" y="85" class="room-sublabel">ESP32-CAM & Motion</text>
-                <rect x="340" y="120" width="160" height="50" rx="8" class="furniture sofa"/>
-                <rect x="360" y="190" width="120" height="35" rx="4" class="furniture table"/>
-                <path id="cameraCone" d="M 590 60 L 400 130 L 440 260 Z" class="camera-cone" />
-                <g id="marker-cam" class="sensor-marker" transform="translate(590, 60)">
-                  <title>📷 ESP32-CAM – Drag to reposition</title>
-                  <circle r="16" class="marker-circle cam-circle"/>
-                  <text y="5" text-anchor="middle" class="marker-icon">📷</text>
-                </g>
-                <g id="marker-pir" class="sensor-marker" transform="translate(330, 260)">
-                  <title>🚶 PIR Motion – Drag to reposition</title>
-                  <circle r="16" class="marker-circle pir-circle"/>
-                  <text y="5" text-anchor="middle" class="marker-icon">🚶</text>
-                </g>
-                <text x="360" y="265" class="marker-reading" id="txtPirStatus">No Motion</text>
-              </g>
-
-              <!-- Room 3: Kitchen (MQ-2 Gas Sensor & Fan) -->
-              <g class="room-group clickable-room" id="room-kitchen" data-room="Kitchen">
-                <rect x="645" y="35" width="220" height="290" rx="12" class="room-floor"/>
-                <text x="660" y="65" class="room-label" id="lblRoomKitchen">Kitchen</text>
-                <text x="660" y="85" class="room-sublabel">MQ-2 Gas & Exhaust</text>
-                <rect x="730" y="120" width="115" height="70" rx="6" class="furniture stove"/>
-                <circle cx="760" cy="155" r="14" class="burner"/>
-                <circle cx="805" cy="155" r="14" class="burner"/>
-                <g id="marker-gas" class="sensor-marker" transform="translate(685, 155)">
-                  <title>💨 MQ-2 Gas – Drag to reposition</title>
-                  <circle r="16" class="marker-circle gas-circle"/>
-                  <text y="5" text-anchor="middle" class="marker-icon">💨</text>
-                </g>
-                <text x="660" y="240" class="marker-reading" id="txtGasStatus">Air: Clean</text>
-                <g id="fanGraphic" class="fan-icon" transform="translate(820, 65)">
-                  <circle r="14" class="fan-housing"/>
-                  <path d="M 0 -8 L 0 8 M -8 0 L 8 0" class="fan-blades"/>
-                </g>
-                <text x="730" y="70" class="marker-subtle" id="txtFanStatus">Fan: Off</text>
-              </g>
-
-              <!-- Room 4: Master Bedroom (DHT22 & Ultrasonic) -->
-              <g class="room-group clickable-room" id="room-bed" data-room="Master Haven">
-                <rect x="35" y="280" width="380" height="245" rx="12" class="room-floor"/>
-                <text x="50" y="310" class="room-label" id="lblRoomBedroom">Master Haven</text>
-                <text x="50" y="330" class="room-sublabel">DHT22 Climate Haven</text>
-                <rect x="70" y="360" width="130" height="135" rx="8" class="furniture bed"/>
-                <g id="marker-dht" class="sensor-marker" transform="translate(260, 390)">
-                  <title>🌡️ DHT22 Climate – Drag to reposition</title>
-                  <circle r="16" class="marker-circle dht-circle"/>
-                  <text y="5" text-anchor="middle" class="marker-icon">🌡️</text>
-                </g>
-                <text x="290" y="385" class="marker-reading" id="txtTempReading">-- °C</text>
-                <text x="290" y="405" class="marker-subtle" id="txtHumReading">-- %</text>
-                <g id="marker-ultra" class="sensor-marker" transform="translate(245, 450)">
-                  <title>📏 HC-SR04 Ultrasonic – Drag to reposition</title>
-                  <circle r="13" class="marker-circle ultra-circle"/>
-                  <text y="4" text-anchor="middle" class="marker-icon">📏</text>
-                </g>
-                <text x="270" y="454" class="marker-subtle" id="txtDistReading">HC-SR04: 24.5 cm</text>
-
-                <!-- Doppler Microwave Radar Scanner (RCWL-0516) -->
-                <g id="marker-radar" class="sensor-marker radar-marker-group" transform="translate(245, 490)" title="RCWL-0516 Doppler Radar (5.8GHz)">
-                  <circle r="13" class="marker-circle radar-circle"/>
-                  <circle r="22" class="radar-pulse-ring"/>
-                  <line x1="0" y1="0" x2="16" y2="-9" class="radar-sweep-beam"/>
-                  <text y="4" text-anchor="middle" class="marker-icon">📡</text>
-                </g>
-                <text x="270" y="494" class="marker-subtle" id="txtRadarStatus">RCWL-0516: Scanning / Clear</text>
-              </g>
-
-              <!-- Room 5: Utility & Mains Power (ZMPT101B, ACS712, GSM) -->
-              <g class="room-group clickable-room" id="room-utility" data-room="Power Utility">
-                <rect x="430" y="340" width="435" height="185" rx="12" class="room-floor"/>
-                <text x="450" y="370" class="room-label" id="lblRoomUtility">Power & Communications Utility</text>
-                <text x="450" y="390" class="room-sublabel">UEDCL Grid, SIM800L GSM</text>
-                <rect x="455" y="420" width="85" height="85" rx="6" class="furniture panel-box"/>
-                <g id="marker-power" class="sensor-marker" transform="translate(580, 440)">
-                  <title>⚡ ZMPT101B Voltage – Drag to reposition</title>
-                  <circle r="16" class="marker-circle volt-circle"/>
-                  <text y="5" text-anchor="middle" class="marker-icon">⚡</text>
-                </g>
-                <text x="610" y="435" class="marker-reading" id="txtVoltageReading">-- V AC</text>
-                <text x="610" y="455" class="marker-subtle" id="txtPowerReading">-- W</text>
-                <g id="marker-gsm" class="sensor-marker" transform="translate(740, 440)">
-                  <title>📶 SIM800L GSM – Drag to reposition</title>
-                  <circle r="16" class="marker-circle gsm-circle"/>
-                  <text y="5" text-anchor="middle" class="marker-icon">📶</text>
-                </g>
-                <text x="770" y="435" class="marker-reading" id="txtGsmCarrier">SIM800L</text>
-                <text x="770" y="455" class="marker-subtle" id="txtGsmStatus">SMS Armed</text>
-              </g>
-            </svg>
           </div>
         </div>
 
@@ -2891,10 +2970,11 @@
   </div>
   <script src="sensorTemplatesCatalog.js"></script>
   <!-- Modal: Onboarding & Setup -->
-  <div class="modal-overlay active" id="modalOnboarding">
+  <div class="modal-overlay" id="modalOnboarding">
     <div class="modal-box" style="max-width: 700px; text-align: left;">
       <div class="modal-header">
         <h3 class="modal-title">👋 Welcome to Sanctuary OS</h3>
+        <button type="button" class="modal-close" id="btnCloseOnboarding" title="Close">✕</button>
       </div>
       <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
         <p style="margin-bottom: 16px; color: var(--text-muted);">Please configure your initial workspace environment, device models, and facility type. You can edit this later.</p>

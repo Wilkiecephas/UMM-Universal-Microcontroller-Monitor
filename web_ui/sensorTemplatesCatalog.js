@@ -1928,7 +1928,7 @@ window.SENSOR_TEMPLATES = [
  * Parses raw serial streams (JSON, CSV, delimited key-value, raw ADC, NMEA, AT),
  * extracts telemetry tokens, and correlates matches across 120+ hardware templates.
  */
-export class SerialOutputExaminer {
+class SerialOutputExaminer {
   constructor(templatesList = SENSOR_TEMPLATES) {
     this.templates = templatesList;
   }

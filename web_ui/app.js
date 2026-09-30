@@ -1,4 +1,4 @@
-﻿/**
+/**
  * SANCTUARY OS - CLEAN, UNCLUTTERED HOME MONITOR & UNIVERSAL ENGINE
  * Multi-Board Web Serial Engine (ESP32, Arduino, SparkFun),
  * 10 Theme Environments, Interactive Room Inspector Drawer,
@@ -8,7 +8,8 @@
 // =============================================================================
 // 1. GLOBAL STATE & REGISTRY
 // =============================================================================
-const state = {
+const state = window.state = {
+
   facilityName: 'KyU Telemetry Lab 4',
   profileName: 'Smart Room Monitoring Level 2',
   currentTheme: 'home',
@@ -200,7 +201,8 @@ const state = {
     'marker-ultra':  { x: 245, y: 450 },
     'marker-radar':  { x: 245, y: 490 },
     'marker-power':  { x: 580, y: 440 },
-    'marker-gsm':    { x: 740, y: 440 }
+    'marker-gsm':    { x: 710, y: 430 },
+    'marker-buzzer': { x: 565, y: 488 }
   },
 
   // RF/Interference Obstacles on floor plan
@@ -2100,6 +2102,23 @@ function updateAllViews() {
     if (el.cardDist) el.cardDist.textContent = '--';
   }
 
+  
+  // 7c. Piezo Buzzer Siren
+  const markerBuzzer = document.getElementById('marker-buzzer');
+  const txtBuzzerReading = document.getElementById('txtBuzzerReading');
+  const txtBuzzerStatus = document.getElementById('txtBuzzerStatus');
+  const isBuzzerActive = Boolean(state.telemetry.buzzer || (t.gas > 350) || (t.doorOpen && t.nightGuard));
+  if (markerBuzzer) {
+    markerBuzzer.classList.toggle('marker-buzzer-alert', isBuzzerActive);
+  }
+  if (txtBuzzerReading) {
+    txtBuzzerReading.textContent = isBuzzerActive ? '🚨 SIREN ACTIVE' : 'Piezo Siren';
+  }
+  if (txtBuzzerStatus) {
+    txtBuzzerStatus.textContent = isBuzzerActive ? 'ALARM SOUNDING!' : 'Standby / Armed';
+    txtBuzzerStatus.style.fill = isBuzzerActive ? '#ef4444' : '#64748b';
+  }
+
   // 7b. RCWL-0516 Microwave Radar Doppler Scanner
   const markerRadar = document.getElementById('marker-radar');
   const txtRadarStatus = document.getElementById('txtRadarStatus');
@@ -2823,7 +2842,34 @@ function renderPremiseZones() {
   // Attach Drag & Drop Listeners
   attachDragAndDropHandlers();
   attachEditButtons();
-  renderHierarchyTree();
+  if (typeof renderHierarchyTreeView === 'function') {
+    renderHierarchyTreeView();
+  }
+}
+
+function attachEditButtons() {
+  document.querySelectorAll('.btn-del-sensor').forEach(btn => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      const id = btn.dataset.sensorId || btn.dataset.id;
+      if (id) {
+        state.configuredSensors = state.configuredSensors.filter(s => String(s.id) !== String(id));
+        try { localStorage.setItem('sanctuary_configured_sensors', JSON.stringify(state.configuredSensors)); } catch(_) {}
+        updateAllViews();
+        showToast('Sensor removed', 'info');
+      }
+    };
+  });
+  document.querySelectorAll('.btn-edit-sensor').forEach(btn => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      const id = btn.dataset.sensorId || btn.dataset.id;
+      const s = state.configuredSensors.find(x => String(x.id) === String(id));
+      if (s) {
+        showToast(`Selected sensor: ${s.name} (${s.pin})`, 'info');
+      }
+    };
+  });
 }
 
 function attachDragAndDropHandlers() {
@@ -6745,18 +6791,19 @@ function initSvgFloorPlan() {
   initSvgSensorDrag();
   renderObstaclePanel();
 
-  // Wire up Reset Positions button
-  document.getElementById('btnResetSensorPositions')?.addEventListener('click', () => {
+  // Reset Positions Handler
+  const resetHandler = () => {
     const defaults = {
-      'marker-reed':  { x: 70,  y: 180 },
-      'marker-cam':   { x: 590, y: 60  },
-      'marker-pir':   { x: 330, y: 260 },
-      'marker-gas':   { x: 685, y: 155 },
-      'marker-dht':   { x: 260, y: 390 },
-      'marker-ultra': { x: 245, y: 450 },
-      'marker-radar': { x: 245, y: 490 },
-      'marker-power': { x: 580, y: 440 },
-      'marker-gsm':   { x: 740, y: 440 }
+      'marker-reed':   { x: 70,  y: 180 },
+      'marker-cam':    { x: 590, y: 60  },
+      'marker-pir':    { x: 330, y: 260 },
+      'marker-gas':    { x: 685, y: 155 },
+      'marker-dht':    { x: 260, y: 375 },
+      'marker-ultra':  { x: 245, y: 435 },
+      'marker-radar':  { x: 245, y: 492 },
+      'marker-power':  { x: 565, y: 430 },
+      'marker-gsm':    { x: 710, y: 430 },
+      'marker-buzzer': { x: 565, y: 488 }
     };
     Object.entries(defaults).forEach(([id, pos]) => {
       state.sensorPositions[id] = { ...pos };
@@ -6764,7 +6811,69 @@ function initSvgFloorPlan() {
       if (el) el.setAttribute('transform', `translate(${pos.x}, ${pos.y})`);
     });
     checkSensorInterference();
-    showToast('📍 All sensor positions reset to default', 'info');
+    showToast('📍 All sensor positions reset to layout defaults', 'info');
+  };
+  document.getElementById('btnResetSensorPositions')?.addEventListener('click', resetHandler);
+  document.getElementById('btnResetMapMarkers')?.addEventListener('click', resetHandler);
+
+  // Add Sensor to map button
+  document.getElementById('btnColAddSensor')?.addEventListener('click', () => {
+    const modal = document.getElementById('addSensorModal');
+    if (modal) modal.classList.add('active');
+    else navigateToRoute('universal');
+  });
+
+  // Add RF Interference Obstacle button
+  document.getElementById('btnColAddObstacle')?.addEventListener('click', () => {
+    const types = [
+      { type: 'wifi', label: 'Wi-Fi 5GHz AP', color: 'rgba(59,130,246,0.18)', border: '#3b82f6', radius: 55 },
+      { type: 'microwave', label: 'Microwave Oven EMI', color: 'rgba(239,68,68,0.16)', border: '#ef4444', radius: 42 },
+      { type: 'motor', label: 'Inductive Motor EMI', color: 'rgba(245,158,11,0.18)', border: '#f59e0b', radius: 48 },
+      { type: 'wall', label: 'Concrete Wall Obstacle', color: 'rgba(100,116,139,0.22)', border: '#64748b', radius: 38 }
+    ];
+    const pick = types[Math.floor(Math.random() * types.length)];
+    const newObs = {
+      id: 'obs-' + Date.now(),
+      type: pick.type,
+      label: pick.label,
+      x: 350 + Math.random() * 220,
+      y: 160 + Math.random() * 180,
+      radius: pick.radius,
+      color: pick.color,
+      border: pick.border
+    };
+    state.obstacles.push(newObs);
+    renderObstaclesOnSvg();
+    checkSensorInterference();
+    showToast(`Added ${pick.label} interference zone (Drag to move, click ✕ to delete)`, 'success');
+  });
+
+  // Toggle Floor View button (between cards and floorplan)
+  document.getElementById('btnToggleFloorView')?.addEventListener('click', () => {
+    const cards = document.getElementById('roomCardsContainer');
+    const hero = document.getElementById('floorplanHeroCard');
+    const txt = document.getElementById('txtToggleFloor');
+    if (cards && hero) {
+      if (cards.style.display === 'none') {
+        cards.style.display = 'flex';
+        if (txt) txt.textContent = 'Room Cards';
+        showToast('Showing Room Cards view', 'info');
+      } else {
+        cards.style.display = 'none';
+        if (txt) txt.textContent = 'Show Cards';
+        showToast('Focusing on Floorplan Twin view', 'info');
+      }
+    }
+  });
+
+  // Buzzer click to test tone
+  const markerBuzzer = document.getElementById('marker-buzzer');
+  markerBuzzer?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    state.telemetry.buzzer = !state.telemetry.buzzer;
+    playBuzzerTone();
+    showToast(state.telemetry.buzzer ? '🚨 Piezo Buzzer Siren Test: SOUNDING!' : '🔕 Buzzer Silenced / Armed', 'warning');
+    updateAllViews();
   });
 }
 
@@ -6809,31 +6918,21 @@ function initOnboarding() {
     if (modal) modal.classList.remove('active');
     showToast(`Welcome to ${labName}! Board: ${board}`, 'success');
   });
-}
 
-// Retry logic for WebSockets (can be injected into the existing websocket function via prototype or wrap)
-const originalWebSocket = window.WebSocket;
-window.WebSocket = function(url, protocols) {
-  const ws = protocols ? new originalWebSocket(url, protocols) : new originalWebSocket(url);
-  ws.addEventListener('close', (e) => {
-    if (ws._retryEnabled && ws._retryCount < 5) {
-      ws._retryCount = (ws._retryCount || 0) + 1;
-      console.log(`[WebSocket] Retrying connection to ${url} (Attempt ${ws._retryCount})...`);
-      setTimeout(() => {
-        // We'd typically recreate the socket here, but for this mock environment, 
-        // we'll rely on the manual reconnect button or synthetic telemetry fallback.
-      }, 3000 * ws._retryCount);
-    }
+  const btnClose = document.getElementById('btnCloseOnboarding');
+  btnClose?.addEventListener('click', () => {
+    if (modal) modal.classList.remove('active');
   });
-  return ws;
-};
+  modal?.addEventListener('click', (e) => {
+    if (e.target === modal) modal.classList.remove('active');
+  });
+}
 
 // =============================================================================
 // 19. INITIALIZE SANCTUARY OS
 // =============================================================================
 
-window.addEventListener('DOMContentLoaded', function() {
-
+function bootSanctuaryOS() {
   // Restore user data from localStorage (browser as persistent database)
   try { var sv = localStorage.getItem('sanctuary_configured_sensors'); if (sv) { var p = JSON.parse(sv); if (Array.isArray(p) && p.length > 0) state.configuredSensors = p; } } catch(_) {}
   try { var rv = localStorage.getItem('sanctuary_automation_rules'); if (rv) { var q = JSON.parse(rv); if (Array.isArray(q)) state.automationRules = q; } } catch(_) {}
@@ -6863,8 +6962,13 @@ window.addEventListener('DOMContentLoaded', function() {
 
   updateAllViews();
   showToast('Sanctuary OS loaded. Facility: ' + state.facilityName + ' - ' + state.configuredSensors.length + ' sensors active', 'info');
-});
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', bootSanctuaryOS);
+} else {
+  bootSanctuaryOS();
+}
 
 // =============================================================================
 // COLUMN FULLSCREEN SCROLL-SNAP OVERLAY

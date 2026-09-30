@@ -26,211 +26,242 @@
   --floor-hover: #1E293B;
 }
 
-/* 2. NORDIC OFFICE (Crisp Minimalist Slate & Electric Royal Blue) */
+/* 2. CRISP NEON LIGHT (Crisp Pearl & Royal Purple) */
+[data-theme="home-light"] {
+  --bg-page: #F0F0F8;
+  --bg-pattern: radial-gradient(rgba(139, 92, 246, 0.08) 1.2px, transparent 1.2px);
+  --bg-pattern-size: 24px 24px;
+  --bg-card: #FFFFFF;
+  --bg-card-subtle: #F5F3FF;
+  --bg-accent-soft: #EDE9FE;
+  --text-primary: #1E1B4B;
+  --text-secondary: #4C1D95;
+  --text-muted: #6B7280;
+  --accent-primary: #7C3AED;
+  --accent-primary-hover: #6D28D9;
+  --accent-contrast: #FFFFFF;
+  --accent-warning: #DC2626;
+  --accent-neon: #7C3AED;
+  --border-light: rgba(124, 58, 237, 0.18);
+  --border-focus: #7C3AED;
+  --card-glow: 0 4px 18px rgba(124, 58, 237, 0.08);
+  --wall-stroke: #6D28D9;
+  --floor-fill: #F5F3FF;
+  --floor-hover: #EDE9FE;
+}
+
+/* 3. NORDIC OFFICE (Crisp Minimalist Slate & Electric Royal Blue) */
 [data-theme="office"] {
-  --bg-page: #edf1f7;
-  --bg-pattern: linear-gradient(to right, #e2e8f0 1px, transparent 1px), linear-gradient(to bottom, #e2e8f0 1px, transparent 1px);
-  --bg-pattern-size: 32px 32px;
-  --bg-card: #ffffff;
-  --bg-card-subtle: #f8fafc;
-  --bg-accent-soft: #e0e7ff;
-  --text-primary: #0f172a;
-  --text-secondary: #334155;
-  --text-muted: #64748b;
-  --accent-primary: #2563eb;
-  --accent-primary-hover: #1d4ed8;
-  --accent-contrast: #ffffff;
-  --accent-warning: #ef4444;
-  --border-light: #cbd5e1;
-  --border-focus: #3b82f6;
-  --card-glow: 0 4px 16px rgba(15, 23, 42, 0.06);
-  --wall-stroke: #64748b;
-  --floor-fill: #f8fafc;
-  --floor-hover: #e2e8f0;
+  --bg-page: #F1F5F9;
+  --bg-pattern: linear-gradient(to right, #E2E8F0 1px, transparent 1px), linear-gradient(to bottom, #E2E8F0 1px, transparent 1px);
+  --bg-pattern-size: 28px 28px;
+  --bg-card: #FFFFFF;
+  --bg-card-subtle: #F8FAFC;
+  --bg-accent-soft: #EFF6FF;
+  --text-primary: #0F172A;
+  --text-secondary: #1E293B;
+  --text-muted: #64748B;
+  --accent-primary: #2563EB;
+  --accent-primary-hover: #1D4ED8;
+  --accent-contrast: #FFFFFF;
+  --accent-warning: #EF4444;
+  --accent-neon: #3B82F6;
+  --border-light: rgba(37, 99, 235, 0.18);
+  --border-focus: #2563EB;
+  --card-glow: 0 4px 18px rgba(37, 99, 235, 0.08);
+  --wall-stroke: #3B82F6;
+  --floor-fill: #F8FAFC;
+  --floor-hover: #EFF6FF;
 }
 
-/* 3. MAKER WORKSHOP (Industrial Charcoal, Brass & Glowing Amber) */
+/* 4. MAKER WORKSHOP (Artisan Sand, Warm Kraft & Glowing Amber) */
 [data-theme="workshop"] {
-  --bg-page: #1c1a18;
-  --bg-pattern: radial-gradient(#332e29 1.5px, transparent 1.5px);
-  --bg-pattern-size: 20px 20px;
-  --bg-card: #272421;
-  --bg-card-subtle: #302c28;
-  --bg-accent-soft: #423d37;
-  --text-primary: #f5eedc;
-  --text-secondary: #d4c5a9;
-  --text-muted: #9e8f77;
-  --accent-primary: #d97706;
-  --accent-primary-hover: #b45309;
-  --accent-contrast: #ffffff;
-  --accent-warning: #ea580c;
-  --border-light: #443e36;
-  --border-focus: #f59e0b;
-  --card-glow: 0 6px 20px rgba(0, 0, 0, 0.4);
-  --wall-stroke: #7c7264;
-  --floor-fill: #2d2925;
-  --floor-hover: #3b3631;
+  --bg-page: #FAF5EE;
+  --bg-pattern: radial-gradient(rgba(217, 119, 6, 0.09) 1.5px, transparent 1.5px);
+  --bg-pattern-size: 22px 22px;
+  --bg-card: #FFFFFF;
+  --bg-card-subtle: #F7F1E6;
+  --bg-accent-soft: #FEF3C7;
+  --text-primary: #27211B;
+  --text-secondary: #574B3C;
+  --text-muted: #8F8171;
+  --accent-primary: #D97706;
+  --accent-primary-hover: #B45309;
+  --accent-contrast: #FFFFFF;
+  --accent-warning: #EA580C;
+  --accent-neon: #F59E0B;
+  --border-light: rgba(217, 119, 6, 0.2);
+  --border-focus: #D97706;
+  --card-glow: 0 4px 18px rgba(217, 119, 6, 0.08);
+  --wall-stroke: #B45309;
+  --floor-fill: #FAF6EF;
+  --floor-hover: #F5ECD9;
 }
 
-/* 4. COSMIC DEEP SPACE (Starlight Indigo, Purple Nebula & Cyan) */
+/* 5. COSMIC DEEP SPACE (Starlight Pearl, Aurora Indigo & Sky Cyan) */
 [data-theme="space"] {
-  --bg-page: #070913;
-  --bg-pattern: radial-gradient(ellipse at top, #161b36 0%, #070913 80%);
-  --bg-pattern-size: 100% 100%;
-  --bg-card: rgba(18, 23, 45, 0.9);
-  --bg-card-subtle: rgba(26, 33, 64, 0.7);
-  --bg-accent-soft: #2a3363;
-  --text-primary: #f0f4ff;
-  --text-secondary: #a8b8f8;
-  --text-muted: #6d7cb8;
-  --accent-primary: #818cf8;
-  --accent-primary-hover: #6366f1;
-  --accent-contrast: #ffffff;
-  --accent-warning: #f43f5e;
-  --border-light: #2a3563;
-  --border-focus: #a5b4fc;
-  --card-glow: 0 0 24px rgba(99, 102, 241, 0.18);
-  --wall-stroke: #4f5f9e;
-  --floor-fill: #11162d;
-  --floor-hover: #19203f;
-}
-
-/* 5. CYBER NEON (Midnight OLED, Matrix Green & Cyan Glow) */
-[data-theme="cyber"] {
-  --bg-page: #040608;
-  --bg-pattern: linear-gradient(rgba(0, 255, 136, 0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 136, 0.04) 1px, transparent 1px);
-  --bg-pattern-size: 28px 28px;
-  --bg-card: #0a0e12;
-  --bg-card-subtle: #11171d;
-  --bg-accent-soft: #162422;
-  --text-primary: #dffcee;
-  --text-secondary: #00ff88;
-  --text-muted: #4e806c;
-  --accent-primary: #00ff88;
-  --accent-primary-hover: #00cc6a;
-  --accent-contrast: #040608;
-  --accent-warning: #ff0055;
-  --border-light: #162821;
-  --border-focus: #00ff88;
-  --card-glow: 0 0 16px rgba(0, 255, 136, 0.15);
-  --wall-stroke: #00ff88;
-  --floor-fill: #060b0e;
-  --floor-hover: #0c1816;
-}
-
-/* 6. CLINICAL LABORATORY (Sterile Mint & Clean Steel Blue) */
-[data-theme="lab"] {
-  --bg-page: #edf6f4;
-  --bg-pattern: radial-gradient(#cadfd8 1px, transparent 1px);
-  --bg-pattern-size: 20px 20px;
-  --bg-card: #ffffff;
-  --bg-card-subtle: #f6fbf9;
-  --bg-accent-soft: #ddf0ea;
-  --text-primary: #0f2d24;
-  --text-secondary: #245244;
-  --text-muted: #5e8a7d;
-  --accent-primary: #0d9488;
-  --accent-primary-hover: #0f766e;
-  --accent-contrast: #ffffff;
-  --accent-warning: #e11d48;
-  --border-light: #cce4dc;
-  --border-focus: #14b8a6;
-  --card-glow: 0 4px 14px rgba(13, 148, 136, 0.06);
-  --wall-stroke: #86b4a6;
-  --floor-fill: #e9f5f1;
-  --floor-hover: #dcf0e9;
-}
-
-/* 7. BOTANICAL GREENHOUSE (Lush Emerald & Forest Moss) */
-[data-theme="garden"] {
-  --bg-page: #eef5eb;
-  --bg-pattern: radial-gradient(#d3e5cf 1.2px, transparent 1.2px);
-  --bg-pattern-size: 24px 24px;
-  --bg-card: #ffffff;
-  --bg-card-subtle: #f7faf5;
-  --bg-accent-soft: #e1edd9;
-  --text-primary: #172d17;
-  --text-secondary: #355735;
-  --text-muted: #6b8a6b;
-  --accent-primary: #15803d;
-  --accent-primary-hover: #166534;
-  --accent-contrast: #ffffff;
-  --accent-warning: #dc2626;
-  --border-light: #cfe3c9;
-  --border-focus: #22c55e;
-  --card-glow: 0 4px 14px rgba(21, 128, 61, 0.08);
-  --wall-stroke: #739f6f;
-  --floor-fill: #e5f2e1;
-  --floor-hover: #d7ebd1;
-}
-
-/* 8. WARM NIGHT EMBER (Low-Light Amber & Twilight Maroon) */
-[data-theme="night"] {
-  --bg-page: #151314;
-  --bg-pattern: radial-gradient(#292324 1.5px, transparent 1.5px);
-  --bg-pattern-size: 24px 24px;
-  --bg-card: #1f1b1c;
-  --bg-card-subtle: #292425;
-  --bg-accent-soft: #383032;
-  --text-primary: #f5ebe6;
-  --text-secondary: #e0b4a4;
-  --text-muted: #9c7b70;
-  --accent-primary: #e07a5f;
-  --accent-primary-hover: #c95d40;
-  --accent-contrast: #ffffff;
-  --accent-warning: #f87171;
-  --border-light: #382f31;
-  --border-focus: #e07a5f;
-  --card-glow: 0 4px 20px rgba(224, 122, 95, 0.15);
-  --wall-stroke: #665054;
-  --floor-fill: #241f20;
-  --floor-hover: #2e282a;
-}
-
-/* 9. OCEANIC MARINA (Deep Sea Navy & Wave Cyan) */
-[data-theme="ocean"] {
-  --bg-page: #0a1520;
-  --bg-pattern: radial-gradient(#14293d 1.5px, transparent 1.5px);
+  --bg-page: #F0F4FF;
+  --bg-pattern: radial-gradient(rgba(79, 70, 229, 0.08) 1.2px, transparent 1.2px);
   --bg-pattern-size: 26px 26px;
-  --bg-card: #102131;
-  --bg-card-subtle: #172b3f;
-  --bg-accent-soft: #203c57;
-  --text-primary: #e6f3fc;
-  --text-secondary: #7dd3fc;
-  --text-muted: #648ba6;
-  --accent-primary: #0284c7;
-  --accent-primary-hover: #0369a1;
-  --accent-contrast: #ffffff;
-  --accent-warning: #ef4444;
-  --border-light: #203a52;
-  --border-focus: #38bdf8;
-  --card-glow: 0 4px 20px rgba(2, 132, 199, 0.2);
-  --wall-stroke: #396387;
-  --floor-fill: #0c1c2b;
-  --floor-hover: #13273c;
+  --bg-card: #FFFFFF;
+  --bg-card-subtle: #F5F7FF;
+  --bg-accent-soft: #EEF2FF;
+  --text-primary: #1E1B4B;
+  --text-secondary: #3730A3;
+  --text-muted: #6B7280;
+  --accent-primary: #4F46E5;
+  --accent-primary-hover: #4338CA;
+  --accent-contrast: #FFFFFF;
+  --accent-warning: #F43F5E;
+  --accent-neon: #6366F1;
+  --border-light: rgba(79, 70, 229, 0.18);
+  --border-focus: #4F46E5;
+  --card-glow: 0 4px 18px rgba(79, 70, 229, 0.08);
+  --wall-stroke: #4338CA;
+  --floor-fill: #F6F8FE;
+  --floor-hover: #EEF2FF;
 }
 
-/* 10. HIGH-VOLT INDUSTRIAL (Dark Titanium & Safety Amber Hazard) */
+/* 6. CYBER NEON (Clean Matrix Mint & Vivid Emerald Cyan) */
+[data-theme="cyber"] {
+  --bg-page: #F0FDF4;
+  --bg-pattern: linear-gradient(rgba(5, 150, 105, 0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(5, 150, 105, 0.07) 1px, transparent 1px);
+  --bg-pattern-size: 24px 24px;
+  --bg-card: #FFFFFF;
+  --bg-card-subtle: #F6FEF8;
+  --bg-accent-soft: #DCFCE7;
+  --text-primary: #064E3B;
+  --text-secondary: #065F46;
+  --text-muted: #4B5563;
+  --accent-primary: #059669;
+  --accent-primary-hover: #047857;
+  --accent-contrast: #FFFFFF;
+  --accent-warning: #FF0055;
+  --accent-neon: #10B981;
+  --border-light: rgba(5, 150, 105, 0.2);
+  --border-focus: #059669;
+  --card-glow: 0 4px 18px rgba(5, 150, 105, 0.08);
+  --wall-stroke: #059669;
+  --floor-fill: #F3FBF6;
+  --floor-hover: #E7F8EE;
+}
+
+/* 7. CLINICAL LABORATORY (Sterile Porcelain & Clean Medical Teal) */
+[data-theme="lab"] {
+  --bg-page: #F0FDFA;
+  --bg-pattern: radial-gradient(rgba(13, 148, 136, 0.09) 1.2px, transparent 1.2px);
+  --bg-pattern-size: 22px 22px;
+  --bg-card: #FFFFFF;
+  --bg-card-subtle: #F5FEFD;
+  --bg-accent-soft: #CCFBF1;
+  --text-primary: #134E4A;
+  --text-secondary: #115E59;
+  --text-muted: #5E8A7D;
+  --accent-primary: #0D9488;
+  --accent-primary-hover: #0F766E;
+  --accent-contrast: #FFFFFF;
+  --accent-warning: #E11D48;
+  --accent-neon: #14B8A6;
+  --border-light: rgba(13, 148, 136, 0.2);
+  --border-focus: #0D9488;
+  --card-glow: 0 4px 18px rgba(13, 148, 136, 0.08);
+  --wall-stroke: #0F766E;
+  --floor-fill: #F2FBF9;
+  --floor-hover: #E4F7F4;
+}
+
+/* 8. BOTANICAL GREENHOUSE (Fresh Sage Linen & Lush Forest Green) */
+[data-theme="garden"] {
+  --bg-page: #EEF5EB;
+  --bg-pattern: radial-gradient(rgba(21, 128, 61, 0.08) 1.2px, transparent 1.2px);
+  --bg-pattern-size: 24px 24px;
+  --bg-card: #FFFFFF;
+  --bg-card-subtle: #F6FAF4;
+  --bg-accent-soft: #DCFCE7;
+  --text-primary: #14532D;
+  --text-secondary: #166534;
+  --text-muted: #4B5563;
+  --accent-primary: #15803D;
+  --accent-primary-hover: #166534;
+  --accent-contrast: #FFFFFF;
+  --accent-warning: #DC2626;
+  --accent-neon: #22C55E;
+  --border-light: rgba(21, 128, 61, 0.2);
+  --border-focus: #15803D;
+  --card-glow: 0 4px 18px rgba(21, 128, 61, 0.08);
+  --wall-stroke: #166534;
+  --floor-fill: #F1F8EE;
+  --floor-hover: #E3F2DD;
+}
+
+/* 9. WARM NIGHT EMBER (Sunset Linen, Warm Peach & Terracotta Coral) */
+[data-theme="night"] {
+  --bg-page: #FFF7F4;
+  --bg-pattern: radial-gradient(rgba(224, 86, 56, 0.08) 1.4px, transparent 1.4px);
+  --bg-pattern-size: 24px 24px;
+  --bg-card: #FFFFFF;
+  --bg-card-subtle: #FDF4F0;
+  --bg-accent-soft: #FFE4DE;
+  --text-primary: #431407;
+  --text-secondary: #7C2D12;
+  --text-muted: #9A3412;
+  --accent-primary: #E05638;
+  --accent-primary-hover: #C2410C;
+  --accent-contrast: #FFFFFF;
+  --accent-warning: #EF4444;
+  --accent-neon: #F97316;
+  --border-light: rgba(224, 86, 56, 0.2);
+  --border-focus: #E05638;
+  --card-glow: 0 4px 18px rgba(224, 86, 56, 0.08);
+  --wall-stroke: #C2410C;
+  --floor-fill: #FDF3EF;
+  --floor-hover: #FCE6DD;
+}
+
+/* 10. OCEANIC MARINA (Sea Spray Sky & Deep Blue Azure) */
+[data-theme="ocean"] {
+  --bg-page: #F0F9FF;
+  --bg-pattern: radial-gradient(rgba(2, 132, 199, 0.09) 1.5px, transparent 1.5px);
+  --bg-pattern-size: 26px 26px;
+  --bg-card: #FFFFFF;
+  --bg-card-subtle: #F5FAFF;
+  --bg-accent-soft: #E0F2FE;
+  --text-primary: #0C4A6E;
+  --text-secondary: #0369A1;
+  --text-muted: #475569;
+  --accent-primary: #0284C7;
+  --accent-primary-hover: #0369A1;
+  --accent-contrast: #FFFFFF;
+  --accent-warning: #EF4444;
+  --border-light: rgba(2, 132, 199, 0.2);
+  --border-focus: #0284C7;
+  --card-glow: 0 4px 18px rgba(2, 132, 199, 0.08);
+  --wall-stroke: #0369A1;
+  --floor-fill: #F0F8FE;
+  --floor-hover: #E0F2FE;
+}
+
+/* 11. HIGH-VOLT INDUSTRIAL (Titanium White, Slate & Safety Hazard Amber) */
 [data-theme="industrial"] {
-  --bg-page: #18191b;
-  --bg-pattern: linear-gradient(135deg, #1f2124 25%, transparent 25%), linear-gradient(225deg, #1f2124 25%, transparent 25%);
-  --bg-pattern-size: 28px 28px;
-  --bg-card: #222428;
-  --bg-card-subtle: #2b2e33;
-  --bg-accent-soft: #383c42;
-  --text-primary: #f0f3f6;
-  --text-secondary: #fbbf24;
-  --text-muted: #8b949e;
-  --accent-primary: #f59e0b;
-  --accent-primary-hover: #d97706;
-  --accent-contrast: #18191b;
-  --accent-warning: #ef4444;
-  --border-light: #373b42;
-  --border-focus: #f59e0b;
-  --card-glow: 0 4px 20px rgba(245, 158, 11, 0.15);
-  --wall-stroke: #5a616b;
-  --floor-fill: #1d1e21;
-  --floor-hover: #272a2e;
+  --bg-page: #F8FAFC;
+  --bg-pattern: linear-gradient(135deg, rgba(217, 119, 6, 0.06) 25%, transparent 25%), linear-gradient(225deg, rgba(217, 119, 6, 0.06) 25%, transparent 25%);
+  --bg-pattern-size: 26px 26px;
+  --bg-card: #FFFFFF;
+  --bg-card-subtle: #F1F5F9;
+  --bg-accent-soft: #FEF3C7;
+  --text-primary: #0F172A;
+  --text-secondary: #334155;
+  --text-muted: #64748B;
+  --accent-primary: #D97706;
+  --accent-primary-hover: #B45309;
+  --accent-contrast: #FFFFFF;
+  --accent-warning: #EF4444;
+  --border-light: rgba(217, 119, 6, 0.2);
+  --border-focus: #D97706;
+  --card-glow: 0 4px 18px rgba(217, 119, 6, 0.08);
+  --wall-stroke: #B45309;
+  --floor-fill: #F8FAFC;
+  --floor-hover: #FEF3C7;
 }
 
 /* ==========================================================================
@@ -4582,7 +4613,7 @@ body.monitor-fullscreen-mode #houseSvg {
 .rqc-badge.motion { background: rgba(239,68,68,0.12); color: #ef4444; border-color: rgba(239,68,68,0.2); }
 .rqc-badge.ok { background: rgba(34,197,94,0.12); color: #22c55e; border-color: rgba(34,197,94,0.2); }
 
-/* Value Grid — 4-up */
+/* Value Grid ï¿½ 4-up */
 .rqc-values {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr;
@@ -4622,7 +4653,7 @@ body.monitor-fullscreen-mode #houseSvg {
 }
 
 /* ==========================================================================
-   LIGHT MODE — "Crisp Neon" (White base with purple accents)
+   LIGHT MODE ï¿½ "Crisp Neon" (White base with purple accents)
    ========================================================================== */
 [data-theme="home-light"] {
   --bg-page: #F0F0F8;
@@ -4728,7 +4759,7 @@ body.monitor-fullscreen-mode #houseSvg {
 }
 
 /* ==========================================================================
-   LUCIDE ICON SYSTEM — Consistent stroke SVG icons throughout Sanctuary OS
+   LUCIDE ICON SYSTEM ï¿½ Consistent stroke SVG icons throughout Sanctuary OS
    ========================================================================== */
 .lc-icon {
   display: inline-flex;
@@ -4828,4 +4859,666 @@ body.monitor-fullscreen-mode #houseSvg {
 }
 .neon-btn-square.active .lc-icon {
   stroke: white;
+}
+
+/* ==========================================================================
+   LIGHT MODE VARIANTS ï¿½ same neon design language, bright backgrounds
+   ========================================================================== */
+
+/* Office Light */
+[data-theme="office"] {
+  --bg-page: #F0F4FF;
+  --bg-pattern: linear-gradient(to right, rgba(99,102,241,0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(99,102,241,0.05) 1px, transparent 1px);
+  --bg-pattern-size: 32px 32px;
+  --bg-card: #FFFFFF;
+  --bg-card-subtle: #F5F7FF;
+  --bg-accent-soft: #E0E7FF;
+  --text-primary: #1E1B4B;
+  --text-secondary: #3730A3;
+  --text-muted: #6B7280;
+  --accent-primary: #4F46E5;
+  --accent-primary-hover: #4338CA;
+  --accent-contrast: #FFFFFF;
+  --accent-warning: #DC2626;
+  --accent-neon: #6366F1;
+  --border-light: rgba(79,70,229,0.15);
+  --border-focus: #6366F1;
+  --border-medium: #C7D2FE;
+  --card-glow: 0 4px 20px rgba(79,70,229,0.08);
+  --wall-stroke: #6366F1;
+  --floor-fill: #F5F7FF;
+  --floor-hover: #E0E7FF;
+}
+/* Workshop Light */
+[data-theme="workshop"] {
+  --bg-page: #FFF7ED;
+  --bg-pattern: radial-gradient(rgba(249,115,22,0.06) 1px, transparent 1px);
+  --bg-pattern-size: 24px 24px;
+  --bg-card: #FFFFFF;
+  --bg-card-subtle: #FFF8F1;
+  --bg-accent-soft: #FFEDD5;
+  --text-primary: #431407;
+  --text-secondary: #9A3412;
+  --text-muted: #78716C;
+  --accent-primary: #EA580C;
+  --accent-primary-hover: #C2410C;
+  --accent-contrast: #FFFFFF;
+  --accent-warning: #DC2626;
+  --accent-neon: #F97316;
+  --border-light: rgba(234,88,12,0.15);
+  --border-focus: #F97316;
+  --border-medium: #FED7AA;
+  --card-glow: 0 4px 20px rgba(234,88,12,0.08);
+  --wall-stroke: #EA580C;
+  --floor-fill: #FFF8F1;
+  --floor-hover: #FFEDD5;
+}
+/* Space Light */
+[data-theme="space"] {
+  --bg-page: #EFF6FF;
+  --bg-pattern: radial-gradient(rgba(59,130,246,0.06) 1px, transparent 1px);
+  --bg-pattern-size: 24px 24px;
+  --bg-card: #FFFFFF;
+  --bg-card-subtle: #EFF6FF;
+  --bg-accent-soft: #DBEAFE;
+  --text-primary: #172554;
+  --text-secondary: #1D4ED8;
+  --text-muted: #6B7280;
+  --accent-primary: #2563EB;
+  --accent-primary-hover: #1D4ED8;
+  --accent-contrast: #FFFFFF;
+  --accent-warning: #DC2626;
+  --accent-neon: #3B82F6;
+  --border-light: rgba(37,99,235,0.15);
+  --border-focus: #3B82F6;
+  --border-medium: #BFDBFE;
+  --card-glow: 0 4px 20px rgba(37,99,235,0.08);
+  --wall-stroke: #3B82F6;
+  --floor-fill: #EFF6FF;
+  --floor-hover: #DBEAFE;
+}
+/* Cyber Light */
+[data-theme="cyber"] {
+  --bg-page: #F0FDF4;
+  --bg-pattern: linear-gradient(to right, rgba(34,197,94,0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(34,197,94,0.06) 1px, transparent 1px);
+  --bg-pattern-size: 24px 24px;
+  --bg-card: #FFFFFF;
+  --bg-card-subtle: #F0FDF4;
+  --bg-accent-soft: #DCFCE7;
+  --text-primary: #14532D;
+  --text-secondary: #15803D;
+  --text-muted: #6B7280;
+  --accent-primary: #16A34A;
+  --accent-primary-hover: #15803D;
+  --accent-contrast: #FFFFFF;
+  --accent-warning: #DC2626;
+  --accent-neon: #22C55E;
+  --border-light: rgba(22,163,74,0.15);
+  --border-focus: #22C55E;
+  --border-medium: #BBF7D0;
+  --card-glow: 0 4px 20px rgba(22,163,74,0.08);
+  --wall-stroke: #22C55E;
+  --floor-fill: #F0FDF4;
+  --floor-hover: #DCFCE7;
+}
+/* Lab Light */
+[data-theme="lab"] {
+  --bg-page: #FAFAFA;
+  --bg-pattern: linear-gradient(to right, rgba(0,0,0,0.04) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,0.04) 1px, transparent 1px);
+  --bg-pattern-size: 20px 20px;
+  --bg-card: #FFFFFF;
+  --bg-card-subtle: #F4F4F5;
+  --bg-accent-soft: #E4E4E7;
+  --text-primary: #09090B;
+  --text-secondary: #3F3F46;
+  --text-muted: #71717A;
+  --accent-primary: #18181B;
+  --accent-primary-hover: #27272A;
+  --accent-contrast: #FFFFFF;
+  --accent-warning: #EF4444;
+  --accent-neon: #7C3AED;
+  --border-light: rgba(0,0,0,0.1);
+  --border-focus: #7C3AED;
+  --border-medium: #D4D4D8;
+  --card-glow: 0 4px 20px rgba(0,0,0,0.05);
+  --wall-stroke: #52525B;
+  --floor-fill: #F4F4F5;
+  --floor-hover: #E4E4E7;
+}
+/* Garden Light */
+[data-theme="garden"] {
+  --bg-page: #F0FDF4;
+  --bg-pattern: radial-gradient(rgba(22,163,74,0.07) 1px, transparent 1px);
+  --bg-pattern-size: 24px 24px;
+  --bg-card: #FFFFFF;
+  --bg-card-subtle: #F0FFF4;
+  --bg-accent-soft: #DCFCE7;
+  --text-primary: #14532D;
+  --text-secondary: #166534;
+  --text-muted: #6B7280;
+  --accent-primary: #16A34A;
+  --accent-primary-hover: #15803D;
+  --accent-contrast: #FFFFFF;
+  --accent-warning: #DC2626;
+  --accent-neon: #22C55E;
+  --border-light: rgba(22,163,74,0.15);
+  --border-focus: #22C55E;
+  --border-medium: #A7F3D0;
+  --card-glow: 0 4px 20px rgba(22,163,74,0.08);
+  --wall-stroke: #4ADE80;
+  --floor-fill: #F0FDF4;
+  --floor-hover: #DCFCE7;
+}
+/* Night Light (warm amber) */
+[data-theme="night"] {
+  --bg-page: #FFFBEB;
+  --bg-pattern: radial-gradient(rgba(245,158,11,0.06) 1px, transparent 1px);
+  --bg-pattern-size: 24px 24px;
+  --bg-card: #FFFFFF;
+  --bg-card-subtle: #FFFBEB;
+  --bg-accent-soft: #FEF3C7;
+  --text-primary: #451A03;
+  --text-secondary: #92400E;
+  --text-muted: #78716C;
+  --accent-primary: #D97706;
+  --accent-primary-hover: #B45309;
+  --accent-contrast: #FFFFFF;
+  --accent-warning: #DC2626;
+  --accent-neon: #F59E0B;
+  --border-light: rgba(217,119,6,0.15);
+  --border-focus: #F59E0B;
+  --border-medium: #FDE68A;
+  --card-glow: 0 4px 20px rgba(217,119,6,0.08);
+  --wall-stroke: #F59E0B;
+  --floor-fill: #FFFBEB;
+  --floor-hover: #FEF3C7;
+}
+/* Ocean Light */
+[data-theme="ocean"] {
+  --bg-page: #F0FDFA;
+  --bg-pattern: linear-gradient(to right, rgba(20,184,166,0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(20,184,166,0.06) 1px, transparent 1px);
+  --bg-pattern-size: 28px 28px;
+  --bg-card: #FFFFFF;
+  --bg-card-subtle: #F0FDFA;
+  --bg-accent-soft: #CCFBF1;
+  --text-primary: #134E4A;
+  --text-secondary: #0F766E;
+  --text-muted: #6B7280;
+  --accent-primary: #0D9488;
+  --accent-primary-hover: #0F766E;
+  --accent-contrast: #FFFFFF;
+  --accent-warning: #DC2626;
+  --accent-neon: #14B8A6;
+  --border-light: rgba(13,148,136,0.15);
+  --border-focus: #14B8A6;
+  --border-medium: #99F6E4;
+  --card-glow: 0 4px 20px rgba(13,148,136,0.08);
+  --wall-stroke: #2DD4BF;
+  --floor-fill: #F0FDFA;
+  --floor-hover: #CCFBF1;
+}
+/* Industrial Light */
+[data-theme="industrial"] {
+  --bg-page: #F8FAFC;
+  --bg-pattern: linear-gradient(to right, rgba(51,65,85,0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(51,65,85,0.06) 1px, transparent 1px);
+  --bg-pattern-size: 40px 40px;
+  --bg-card: #FFFFFF;
+  --bg-card-subtle: #F1F5F9;
+  --bg-accent-soft: #E2E8F0;
+  --text-primary: #0F172A;
+  --text-secondary: #334155;
+  --text-muted: #64748B;
+  --accent-primary: #475569;
+  --accent-primary-hover: #334155;
+  --accent-contrast: #FFFFFF;
+  --accent-warning: #EF4444;
+  --accent-neon: #F97316;
+  --border-light: rgba(51,65,85,0.12);
+  --border-focus: #F97316;
+  --border-medium: #CBD5E1;
+  --card-glow: 0 4px 20px rgba(15,23,42,0.06);
+  --wall-stroke: #64748B;
+  --floor-fill: #F1F5F9;
+  --floor-hover: #E2E8F0;
+}
+
+/* Universal light mode card overrides ï¿½ all neon-card and room-quick-card light styling */
+[data-theme="office"] .neon-card,
+[data-theme="workshop"] .neon-card,
+[data-theme="space"] .neon-card,
+[data-theme="cyber"] .neon-card,
+[data-theme="lab"] .neon-card,
+[data-theme="garden"] .neon-card,
+[data-theme="night"] .neon-card,
+[data-theme="ocean"] .neon-card,
+[data-theme="industrial"] .neon-card,
+[data-theme="home-light"] .neon-card {
+  background: var(--bg-card) !important;
+  border-color: var(--border-light) !important;
+  box-shadow: var(--card-glow) !important;
+  color: var(--text-primary) !important;
+}
+[data-theme="office"] .neon-card:hover,
+[data-theme="workshop"] .neon-card:hover,
+[data-theme="space"] .neon-card:hover,
+[data-theme="cyber"] .neon-card:hover,
+[data-theme="lab"] .neon-card:hover,
+[data-theme="garden"] .neon-card:hover,
+[data-theme="night"] .neon-card:hover,
+[data-theme="ocean"] .neon-card:hover,
+[data-theme="industrial"] .neon-card:hover {
+  border-color: var(--border-focus) !important;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.1) !important;
+}
+
+/* Light theme pill/button overrides */
+[data-theme]:not([data-theme="home"]) .neon-pill {
+  background: var(--bg-card-subtle);
+  border-color: var(--border-light);
+  color: var(--text-secondary);
+}
+[data-theme]:not([data-theme="home"]) .neon-pill.active {
+  background: var(--accent-primary);
+  color: var(--accent-contrast);
+  border-color: var(--accent-primary);
+}
+[data-theme]:not([data-theme="home"]) .neon-btn-square {
+  background: var(--bg-card-subtle);
+  border-color: var(--border-light);
+  color: var(--text-secondary);
+}
+[data-theme]:not([data-theme="home"]) .neon-btn-square.active {
+  background: var(--accent-primary);
+  color: var(--accent-contrast);
+}
+[data-theme]:not([data-theme="home"]) .neon-action-btn {
+  background: var(--bg-card-subtle);
+  border-color: var(--border-light);
+  color: var(--text-secondary);
+}
+[data-theme]:not([data-theme="home"]) .neon-action-btn.primary {
+  background: var(--bg-accent-soft);
+  color: var(--accent-primary);
+  border-color: var(--border-focus);
+}
+[data-theme]:not([data-theme="home"]) .btn-neon-toggle {
+  background: var(--bg-accent-soft);
+  color: var(--accent-primary);
+}
+[data-theme]:not([data-theme="home"]) .btn-neon-toggle.active {
+  background: var(--accent-primary);
+  color: var(--accent-contrast);
+  box-shadow: none;
+}
+[data-theme]:not([data-theme="home"]) .neon-arc-active {
+  stroke: var(--accent-neon) !important;
+}
+[data-theme]:not([data-theme="home"]) .neon-dial-knob {
+  stroke: var(--accent-neon) !important;
+}
+[data-theme]:not([data-theme="home"]) .neon-dial-value h2 {
+  color: var(--text-primary);
+  text-shadow: none;
+}
+[data-theme]:not([data-theme="home"]) .neon-dial-value span {
+  color: var(--accent-primary);
+}
+[data-theme]:not([data-theme="home"]) .room-quick-card {
+  background: var(--bg-card) !important;
+  border-color: var(--border-light) !important;
+}
+[data-theme]:not([data-theme="home"]) .rooms-col-header {
+  background: var(--bg-card) !important;
+  border-color: var(--border-light) !important;
+}
+[data-theme]:not([data-theme="home"]) .rqc-val-item {
+  background: var(--bg-card-subtle) !important;
+  border-color: var(--border-light) !important;
+}
+[data-theme]:not([data-theme="home"]) .rqc-badge {
+  background: var(--bg-accent-soft) !important;
+  color: var(--accent-primary) !important;
+  border-color: var(--border-light) !important;
+}
+[data-theme]:not([data-theme="home"]) .monitor-sidebar > .card,
+[data-theme]:not([data-theme="home"]) .floorplan-hero-card {
+  background: var(--bg-card) !important;
+  border-color: var(--border-light) !important;
+}
+[data-theme]:not([data-theme="home"]) .col-fullscreen-overlay {
+  background: var(--bg-page) !important;
+}
+
+
+/* ==========================================================================
+   FLOOR PLAN SENSORS & ROOM LAYOUT ENHANCEMENTS
+   ========================================================================== */
+
+/* Ultrasonic Sonar Visuals */
+.ultra-circle {
+  stroke: #3b82f6;
+  fill: rgba(59, 130, 246, 0.15);
+}
+.ultra-sonar-cone {
+  fill: rgba(59, 130, 246, 0.08);
+  stroke: rgba(59, 130, 246, 0.3);
+  stroke-dasharray: 3, 3;
+  pointer-events: none;
+}
+.ultra-pulse-arc {
+  fill: none;
+  stroke: #3b82f6;
+  stroke-width: 1.5;
+  animation: ultraPulseAnim 2s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+  transform-origin: 0 0;
+  pointer-events: none;
+}
+.ultra-pulse-arc.second {
+  animation-delay: 1s;
+}
+@keyframes ultraPulseAnim {
+  0% { r: 14; opacity: 0.8; }
+  100% { r: 42; opacity: 0; }
+}
+
+/* Buzzer Piezo Siren Visuals */
+.buzzer-circle {
+  stroke: #f59e0b;
+  fill: rgba(245, 158, 11, 0.15);
+}
+.buzzer-wave-ring {
+  fill: none;
+  stroke: #f59e0b;
+  stroke-width: 1.5;
+  animation: buzzerWaveAnim 1.8s ease-out infinite;
+  transform-origin: 0 0;
+  pointer-events: none;
+}
+.buzzer-wave-ring.second {
+  animation-delay: 0.9s;
+}
+@keyframes buzzerWaveAnim {
+  0% { r: 15; opacity: 0.9; }
+  100% { r: 38; opacity: 0; }
+}
+.marker-buzzer-alert .buzzer-circle {
+  stroke: #ef4444 !important;
+  fill: rgba(239, 68, 68, 0.35) !important;
+}
+.marker-buzzer-alert .buzzer-wave-ring {
+  stroke: #ef4444 !important;
+  stroke-width: 2.5 !important;
+  animation-duration: 0.8s !important;
+}
+
+/* PIR Motion Cone */
+.pir-cone {
+  fill: rgba(139, 92, 246, 0.08);
+  stroke: rgba(139, 92, 246, 0.25);
+  stroke-dasharray: 4, 3;
+  pointer-events: none;
+}
+.pir-pulse-ring {
+  fill: none;
+  stroke: #8b5cf6;
+  stroke-width: 1.5;
+  animation: pirPulseAnim 2.5s ease-out infinite;
+  pointer-events: none;
+}
+@keyframes pirPulseAnim {
+  0% { r: 16; opacity: 0.8; }
+  100% { r: 35; opacity: 0; }
+}
+.marker-pir-active .pir-circle {
+  stroke: #ef4444;
+  fill: rgba(239, 68, 68, 0.3);
+}
+.marker-pir-active .pir-pulse-ring {
+  stroke: #ef4444;
+  animation-duration: 1s;
+}
+
+/* Camera Scan Line */
+.camera-scan-line {
+  stroke: rgba(0, 255, 136, 0.5);
+  stroke-width: 1.5;
+  stroke-dasharray: 2, 2;
+  animation: camScan 3s linear infinite alternate;
+}
+@keyframes camScan {
+  from { opacity: 0.3; }
+  to { opacity: 0.9; }
+}
+
+/* Room Floor Subtle Tints */
+.room-floor-porch {
+  fill: rgba(16, 185, 129, 0.05);
+}
+.room-floor-living {
+  fill: rgba(14, 165, 233, 0.05);
+}
+.room-floor-kitchen {
+  fill: rgba(245, 158, 11, 0.05);
+}
+.room-floor-haven {
+  fill: rgba(139, 92, 246, 0.06);
+}
+.room-floor-utility {
+  fill: rgba(99, 102, 241, 0.05);
+}
+
+/* Floorplan Hero Card */
+.floorplan-hero-card {
+  background: var(--bg-card);
+  border-radius: 18px;
+  border: 1px solid var(--border-light);
+  box-shadow: var(--card-glow);
+  padding: 14px;
+  margin-bottom: 16px;
+  transition: var(--transition-smooth);
+}
+.floorplan-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.floorplan-toolbar-left,
+.floorplan-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.floorplan-wrapper-active {
+  background: var(--bg-page);
+  border-radius: 14px;
+  border: 1px solid var(--border-light);
+  overflow: hidden;
+  position: relative;
+  box-shadow: inset 0 2px 10px rgba(0,0,0,0.06);
+}
+.floorplan-wrapper-active #houseSvg {
+  width: 100%;
+  height: auto;
+  min-height: 280px;
+  max-height: 480px;
+  display: block;
+}
+.floorplan-legend-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  align-items: center;
+  padding-top: 10px;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+.fpl-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.fpl-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.fpl-radar { background: #06b6d4; box-shadow: 0 0 6px #06b6d4; }
+.fpl-ultra { background: #3b82f6; box-shadow: 0 0 6px #3b82f6; }
+.fpl-pir   { background: #8b5cf6; box-shadow: 0 0 6px #8b5cf6; }
+.fpl-cam   { background: #10b981; box-shadow: 0 0 6px #10b981; }
+.fpl-buzzer{ background: #f59e0b; box-shadow: 0 0 6px #f59e0b; }
+.fpl-rf    { background: #ef4444; box-shadow: 0 0 6px #ef4444; }
+
+/* ==========================================================================
+   UNIVERSAL LIGHT THEME ADAPTATION (FOR ALL 10 NON-HOME THEMES)
+   ========================================================================== */
+[data-theme]:not([data-theme="home"]) {
+  color-scheme: light;
+}
+
+[data-theme]:not([data-theme="home"]) body,
+[data-theme]:not([data-theme="home"]) .main-container {
+  background-color: var(--bg-page);
+  color: var(--text-primary);
+}
+
+[data-theme]:not([data-theme="home"]) .navbar-wrapper {
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-light);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+}
+
+[data-theme]:not([data-theme="home"]) .brand-title {
+  color: var(--text-primary);
+}
+
+[data-theme]:not([data-theme="home"]) .nav-tab {
+  color: var(--text-secondary);
+}
+
+[data-theme]:not([data-theme="home"]) .nav-tab:hover {
+  color: var(--accent-primary);
+  background: var(--bg-accent-soft);
+}
+
+[data-theme]:not([data-theme="home"]) .nav-tab.active {
+  color: var(--accent-primary);
+  border-bottom-color: var(--accent-primary);
+  background: var(--bg-accent-soft);
+}
+
+[data-theme]:not([data-theme="home"]) .header-control-box,
+[data-theme]:not([data-theme="home"]) .connection-status-pill {
+  background: var(--bg-card-subtle);
+  border-color: var(--border-light);
+  color: var(--text-primary);
+}
+
+[data-theme]:not([data-theme="home"]) .premise-select,
+[data-theme]:not([data-theme="home"]) .theme-select {
+  background: transparent;
+  color: var(--text-primary);
+}
+
+[data-theme]:not([data-theme="home"]) .neon-card,
+[data-theme]:not([data-theme="home"]) .rooms-col-header,
+[data-theme]:not([data-theme="home"]) .room-quick-card,
+[data-theme]:not([data-theme="home"]) .monitor-sidebar > .card,
+[data-theme]:not([data-theme="home"]) .floorplan-hero-card,
+[data-theme]:not([data-theme="home"]) .modal-box,
+[data-theme]:not([data-theme="home"]) .card {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-light) !important;
+  box-shadow: var(--card-glow) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme]:not([data-theme="home"]) .neon-card:hover,
+[data-theme]:not([data-theme="home"]) .room-quick-card:hover {
+  border-color: var(--border-focus) !important;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.08) !important;
+}
+
+[data-theme]:not([data-theme="home"]) .neon-card-footer h4,
+[data-theme]:not([data-theme="home"]) .card-title,
+[data-theme]:not([data-theme="home"]) .rooms-col-title,
+[data-theme]:not([data-theme="home"]) .rqc-name,
+[data-theme]:not([data-theme="home"]) .rqc-val-num,
+[data-theme]:not([data-theme="home"]) .neon-dial-value h2,
+[data-theme]:not([data-theme="home"]) .col-fs-title,
+[data-theme]:not([data-theme="home"]) .modal-title,
+[data-theme]:not([data-theme="home"]) .room-label,
+[data-theme]:not([data-theme="home"]) .marker-reading {
+  color: var(--text-primary) !important;
+  fill: var(--text-primary) !important;
+}
+
+[data-theme]:not([data-theme="home"]) .rqc-sub,
+[data-theme]:not([data-theme="home"]) .rooms-col-sub,
+[data-theme]:not([data-theme="home"]) .rqc-val-lbl,
+[data-theme]:not([data-theme="home"]) .neon-card-footer span,
+[data-theme]:not([data-theme="home"]) .room-sublabel,
+[data-theme]:not([data-theme="home"]) .marker-subtle,
+[data-theme]:not([data-theme="home"]) .text-muted {
+  color: var(--text-muted) !important;
+  fill: var(--text-muted) !important;
+}
+
+[data-theme]:not([data-theme="home"]) .neon-pill,
+[data-theme]:not([data-theme="home"]) .neon-btn-square,
+[data-theme]:not([data-theme="home"]) .neon-action-btn,
+[data-theme]:not([data-theme="home"]) .btn-secondary {
+  background: var(--bg-card-subtle);
+  border-color: var(--border-light);
+  color: var(--text-secondary);
+}
+
+[data-theme]:not([data-theme="home"]) .neon-pill.active,
+[data-theme]:not([data-theme="home"]) .neon-btn-square.active,
+[data-theme]:not([data-theme="home"]) .btn-neon-toggle.active {
+  background: var(--accent-primary) !important;
+  color: var(--accent-contrast) !important;
+  border-color: var(--accent-primary) !important;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.12) !important;
+}
+
+[data-theme]:not([data-theme="home"]) .neon-action-btn.primary,
+[data-theme]:not([data-theme="home"]) .btn-neon-toggle {
+  background: var(--bg-accent-soft);
+  color: var(--accent-primary);
+  border-color: var(--border-light);
+}
+
+[data-theme]:not([data-theme="home"]) .rqc-badge {
+  background: var(--bg-accent-soft) !important;
+  color: var(--accent-primary) !important;
+  border-color: var(--border-light) !important;
+}
+
+[data-theme]:not([data-theme="home"]) .rqc-val-item {
+  background: var(--bg-card-subtle) !important;
+  border: 1px solid var(--border-light) !important;
+}
+
+[data-theme]:not([data-theme="home"]) .col-fullscreen-overlay {
+  background: var(--bg-page) !important;
+}
+
+[data-theme]:not([data-theme="home"]) .house-outer-wall {
+  fill: var(--bg-card);
+  stroke: var(--wall-stroke);
+}
+
+[data-theme]:not([data-theme="home"]) .room-floor {
+  fill: var(--floor-fill);
+  stroke: var(--border-light);
+}
+
+[data-theme]:not([data-theme="home"]) .clickable-room:hover .room-floor {
+  fill: var(--floor-hover);
+  stroke: var(--accent-primary);
 }
