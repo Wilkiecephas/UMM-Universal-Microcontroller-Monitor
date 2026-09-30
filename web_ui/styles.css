@@ -3911,36 +3911,27 @@ input:checked + .slider:before { transform: translateX(20px); }
    FULL SCREEN MONITOR MODE
    ========================================================================== */
 body.monitor-fullscreen-mode {
-  overflow: hidden !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
 }
-body.monitor-fullscreen-mode .navbar-wrapper {
-  display: none !important;
-}
-body.monitor-fullscreen-mode .main-content {
-  padding: 0 !important;
-  margin: 0 !important;
-  max-width: none !important;
-}
-body.monitor-fullscreen-mode .monitor-grid {
-  display: block !important;
-  height: 100vh !important;
-}
-body.monitor-fullscreen-mode .monitor-sidebar,
+body.monitor-fullscreen-mode .navbar-wrapper,
+body.monitor-fullscreen-mode .monitor-lead-bar,
+body.monitor-fullscreen-mode .sim-interactive-bar,
 body.monitor-fullscreen-mode .section-header {
   display: none !important;
 }
-body.monitor-fullscreen-mode .floorplan-hero-card {
-  height: 100vh !important;
-  border-radius: 0 !important;
-  border: none !important;
+body.monitor-fullscreen-mode .main-content {
+  padding: 8px !important;
   margin: 0 !important;
+  max-width: none !important;
+}
+body.monitor-fullscreen-mode .floorplan-hero-card {
+  min-height: 85vh !important;
   display: flex;
   flex-direction: column;
 }
 body.monitor-fullscreen-mode .floorplan-hero-wrapper {
   flex: 1;
-  border-radius: 0 !important;
-  border: none !important;
 }
 body.monitor-fullscreen-mode #houseSvg {
   max-height: 100% !important;
