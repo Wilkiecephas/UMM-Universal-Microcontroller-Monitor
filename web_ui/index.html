@@ -49,7 +49,8 @@
         <div class="header-control-box" title="Select Theme Environment">
           <span style="font-size: 0.85rem;">🎨</span>
           <select class="theme-select" id="themeSelect">
-            <option value="home" selected>🏡 Home Theme</option>
+            <option value="home" selected>🌙 Dark (Neon)</option>
+            <option value="home-light">☀️ Light (Crisp)</option>
             <option value="office">💼 Office</option>
             <option value="workshop">🔨 Workshop</option>
             <option value="space">🚀 Space</option>
@@ -206,18 +207,159 @@
       <!-- Monitor Main View: Floor Plan + Controls + Camera (3 Columns) -->
       <div class="monitor-grid">
         
-        <!-- Floor Plan Card — click to expand fullscreen -->
-        <div class="floorplan-hero-card" id="floorplanHeroCard" title="Click to expand fullscreen">
-          <div class="card-header" style="margin-bottom: 6px;">
-            <span class="card-title">Virtual Model House Twin</span>
-            <div style="display:flex;gap:6px;align-items:center;">
-              <span class="meta-detail" style="font-size:0.7rem;">🖱️ Drag sensors to move · ⚠️ = interference</span>
-              <button class="btn btn-secondary btn-sm" id="btnResetSensorPositions" style="font-size:0.7rem;padding:2px 8px;" title="Reset all sensor markers to default positions">↺ Reset</button>
-              <button class="btn btn-primary btn-sm" id="btnToggleFullScreen" style="font-size:0.7rem;padding:2px 8px;" title="Toggle Full Screen Monitor">⛶ Full Screen</button>
+        <!-- Column 1: Rooms Overview — Live sensor values per room, click any room card to expand -->
+        <div class="rooms-col" id="roomsOverviewCol" title="Click a room to expand">
+          <!-- Column Header -->
+          <div class="rooms-col-header">
+            <div>
+              <h2 class="rooms-col-title">🏛️ Rooms Overview</h2>
+              <span class="rooms-col-sub" id="roomsColFacilityName">Master Haven · All Zones</span>
             </div>
+            <button class="btn-neon-toggle active" id="btnExpandFloorplan" title="Open full floorplan">⛶</button>
           </div>
 
-          <div class="floorplan-hero-wrapper" id="floorplanWrapper">
+          <!-- Room Cards — rendered dynamically by JS, defaults below -->
+          <div class="rooms-cards-scroll" id="roomCardsContainer">
+
+            <!-- Living Room Card -->
+            <div class="room-quick-card" data-room="Living Room" id="roomCard-living">
+              <div class="rqc-top">
+                <span class="rqc-icon">🛋️</span>
+                <div class="rqc-info">
+                  <span class="rqc-name">Living Room</span>
+                  <span class="rqc-status status-ok" id="rqcStatusLiving">● All Clear</span>
+                </div>
+                <div class="rqc-badge-group">
+                  <span class="rqc-badge motion" id="rqcMotionLiving">No Motion</span>
+                </div>
+              </div>
+              <div class="rqc-values">
+                <div class="rqc-val-item">
+                  <span class="rqc-val-label">🌡️ Temp</span>
+                  <span class="rqc-val-num" id="rqcTempLiving">27°C</span>
+                </div>
+                <div class="rqc-val-item">
+                  <span class="rqc-val-label">💧 Humid</span>
+                  <span class="rqc-val-num" id="rqcHumidLiving">54%</span>
+                </div>
+                <div class="rqc-val-item">
+                  <span class="rqc-val-label">💡 Light</span>
+                  <span class="rqc-val-num" id="rqcLightLiving">82%</span>
+                </div>
+                <div class="rqc-val-item">
+                  <span class="rqc-val-label">📷 Cam</span>
+                  <span class="rqc-val-num text-green" id="rqcCamLiving">LIVE</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Kitchen Card -->
+            <div class="room-quick-card" data-room="Kitchen" id="roomCard-kitchen">
+              <div class="rqc-top">
+                <span class="rqc-icon">🍳</span>
+                <div class="rqc-info">
+                  <span class="rqc-name">Kitchen</span>
+                  <span class="rqc-status status-ok" id="rqcStatusKitchen">● All Clear</span>
+                </div>
+                <div class="rqc-badge-group">
+                  <span class="rqc-badge" id="rqcGasKitchen">Gas OK</span>
+                </div>
+              </div>
+              <div class="rqc-values">
+                <div class="rqc-val-item">
+                  <span class="rqc-val-label">🌡️ Temp</span>
+                  <span class="rqc-val-num" id="rqcTempKitchen">29°C</span>
+                </div>
+                <div class="rqc-val-item">
+                  <span class="rqc-val-label">💨 Gas</span>
+                  <span class="rqc-val-num text-green" id="rqcGasPpmKitchen">Normal</span>
+                </div>
+                <div class="rqc-val-item">
+                  <span class="rqc-val-label">💧 Humid</span>
+                  <span class="rqc-val-num" id="rqcHumidKitchen">61%</span>
+                </div>
+                <div class="rqc-val-item">
+                  <span class="rqc-val-label">🔥 Smoke</span>
+                  <span class="rqc-val-num text-green" id="rqcSmokeKitchen">None</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Front Door Card -->
+            <div class="room-quick-card" data-room="Front Entrance" id="roomCard-entrance">
+              <div class="rqc-top">
+                <span class="rqc-icon">🚪</span>
+                <div class="rqc-info">
+                  <span class="rqc-name">Front Door</span>
+                  <span class="rqc-status status-ok" id="rqcStatusEntrance">● Locked</span>
+                </div>
+                <div class="rqc-badge-group">
+                  <span class="rqc-badge" id="rqcDoorEntrance">Closed</span>
+                </div>
+              </div>
+              <div class="rqc-values">
+                <div class="rqc-val-item">
+                  <span class="rqc-val-label">🔒 Reed</span>
+                  <span class="rqc-val-num text-green" id="rqcReedEntrance">Closed</span>
+                </div>
+                <div class="rqc-val-item">
+                  <span class="rqc-val-label">📡 Radar</span>
+                  <span class="rqc-val-num" id="rqcRadarEntrance">180 cm</span>
+                </div>
+                <div class="rqc-val-item">
+                  <span class="rqc-val-label">🕐 Last</span>
+                  <span class="rqc-val-num" id="rqcLastEntrance">08:41</span>
+                </div>
+                <div class="rqc-val-item">
+                  <span class="rqc-val-label">👁️ PIR</span>
+                  <span class="rqc-val-num" id="rqcPirEntrance">Clear</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Fence / Perimeter Card -->
+            <div class="room-quick-card" data-room="Perimeter" id="roomCard-fence">
+              <div class="rqc-top">
+                <span class="rqc-icon">🔐</span>
+                <div class="rqc-info">
+                  <span class="rqc-name">Fence & Perimeter</span>
+                  <span class="rqc-status status-ok" id="rqcStatusFence">● Secure</span>
+                </div>
+                <div class="rqc-badge-group">
+                  <span class="rqc-badge" id="rqcFenceStatus">Armed</span>
+                </div>
+              </div>
+              <div class="rqc-values">
+                <div class="rqc-val-item">
+                  <span class="rqc-val-label">📶 Signal</span>
+                  <span class="rqc-val-num text-green" id="rqcSignalFence">Strong</span>
+                </div>
+                <div class="rqc-val-item">
+                  <span class="rqc-val-label">⚡ Voltage</span>
+                  <span class="rqc-val-num" id="rqcVoltageFence">12.4V</span>
+                </div>
+                <div class="rqc-val-item">
+                  <span class="rqc-val-label">🚨 Alarm</span>
+                  <span class="rqc-val-num text-green" id="rqcAlarmFence">Silent</span>
+                </div>
+                <div class="rqc-val-item">
+                  <span class="rqc-val-label">🕵️ Events</span>
+                  <span class="rqc-val-num" id="rqcEventsFence">0 Today</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Dynamic rooms added by user will be injected here -->
+            <div id="roomCardsUserDynamic"></div>
+
+            <!-- Expand Floorplan Full Button at bottom -->
+            <button class="neon-action-btn" id="btnOpenFloorplanFull" style="width:100%;margin-top:4px;">
+              🗺️ Open Full Floorplan
+            </button>
+          </div>
+
+          <!-- Hidden floorplan wrapper — used for fullscreen overlay -->
+          <div id="floorplanWrapper" style="display:none;">
             <svg id="houseSvg" viewBox="0 0 900 560" preserveAspectRatio="xMidYMid meet">
               <defs>
                 <filter id="alarmGlow" x="-30%" y="-30%" width="160%" height="160%">
