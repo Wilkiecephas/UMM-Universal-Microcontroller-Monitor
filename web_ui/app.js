@@ -5482,25 +5482,6 @@ function renderAutomationRulesList() {
       showToast('Automation rule removed.', 'info');
     });
   });
-}Action(rule.thenAction || `${rule.thenOutput}_on`);
-      rule.lastTriggered = `⚡ Manual Test Fired (${new Date().toLocaleTimeString()})`;
-      updateRoomOutputsUI();
-      renderAutomationRulesList();
-      showToast(`⚡ Fired THEN action for "${rule.name}"!`, 'success');
-      playChimeSound();
-    });
-  });
-
-  // Attach Delete listener
-  container.querySelectorAll('.btn-delete-rule').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const id = btn.dataset.id;
-      state.automationRules = state.automationRules.filter(r => String(r.id) !== String(id));
-      try { localStorage.setItem('sanctuary_automation_rules', JSON.stringify(state.automationRules)); } catch (_) {}
-      renderAutomationRulesList();
-      showToast('Automation rule removed.', 'info');
-    });
-  });
 }
 
 function evaluateAutomationRules(hypothetical = null) {
