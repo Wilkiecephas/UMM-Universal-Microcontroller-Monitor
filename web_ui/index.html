@@ -171,11 +171,43 @@
         <button class="btn btn-primary btn-sm" id="btnResetHouse">🌿 Normalize All</button>
       </div>
 
-      <!-- Monitor Main View: Floor Plan (Left) + Live Camera Stream & Quick Status (Right) -->
+      <!-- =====================================================
+           COLUMN FULLSCREEN SCROLL-SNAP OVERLAY
+           ===================================================== -->
+      <div class="col-fullscreen-overlay" id="colFullscreenOverlay">
+        <div class="col-fs-scroll" id="colFsScroll">
+          <!-- Panel 1: Master Haven Floorplan (zoomed in) -->
+          <div class="col-fs-panel" id="colFsPanel1">
+            <div class="col-fs-header">
+              <span class="col-fs-title">🏛️ Master Haven — Virtual House Twin</span>
+              <button class="col-fs-close" id="colFsClose">✕</button>
+            </div>
+            <div class="floorplan-hero-wrapper" id="colFsFloorplanSlot" style="flex:1; border-radius:24px;"></div>
+            <div class="col-fs-scroll-hint">↓ Scroll down for Controls &amp; Climate</div>
+          </div>
+          <!-- Panel 2: Middle Column — Controls & Climate -->
+          <div class="col-fs-panel" id="colFsPanel2">
+            <div class="col-fs-header">
+              <span class="col-fs-title">🌡️ Room Controls &amp; Climate</span>
+            </div>
+            <div id="colFsMiddleSlot" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:16px;"></div>
+            <div class="col-fs-scroll-hint">↓ Scroll down for Live Camera</div>
+          </div>
+          <!-- Panel 3: Right Column — Live Camera & Vitals -->
+          <div class="col-fs-panel" id="colFsPanel3">
+            <div class="col-fs-header">
+              <span class="col-fs-title">📷 Live Camera &amp; System Vitals</span>
+            </div>
+            <div id="colFsSidebarSlot" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:16px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Monitor Main View: Floor Plan + Controls + Camera (3 Columns) -->
       <div class="monitor-grid">
         
-        <!-- Floor Plan Card -->
-        <div class="floorplan-hero-card">
+        <!-- Floor Plan Card — click to expand fullscreen -->
+        <div class="floorplan-hero-card" id="floorplanHeroCard" title="Click to expand fullscreen">
           <div class="card-header" style="margin-bottom: 6px;">
             <span class="card-title">Virtual Model House Twin</span>
             <div style="display:flex;gap:6px;align-items:center;">
@@ -309,7 +341,7 @@
         </div>
 
         <!-- Middle Column: Smart Comfort Dial, Room Climate, Security Guards -->
-        <div class="monitor-middle-col" id="monitorMiddleCol">
+        <div class="monitor-middle-col" id="monitorMiddleCol" title="Click to expand fullscreen" style="cursor:pointer;">
           <!-- Room Climate & AC Card -->
           <div class="card neon-card">
             <div class="card-header neon-card-header">

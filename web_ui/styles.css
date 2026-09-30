@@ -590,10 +590,11 @@ body {
    ========================================================================== */
 .monitor-grid {
   display: grid;
-  grid-template-columns: 1fr 420px 340px;
-  gap: 18px;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 14px;
   align-items: stretch;
-  height: calc(100vh - 140px); /* Fit to screen */
+  height: calc(100vh - 130px);
+  overflow: hidden;
 }
 
 .monitor-sidebar {
@@ -763,8 +764,9 @@ body {
 
 @media (max-width: 1080px) {
   .monitor-grid {
-    grid-template-columns: 1fr;
-    height: auto;
+    grid-template-columns: 1fr 1fr 1fr;
+    height: calc(100vh - 120px);
+    gap: 8px;
   }
 }
 
@@ -772,15 +774,21 @@ body {
    HERO FLOOR PLAN (SPACIOUS, UNCLUTTERED, CLICKABLE ROOMS)
    ========================================================================== */
 .floorplan-hero-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-xl);
-  padding: 18px 24px 24px 24px;
-  box-shadow: var(--card-glow);
+  background: #111521;
+  border: 1px solid rgba(139,92,246,0.15);
+  border-radius: 24px;
+  padding: 14px 16px 16px 16px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.4);
   position: relative;
   display: flex;
   flex-direction: column;
   height: 100%;
+  cursor: pointer;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.floorplan-hero-card:hover {
+  border-color: rgba(139,92,246,0.4);
+  box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 20px rgba(139,92,246,0.15);
 }
 
 .floorplan-instruction {
@@ -3979,14 +3987,191 @@ body.monitor-fullscreen-mode #houseSvg {
     padding: 2px;
   }
 
-  /* Monitor Tab Mobile Layout */
+  /* Monitor Tab Mobile Layout — 3 cols visible on first screen */
   .monitor-grid {
     display: grid !important;
-    grid-template-columns: 1fr 150px !important;
+    grid-template-columns: 1fr 1fr 1fr !important;
     height: calc(100vh - 90px) !important;
     overflow: hidden;
     gap: 6px;
   }
+  
+  /* All 3 columns stay in flow, scrollable internally */
+  .floorplan-hero-card,
+  .monitor-middle-col,
+  .monitor-sidebar {
+    overflow-y: auto;
+    height: 100%;
+  }
+  
+  .floorplan-hero-card {
+    padding: 6px !important;
+    border-radius: 16px !important;
+  }
+  
+  .floorplan-hero-wrapper {
+    padding: 0;
+    overflow: hidden;
+    width: 100%;
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  #houseSvg {
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+  }
+
+  /* Compact middle column */
+  .monitor-middle-col {
+    gap: 6px;
+    padding: 0;
+  }
+  .neon-card {
+    padding: 10px;
+    border-radius: 14px !important;
+  }
+  .neon-dial-value h2 {
+    font-size: 2rem;
+  }
+  .neon-mode-selectors {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+  }
+  .neon-btn-square {
+    padding: 6px 0;
+    font-size: 0.65rem;
+    border-radius: 10px;
+  }
+  .neon-icon {
+    font-size: 0.9rem;
+  }
+  .neon-bottom-actions {
+    gap: 6px;
+  }
+  .neon-action-btn {
+    padding: 8px;
+    font-size: 0.8rem;
+    border-radius: 10px;
+  }
+  .neon-small-cards-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+
+  /* Compact right sidebar */
+  .monitor-sidebar {
+    gap: 6px;
+    padding-right: 2px;
+  }
+  .monitor-sidebar > .card {
+    padding: 8px !important;
+    border-radius: 14px !important;
+  }
+  .viewfinder-frame canvas {
+    width: 100% !important;
+    height: auto !important;
+  }
+  .vital-row {
+    padding: 4px;
+    font-size: 0.75rem;
+  }
+  .vital-value {
+    font-size: 0.85rem !important;
+  }
+}
+
+/* ==========================================================================
+   COLUMN FULLSCREEN SCROLL-SNAP OVERLAY
+   ========================================================================== */
+.col-fullscreen-overlay {
+  position: fixed;
+  inset: 0;
+  background: #0B0E14;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s cubic-bezier(0.16,1,0.3,1);
+  border-radius: 0;
+}
+.col-fullscreen-overlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.col-fs-scroll {
+  flex: 1;
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+.col-fs-panel {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  gap: 20px;
+}
+.col-fs-panel:not(:first-child) {
+  border-top: 1px solid rgba(139,92,246,0.15);
+}
+.col-fs-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.col-fs-title {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: white;
+  letter-spacing: -0.5px;
+}
+.col-fs-close {
+  background: rgba(139,92,246,0.2);
+  border: 1px solid rgba(139,92,246,0.4);
+  color: #a855f7;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+}
+.col-fs-close:hover {
+  background: #8b5cf6;
+  color: white;
+}
+.col-fs-panel .floorplan-hero-wrapper {
+  flex: 1;
+  border-radius: 20px;
+}
+.col-fs-panel .floorplan-hero-wrapper #houseSvg {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+}
+.col-fs-scroll-hint {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  animation: bounce-hint 2s infinite;
+  padding-bottom: 16px;
+}
+@keyframes bounce-hint {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(6px); }
+}
   
   /* System Overview Side-panel */
   .monitor-sidebar {
