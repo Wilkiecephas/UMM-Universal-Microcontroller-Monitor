@@ -6966,3 +6966,38 @@ window.addEventListener('DOMContentLoaded', function() {
     if (e.key === 'Escape' && overlay.classList.contains('active')) closeOverlay();
   });
 })();
+
+// =============================================================================
+// LUCIDE ICON RENDERER — Re-runs whenever dynamic content is injected
+// =============================================================================
+function renderLucideIcons() {
+  try {
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      window.lucide.createIcons();
+    }
+  } catch(e) { /* silent */ }
+}
+
+// Patch common render functions to refresh icons after they run
+(function patchIconRefresh() {
+  var fns = [
+    'renderAutomationRulesList','renderDynamicSensorsGrid','renderSensorsTable',
+    'renderSensorCatalogGrid','renderCustomCloudGrid','renderPremiseZones',
+    'renderAlarmLog','updateAllViews','updateRoomOutputsUI','renderFacilityRoomsUI'
+  ];
+  fns.forEach(function(name) {
+    if (typeof window[name] === 'function') {
+      var original = window[name];
+      window[name] = function() {
+        var result = original.apply(this, arguments);
+        setTimeout(renderLucideIcons, 50);
+        return result;
+      };
+    }
+  });
+
+  // Also render on DOMContentLoaded after a short delay
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(renderLucideIcons, 300);
+  });
+})();

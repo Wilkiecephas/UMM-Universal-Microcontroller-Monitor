@@ -4726,3 +4726,106 @@ body.monitor-fullscreen-mode #houseSvg {
   border-color: rgba(124,58,237,0.3);
   color: #7C3AED;
 }
+
+/* ==========================================================================
+   LUCIDE ICON SYSTEM — Consistent stroke SVG icons throughout Sanctuary OS
+   ========================================================================== */
+.lc-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  vertical-align: middle;
+  flex-shrink: 0;
+  transition: opacity 0.2s ease;
+}
+.lc-icon.tab-icon {
+  width: 15px;
+  height: 15px;
+  margin-right: 5px;
+}
+.lc-icon.lc-sm {
+  width: 12px;
+  height: 12px;
+}
+.lc-icon.lc-md {
+  width: 18px;
+  height: 18px;
+}
+.lc-icon.lc-lg {
+  width: 24px;
+  height: 24px;
+}
+.lc-icon.lc-xl {
+  width: 32px;
+  height: 32px;
+}
+
+/* Nav tab icons inherit tab color */
+.nav-tab .lc-icon {
+  opacity: 0.7;
+}
+.nav-tab.active .lc-icon,
+.nav-tab:hover .lc-icon {
+  opacity: 1;
+}
+
+/* Card header icons */
+.card-icon .lc-icon,
+.card-icon-title .lc-icon {
+  width: 20px;
+  height: 20px;
+}
+
+/* Button icons */
+.btn .lc-icon,
+.neon-action-btn .lc-icon,
+.btn-neon-toggle .lc-icon {
+  width: 14px;
+  height: 14px;
+}
+.btn-neon-toggle .lc-icon {
+  width: 16px;
+  height: 16px;
+}
+.neon-btn-square .lc-icon {
+  width: 20px;
+  height: 20px;
+  display: block;
+  margin: 0 auto 4px auto;
+}
+
+/* RQC value label icons */
+.rqc-val-label .lc-icon {
+  width: 11px;
+  height: 11px;
+  margin-right: 2px;
+}
+.rqc-icon .lc-icon {
+  width: 22px;
+  height: 22px;
+}
+
+/* Sidebar card icons */
+.monitor-camera-card .card-icon .lc-icon {
+  width: 18px;
+  height: 18px;
+}
+
+/* Accent color on active elements */
+[data-theme="home"] .lc-icon,
+[data-theme="home-light"] .lc-icon {
+  stroke: currentColor;
+}
+.btn-neon-toggle.active .lc-icon {
+  stroke: white;
+}
+.neon-btn-square.active .lc-icon {
+  stroke: white;
+}

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" data-theme="home">
 <head>
   <meta charset="UTF-8">
@@ -9,6 +9,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- Lucide Icons — consistent 24px stroke-based SVG icon system -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 </head>
 <body>
 
@@ -28,13 +30,13 @@
             <h1 class="brand-title" id="displayFacilityName">KyU Telemetry Lab 4</h1>
           </div>
         </a>
-        <button class="btn-icon-subtle" id="btnEditFacility" title="Rename Facility">✏️</button>
+        <button class="btn-icon-subtle" id="btnEditFacility" title="Rename Facility"><i data-lucide="pencil" class="lc-icon"></i></button>
       </div>
 
       <div class="header-actions">
         <!-- Premise Model Archetype Selector -->
         <div class="header-control-box" title="Select Premise Model Architecture">
-          <span style="font-size: 0.85rem;">🏰</span>
+          <i data-lucide="building-2" class="lc-icon"></i>
           <select class="premise-select" id="premiseModelSelect">
             <option value="home" selected>🏡 Smart Residential Home</option>
             <option value="telecom">📡 Telecom Site & Perimeter Fence</option>
@@ -47,10 +49,10 @@
 
         <!-- 10 Theme Environment Selector -->
         <div class="header-control-box" title="Select Theme Environment">
-          <span style="font-size: 0.85rem;">🎨</span>
+          <i data-lucide="palette" class="lc-icon"></i>
           <select class="theme-select" id="themeSelect">
             <option value="home" selected>🌙 Dark (Neon)</option>
-            <option value="home-light">☀️ Light (Crisp)</option>
+            <option value="home-light"><i data-lucide="sun" class="lc-icon"></i> Light (Crisp)</option>
             <option value="office">💼 Office</option>
             <option value="workshop">🔨 Workshop</option>
             <option value="space">🚀 Space</option>
@@ -72,7 +74,7 @@
 
         <!-- Segregated IDE Route Button -->
         <a href="#ide" class="btn btn-secondary btn-sm" id="btnToggleEngineering" title="Open Hardware IDE & Serial Terminal">
-          <span>⚡</span> IDE
+          <i data-lucide="code-2" class="lc-icon"></i> IDE
         </a>
       </div>
     </div>
@@ -81,31 +83,31 @@
     <div class="navbar-tabs-row">
       <nav class="nav-tabs" id="mainNavTabs">
         <a href="#monitor" class="nav-tab active" data-tab="virtual-house">
-          <span class="tab-icon">🏠</span> Monitor
+          <i data-lucide="layout-dashboard" class="lc-icon tab-icon"></i> Monitor
         </a>
         <a href="#sensors" class="nav-tab" data-tab="telemetry">
-          <span class="tab-icon">📊</span> Sensors
+          <i data-lucide="activity" class="lc-icon tab-icon"></i> Sensors
         </a>
         <a href="#controls" class="nav-tab" data-tab="controls">
-          <span class="tab-icon">🌿</span> Controls
+          <i data-lucide="sliders-horizontal" class="lc-icon tab-icon"></i> Controls
         </a>
         <a href="#gallery" class="nav-tab" data-tab="media-gallery">
-          <span class="tab-icon">📸</span> Gallery
+          <i data-lucide="image" class="lc-icon tab-icon"></i> Gallery
         </a>
         <a href="#alarms" class="nav-tab" data-tab="alarms">
-          <span class="tab-icon">🔔</span> Alarms
+          <i data-lucide="bell-ring" class="lc-icon tab-icon"></i> Alarms
         </a>
         <a href="#reports" class="nav-tab" data-tab="reports">
-          <span class="tab-icon">📑</span> Reports
+          <i data-lucide="file-text" class="lc-icon tab-icon"></i> Reports
         </a>
         <a href="#servers" class="nav-tab" data-tab="cloud-servers">
-          <span class="tab-icon">🌐</span> Cloud & Servers
+          <i data-lucide="cloud" class="lc-icon tab-icon"></i> Cloud & Servers
         </a>
         <a href="#universal" class="nav-tab" data-tab="universal-devices">
-          <span class="tab-icon">🔌</span> 100+ Sensors & Examiner
+          <i data-lucide="cpu" class="lc-icon tab-icon"></i> 100+ Sensors & Examiner
         </a>
         <a href="#setup" class="nav-tab" data-tab="facility-rooms">
-          <span class="tab-icon">🏢</span> Setup & Pins
+          <i data-lucide="settings-2" class="lc-icon tab-icon"></i> Setup & Pins
         </a>
       </nav>
     </div>
@@ -166,10 +168,10 @@
       <!-- Test Simulator Trigger Bar (Visible when Test Mode is turned on) -->
       <div class="sim-interactive-bar" id="simInteractiveBar" style="display: none;">
         <span class="sim-badge">🧪 Simulation Mode Active:</span>
-        <button class="btn btn-secondary btn-sm" id="btnTriggerMotion">🚶 Simulate PIR Motion</button>
-        <button class="btn btn-secondary btn-sm" id="btnToggleDoor">🚪 Open/Close Door (Reed)</button>
-        <button class="btn btn-secondary btn-sm" id="btnTriggerGas">💨 Simulate Gas Leak (MQ-2)</button>
-        <button class="btn btn-primary btn-sm" id="btnResetHouse">🌿 Normalize All</button>
+        <button class="btn btn-secondary btn-sm" id="btnTriggerMotion"><i data-lucide="person-standing" class="lc-icon"></i> Simulate PIR Motion</button>
+        <button class="btn btn-secondary btn-sm" id="btnToggleDoor"><i data-lucide="door-closed" class="lc-icon"></i> Open/Close Door (Reed)</button>
+        <button class="btn btn-secondary btn-sm" id="btnTriggerGas"><i data-lucide="wind" class="lc-icon"></i> Simulate Gas Leak (MQ-2)</button>
+        <button class="btn btn-primary btn-sm" id="btnResetHouse"><i data-lucide="refresh-cw" class="lc-icon"></i> Normalize All</button>
       </div>
 
       <!-- =====================================================
@@ -215,7 +217,7 @@
               <h2 class="rooms-col-title">🏛️ Rooms Overview</h2>
               <span class="rooms-col-sub" id="roomsColFacilityName">Master Haven · All Zones</span>
             </div>
-            <button class="btn-neon-toggle active" id="btnExpandFloorplan" title="Open full floorplan">⛶</button>
+            <button class="btn-neon-toggle active" id="btnExpandFloorplan" title="Open full floorplan"><i data-lucide="expand" class="lc-icon"></i></button>
           </div>
 
           <!-- Room Cards — rendered dynamically by JS, defaults below -->
@@ -224,7 +226,7 @@
             <!-- Living Room Card -->
             <div class="room-quick-card" data-room="Living Room" id="roomCard-living">
               <div class="rqc-top">
-                <span class="rqc-icon">🛋️</span>
+                <span class="rqc-icon"><i data-lucide="sofa" class="lc-icon lc-lg"></i></span>
                 <div class="rqc-info">
                   <span class="rqc-name">Living Room</span>
                   <span class="rqc-status status-ok" id="rqcStatusLiving">● All Clear</span>
@@ -235,19 +237,19 @@
               </div>
               <div class="rqc-values">
                 <div class="rqc-val-item">
-                  <span class="rqc-val-label">🌡️ Temp</span>
+                  <span class="rqc-val-label"><i data-lucide="thermometer" class="lc-icon lc-sm"></i> Temp</span>
                   <span class="rqc-val-num" id="rqcTempLiving">27°C</span>
                 </div>
                 <div class="rqc-val-item">
-                  <span class="rqc-val-label">💧 Humid</span>
+                  <span class="rqc-val-label"><i data-lucide="droplets" class="lc-icon lc-sm"></i> Humid</span>
                   <span class="rqc-val-num" id="rqcHumidLiving">54%</span>
                 </div>
                 <div class="rqc-val-item">
-                  <span class="rqc-val-label">💡 Light</span>
+                  <span class="rqc-val-label"><i data-lucide="lightbulb" class="lc-icon lc-sm"></i> Light</span>
                   <span class="rqc-val-num" id="rqcLightLiving">82%</span>
                 </div>
                 <div class="rqc-val-item">
-                  <span class="rqc-val-label">📷 Cam</span>
+                  <span class="rqc-val-label"><i data-lucide="camera" class="lc-icon lc-sm"></i> Cam</span>
                   <span class="rqc-val-num text-green" id="rqcCamLiving">LIVE</span>
                 </div>
               </div>
@@ -256,7 +258,7 @@
             <!-- Kitchen Card -->
             <div class="room-quick-card" data-room="Kitchen" id="roomCard-kitchen">
               <div class="rqc-top">
-                <span class="rqc-icon">🍳</span>
+                <span class="rqc-icon"><i data-lucide="flame" class="lc-icon lc-lg"></i></span>
                 <div class="rqc-info">
                   <span class="rqc-name">Kitchen</span>
                   <span class="rqc-status status-ok" id="rqcStatusKitchen">● All Clear</span>
@@ -267,19 +269,19 @@
               </div>
               <div class="rqc-values">
                 <div class="rqc-val-item">
-                  <span class="rqc-val-label">🌡️ Temp</span>
+                  <span class="rqc-val-label"><i data-lucide="thermometer" class="lc-icon lc-sm"></i> Temp</span>
                   <span class="rqc-val-num" id="rqcTempKitchen">29°C</span>
                 </div>
                 <div class="rqc-val-item">
-                  <span class="rqc-val-label">💨 Gas</span>
+                  <span class="rqc-val-label"><i data-lucide="wind" class="lc-icon lc-sm"></i> Gas</span>
                   <span class="rqc-val-num text-green" id="rqcGasPpmKitchen">Normal</span>
                 </div>
                 <div class="rqc-val-item">
-                  <span class="rqc-val-label">💧 Humid</span>
+                  <span class="rqc-val-label"><i data-lucide="droplets" class="lc-icon lc-sm"></i> Humid</span>
                   <span class="rqc-val-num" id="rqcHumidKitchen">61%</span>
                 </div>
                 <div class="rqc-val-item">
-                  <span class="rqc-val-label">🔥 Smoke</span>
+                  <span class="rqc-val-label"><i data-lucide="alert-triangle" class="lc-icon lc-sm"></i> Smoke</span>
                   <span class="rqc-val-num text-green" id="rqcSmokeKitchen">None</span>
                 </div>
               </div>
@@ -288,7 +290,7 @@
             <!-- Front Door Card -->
             <div class="room-quick-card" data-room="Front Entrance" id="roomCard-entrance">
               <div class="rqc-top">
-                <span class="rqc-icon">🚪</span>
+                <span class="rqc-icon"><i data-lucide="door-open" class="lc-icon lc-lg"></i></span>
                 <div class="rqc-info">
                   <span class="rqc-name">Front Door</span>
                   <span class="rqc-status status-ok" id="rqcStatusEntrance">● Locked</span>
@@ -299,19 +301,19 @@
               </div>
               <div class="rqc-values">
                 <div class="rqc-val-item">
-                  <span class="rqc-val-label">🔒 Reed</span>
+                  <span class="rqc-val-label"><i data-lucide="lock" class="lc-icon lc-sm"></i> Reed</span>
                   <span class="rqc-val-num text-green" id="rqcReedEntrance">Closed</span>
                 </div>
                 <div class="rqc-val-item">
-                  <span class="rqc-val-label">📡 Radar</span>
+                  <span class="rqc-val-label"><i data-lucide="radar" class="lc-icon lc-sm"></i> Radar</span>
                   <span class="rqc-val-num" id="rqcRadarEntrance">180 cm</span>
                 </div>
                 <div class="rqc-val-item">
-                  <span class="rqc-val-label">🕐 Last</span>
+                  <span class="rqc-val-label"><i data-lucide="clock" class="lc-icon lc-sm"></i> Last</span>
                   <span class="rqc-val-num" id="rqcLastEntrance">08:41</span>
                 </div>
                 <div class="rqc-val-item">
-                  <span class="rqc-val-label">👁️ PIR</span>
+                  <span class="rqc-val-label"><i data-lucide="eye" class="lc-icon lc-sm"></i> PIR</span>
                   <span class="rqc-val-num" id="rqcPirEntrance">Clear</span>
                 </div>
               </div>
@@ -320,7 +322,7 @@
             <!-- Fence / Perimeter Card -->
             <div class="room-quick-card" data-room="Perimeter" id="roomCard-fence">
               <div class="rqc-top">
-                <span class="rqc-icon">🔐</span>
+                <span class="rqc-icon"><i data-lucide="shield-check" class="lc-icon lc-lg"></i></span>
                 <div class="rqc-info">
                   <span class="rqc-name">Fence & Perimeter</span>
                   <span class="rqc-status status-ok" id="rqcStatusFence">● Secure</span>
@@ -331,19 +333,19 @@
               </div>
               <div class="rqc-values">
                 <div class="rqc-val-item">
-                  <span class="rqc-val-label">📶 Signal</span>
+                  <span class="rqc-val-label"><i data-lucide="wifi" class="lc-icon lc-sm"></i> Signal</span>
                   <span class="rqc-val-num text-green" id="rqcSignalFence">Strong</span>
                 </div>
                 <div class="rqc-val-item">
-                  <span class="rqc-val-label">⚡ Voltage</span>
+                  <span class="rqc-val-label"><i data-lucide="zap" class="lc-icon lc-sm"></i> Voltage</span>
                   <span class="rqc-val-num" id="rqcVoltageFence">12.4V</span>
                 </div>
                 <div class="rqc-val-item">
-                  <span class="rqc-val-label">🚨 Alarm</span>
+                  <span class="rqc-val-label"><i data-lucide="siren" class="lc-icon lc-sm"></i> Alarm</span>
                   <span class="rqc-val-num text-green" id="rqcAlarmFence">Silent</span>
                 </div>
                 <div class="rqc-val-item">
-                  <span class="rqc-val-label">🕵️ Events</span>
+                  <span class="rqc-val-label"><i data-lucide="list-checks" class="lc-icon lc-sm"></i> Events</span>
                   <span class="rqc-val-num" id="rqcEventsFence">0 Today</span>
                 </div>
               </div>
@@ -354,7 +356,7 @@
 
             <!-- Expand Floorplan Full Button at bottom -->
             <button class="neon-action-btn" id="btnOpenFloorplanFull" style="width:100%;margin-top:4px;">
-              🗺️ Open Full Floorplan
+              <i data-lucide="map" class="lc-icon"></i> Open Full Floorplan
             </button>
           </div>
 
@@ -493,7 +495,7 @@
                   <span class="pin-tag">Living Room</span>
                 </div>
               </div>
-              <button class="btn-neon-toggle active">⏻</button>
+              <button class="btn-neon-toggle active"><i data-lucide="power" class="lc-icon"></i></button>
             </div>
             <div class="neon-card-body">
               <div class="neon-dial-container">
@@ -514,7 +516,7 @@
               <div class="neon-time-selectors">
                 <span class="neon-label">TIME</span>
                 <div class="neon-pill-group">
-                  <button class="neon-pill">⏱</button>
+                  <button class="neon-pill"><i data-lucide="timer" class="lc-icon"></i></button>
                   <button class="neon-pill">2H</button>
                   <button class="neon-pill active">4H</button>
                   <button class="neon-pill">6H</button>
@@ -522,15 +524,15 @@
                 </div>
               </div>
               <div class="neon-mode-selectors">
-                <button class="neon-btn-square"><span class="neon-icon yellow">☀️</span>Hot</button>
-                <button class="neon-btn-square active"><span class="neon-icon cyan">❄️</span>Cold</button>
-                <button class="neon-btn-square"><span class="neon-icon green">🍃</span>Dry Air</button>
-                <button class="neon-btn-square"><span class="neon-icon blue">💧</span>Humid</button>
+                <button class="neon-btn-square"><span class="neon-icon yellow"><i data-lucide="sun" class="lc-icon"></i></span>Hot</button>
+                <button class="neon-btn-square active"><span class="neon-icon cyan"><i data-lucide="snowflake" class="lc-icon"></i></span>Cold</button>
+                <button class="neon-btn-square"><span class="neon-icon green"><i data-lucide="leaf" class="lc-icon"></i></span>Dry Air</button>
+                <button class="neon-btn-square"><span class="neon-icon blue"><i data-lucide="droplets" class="lc-icon"></i></span>Humid</button>
                 <button class="neon-btn-square"><span class="neon-icon yellow">⚡</span>Energy</button>
               </div>
               <div class="neon-bottom-actions">
-                <button class="neon-action-btn"><span class="neon-icon">⏻</span> Switch off</button>
-                <button class="neon-action-btn primary"><span class="neon-icon">⚙️</span> Setting</button>
+                <button class="neon-action-btn"><span class="neon-icon"><i data-lucide="power" class="lc-icon"></i></span> Switch off</button>
+                <button class="neon-action-btn primary"><span class="neon-icon"><i data-lucide="settings" class="lc-icon"></i></span> Setting</button>
               </div>
             </div>
           </div>
@@ -544,7 +546,7 @@
                   <h3 class="card-title">Door & Radar Guard</h3>
                   <span class="pin-tag">Front Entrance</span>
                 </div>
-                <button class="btn-neon-toggle active">⏻</button>
+                <button class="btn-neon-toggle active"><i data-lucide="power" class="lc-icon"></i></button>
               </div>
               <div class="neon-card-center">
                 <span style="font-size: 2rem;">📡</span>
@@ -561,7 +563,7 @@
                   <h3 class="card-title">Ambient Lighting</h3>
                   <span class="pin-tag">Living Room</span>
                 </div>
-                <button class="btn-neon-toggle active">⏻</button>
+                <button class="btn-neon-toggle active"><i data-lucide="power" class="lc-icon"></i></button>
               </div>
               <div class="neon-card-center">
                 <span style="font-size: 2rem; filter: drop-shadow(0 0 10px #fbbf24);">💡</span>
@@ -581,7 +583,7 @@
           <div class="card monitor-camera-card">
             <div class="card-header">
               <div class="card-icon-title">
-                <span class="card-icon">📷</span>
+                <span class="card-icon"><i data-lucide="camera" class="lc-icon"></i></span>
                 <div>
                   <h3 class="card-title">Live ESP32-CAM Stream</h3>
                   <span class="pin-tag">Living Room Stream</span>
@@ -673,11 +675,11 @@
         <div class="category-pills-bar" id="telemetryCategoryPills" style="margin: 0; padding: 0;">
           <button class="cat-pill active" data-cat="all">🌐 All Channels</button>
           <button class="cat-pill" data-cat="climate">🌡️ Climate & Temp</button>
-          <button class="cat-pill" data-cat="gas">💨 Gas & Smoke</button>
+          <button class="cat-pill" data-cat="gas"><i data-lucide="wind" class="lc-icon lc-sm"></i> Gas & Smoke</button>
           <button class="cat-pill" data-cat="power">⚡ Grid Power</button>
           <button class="cat-pill" data-cat="actuator">🎛️ Valves & AC</button>
           <button class="cat-pill" data-cat="motion">🚶 Security & Radar</button>
-          <button class="cat-pill" data-cat="liquid">💧 Liquid & Tanks</button>
+          <button class="cat-pill" data-cat="liquid"><i data-lucide="droplets" class="lc-icon"></i> Liquid & Tanks</button>
           <button class="cat-pill" data-cat="optical">💡 Optical & Bio</button>
         </div>
       </div>
@@ -774,7 +776,7 @@
           <div class="card control-card">
             <div class="card-header">
               <div class="card-icon-title">
-                <span class="card-icon">❄️</span>
+                <span class="card-icon"><i data-lucide="snowflake" class="lc-icon"></i></span>
                 <div>
                   <h3 class="card-title">Smart Inverter AC Unit</h3>
                   <span class="pin-tag">UART Serial / Modbus</span>
@@ -791,8 +793,8 @@
             </div>
             <input type="range" min="16" max="30" value="22" class="range-slider" id="sliderAcTemp">
             <div style="display: flex; gap: 4px; margin-top: 6px;">
-              <button class="btn btn-secondary btn-xs active-mode" id="btnAcCool" style="flex: 1;">❄️ Cool</button>
-              <button class="btn btn-secondary btn-xs" id="btnAcHeat" style="flex: 1;">☀️ Heat</button>
+              <button class="btn btn-secondary btn-xs active-mode" id="btnAcCool" style="flex: 1;"><i data-lucide="snowflake" class="lc-icon"></i> Cool</button>
+              <button class="btn btn-secondary btn-xs" id="btnAcHeat" style="flex: 1;"><i data-lucide="sun" class="lc-icon"></i> Heat</button>
               <button class="btn btn-secondary btn-xs" id="btnAcEco" style="flex: 1;">🌱 Eco</button>
             </div>
           </div>
@@ -849,7 +851,7 @@
           <div class="card control-card">
             <div class="card-header">
               <div class="card-icon-title">
-                <span class="card-icon">💧</span>
+                <span class="card-icon"><i data-lucide="droplets" class="lc-icon"></i></span>
                 <div>
                   <h3 class="card-title">Sump / Water Circulator Pump</h3>
                   <span class="pin-tag">Relay 3: GPIO 18</span>
@@ -942,7 +944,7 @@
             <button class="whatif-pill" data-scenario="heatwave">🌡️ What-If: Severe Heatwave (36.5°C)</button>
             <button class="whatif-pill" data-scenario="intruder">🦹 What-If: Intruder Breach (Door Open + PIR Active)</button>
             <button class="whatif-pill" data-scenario="surge">⚡ What-If: AC Mains Surge (262V AC)</button>
-            <button class="whatif-pill" data-scenario="flood">💧 What-If: Water Tank Low (12% Full)</button>
+            <button class="whatif-pill" data-scenario="flood"><i data-lucide="droplets" class="lc-icon"></i> What-If: Water Tank Low (12% Full)</button>
           </div>
 
           <!-- Hypothetical Parameter Sliders -->
@@ -1528,7 +1530,7 @@
               <button class="sample-chip" data-sample='TEMP_PROBE: 25.62 C, ROM: 28FF641E8216035A (DS18B20)'>🧪 DS18B20 1-Wire</button>
               <button class="sample-chip" data-sample='[SECURITY_ALARM] HC-SR501 PIR TRIGGERED! Motion Detected on Pin D12'>🚶 PIR Motion</button>
               <button class="sample-chip" data-sample='[SOLENOID_VALVE] State: CLOSED, Pulse: 12V 100ms, Gas Safety Interlock: ACTIVE'>🎛️ Gas Valve Solenoid</button>
-              <button class="sample-chip" data-sample='TUYA_SMART_AC: Power=ON, Mode=COOL, SetTemp=22C, FanSpeed=AUTO, Ambient=25.4C'>❄️ Smart AC Unit</button>
+              <button class="sample-chip" data-sample='TUYA_SMART_AC: Power=ON, Mode=COOL, SetTemp=22C, FanSpeed=AUTO, Ambient=25.4C'><i data-lucide="snowflake" class="lc-icon"></i> Smart AC Unit</button>
               <button class="sample-chip" data-sample='BLE_ENV_BEACON [C4:7F:51:22:A1:04] Temp: 23.4C, Hum: 48%, Batt: 92%, RSSI: -64dBm'>📡 BLE Sensor Beacon</button>
               <button class="sample-chip" data-sample='{"co2_ppm": 745, "tvoc_ppb": 42, "eco2": 720, "sensor": "SGP30"}'>🌿 SGP30 Air Quality</button>
               <button class="sample-chip" data-sample='PZEM004T: Volt=240.2V, Current=1.45A, Power=348.3W, Energy=12.45kWh, PF=0.98'>🔌 PZEM Power Meter</button>
@@ -1925,7 +1927,7 @@
           <span style="font-size: 0.78rem; font-weight: 700; color: #8b949e; text-transform: uppercase; letter-spacing: 0.5px;">Terminal &amp; IDE Layout:</span>
           <button type="button" class="btn btn-primary btn-xs btn-ide-layout active" id="btnLayoutTermPriority" title="Give terminal 70% width for live output visibility">📟 Terminal Priority (30 / 70)</button>
           <button type="button" class="btn btn-secondary btn-xs btn-ide-layout" id="btnLayoutBalanced" title="Equal 50/50 split between code and terminal">⚡ Balanced (50 / 50)</button>
-          <button type="button" class="btn btn-secondary btn-xs btn-ide-layout" id="btnLayoutTermMax" title="Maximize terminal output to 100% width">⛶ Maximize Terminal</button>
+          <button type="button" class="btn btn-secondary btn-xs btn-ide-layout" id="btnLayoutTermMax" title="Maximize terminal output to 100% width"><i data-lucide="expand" class="lc-icon"></i> Maximize Terminal</button>
           <button type="button" class="btn btn-secondary btn-xs btn-ide-layout" id="btnLayoutCodeMax" title="Expand code editor to 100% width">💻 Code Full</button>
         </div>
         <div style="display: flex; align-items: center; gap: 12px;">
@@ -1971,7 +1973,7 @@
               <button type="button" class="btn btn-secondary btn-xs" id="btnTermFontIncr" title="Increase font size">A+</button>
               <label class="terminal-checkbox" style="font-size: 0.75rem; color: #8b949e;"><input type="checkbox" id="chkAutoScroll" checked> Auto-Scroll</label>
               <button type="button" class="btn btn-secondary btn-xs" id="btnClearTerminal">Clear</button>
-              <button type="button" class="btn btn-secondary btn-xs" id="btnToggleTermMax" title="Toggle Terminal Fullscreen">⛶ Maximize</button>
+              <button type="button" class="btn btn-secondary btn-xs" id="btnToggleTermMax" title="Toggle Terminal Fullscreen"><i data-lucide="expand" class="lc-icon"></i> Maximize</button>
             </div>
           </div>
           <div class="terminal-window" id="terminalWindow">
@@ -2071,13 +2073,13 @@
               <option value="🗼">🗼 Tower Mast / Mast</option>
               <option value="⛽">⛽ Fuel / Genset Depot</option>
               <option value="🩺">🩺 ICU / Medical</option>
-              <option value="❄️">❄️ Cryo / Freezer</option>
+              <option value="<i data-lucide="snowflake" class="lc-icon"></i>"><i data-lucide="snowflake" class="lc-icon"></i> Cryo / Freezer</option>
               <option value="🥼">🥼 Operating Theater</option>
               <option value="☣️">☣️ Isolation Ward</option>
               <option value="🧪">🧪 Chemical Bay</option>
               <option value="🔥">🔥 Boiler / Furnace</option>
-              <option value="⚙️">⚙️ Assembly / Machine</option>
-              <option value="💧">💧 Hydroponics Bay</option>
+              <option value="<i data-lucide="settings" class="lc-icon"></i>"><i data-lucide="settings" class="lc-icon"></i> Assembly / Machine</option>
+              <option value="<i data-lucide="droplets" class="lc-icon"></i>"><i data-lucide="droplets" class="lc-icon"></i> Hydroponics Bay</option>
               <option value="🌾">🌾 Agriculture Field</option>
               <option value="🏢">🏢 Server Containment</option>
             </select>
@@ -2322,11 +2324,11 @@
               <option value="⚠️">⚠️ Toxic / Gas Detector</option>
               <option value="⚡">⚡ Power / Grid Breaker</option>
               <option value="🛡️">🛡️ Radar / Security Sentry</option>
-              <option value="💧">💧 Liquid / Flow Sensor</option>
+              <option value="<i data-lucide="droplets" class="lc-icon"></i>"><i data-lucide="droplets" class="lc-icon"></i> Liquid / Flow Sensor</option>
               <option value="🚰">🚰 Motorized Valve / Actuator</option>
               <option value="🩺">🩺 Medical Biometric</option>
               <option value="🌾">🌾 Soil / Crop Sensor</option>
-              <option value="⚙️">⚙️ Industrial Machine Probe</option>
+              <option value="<i data-lucide="settings" class="lc-icon"></i>"><i data-lucide="settings" class="lc-icon"></i> Industrial Machine Probe</option>
               <option value="💡">💡 Optical / Flame Scanner</option>
             </select>
           </div>
@@ -2420,13 +2422,13 @@
               <option value="🗼">🗼 Tower Mast / Mast</option>
               <option value="⛽">⛽ Fuel / Genset Depot</option>
               <option value="🩺">🩺 ICU / Medical</option>
-              <option value="❄️">❄️ Cryo / Freezer</option>
+              <option value="<i data-lucide="snowflake" class="lc-icon"></i>"><i data-lucide="snowflake" class="lc-icon"></i> Cryo / Freezer</option>
               <option value="🥼">🥼 Operating Theater</option>
               <option value="☣️">☣️ Isolation Ward</option>
               <option value="🧪">🧪 Chemical Bay</option>
               <option value="🔥">🔥 Boiler / Furnace</option>
-              <option value="⚙️">⚙️ Assembly Line</option>
-              <option value="💧">💧 Hydroponics Bay</option>
+              <option value="<i data-lucide="settings" class="lc-icon"></i>"><i data-lucide="settings" class="lc-icon"></i> Assembly Line</option>
+              <option value="<i data-lucide="droplets" class="lc-icon"></i>"><i data-lucide="droplets" class="lc-icon"></i> Hydroponics Bay</option>
               <option value="🌾">🌾 Agriculture Field</option>
               <option value="🏢">🏢 Server Containment</option>
             </select>
@@ -2696,10 +2698,10 @@
                 <option value="valve">🎛️ Gas Solenoid Valve</option>
                 <option value="buzzer">🔔 Piezo Alarm Siren</option>
                 <option value="window">🪟 Smart Airflow Window</option>
-                <option value="ac">❄️ Smart Inverter AC</option>
+                <option value="ac"><i data-lucide="snowflake" class="lc-icon"></i> Smart Inverter AC</option>
                 <option value="floodlights">💡 Security Floodlights</option>
                 <option value="lock">🔒 Entrance Maglock</option>
-                <option value="pump">💧 Sump / Water Pump</option>
+                <option value="pump"><i data-lucide="droplets" class="lc-icon"></i> Sump / Water Pump</option>
                 <option value="breaker">⚡ Grid Circuit Breaker</option>
                 <option value="snapshot">📸 Camera Snapshot & Alert</option>
               </select>
@@ -2728,10 +2730,10 @@
                 <option value="valve">🎛️ Gas Solenoid Valve</option>
                 <option value="buzzer">🔔 Piezo Alarm Siren</option>
                 <option value="window">🪟 Smart Airflow Window</option>
-                <option value="ac">❄️ Smart Inverter AC</option>
+                <option value="ac"><i data-lucide="snowflake" class="lc-icon"></i> Smart Inverter AC</option>
                 <option value="floodlights">💡 Security Floodlights</option>
                 <option value="lock">🔒 Entrance Maglock</option>
-                <option value="pump">💧 Sump / Water Pump</option>
+                <option value="pump"><i data-lucide="droplets" class="lc-icon"></i> Sump / Water Pump</option>
                 <option value="breaker">⚡ Grid Circuit Breaker</option>
               </select>
             </div>
