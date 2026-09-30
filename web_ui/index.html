@@ -2308,6 +2308,88 @@
     </div>
   </div>
 
+  <!-- Modal: Add / Edit Room -->
+  <div class="modal-overlay" id="addRoomModal">
+    <div class="modal-box" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3 class="modal-title">🏠 Add New Facility Room / Zone</h3>
+        <button class="modal-close" id="btnCloseRoomModal">&times;</button>
+      </div>
+      <form id="formAddRoom" class="modal-body">
+        <div class="form-group">
+          <label class="input-label">Room / Zone Name</label>
+          <input type="text" class="input-control" id="newRoomName" placeholder="e.g. Server Room B" required>
+        </div>
+        <div class="form-group">
+          <label class="input-label">Room Icon</label>
+          <select class="input-control" id="newRoomIcon">
+            <option value="🏠">🏠 Generic Room</option>
+            <option value="🛏️">🛏️ Bedroom</option>
+            <option value="🍳">🍳 Kitchen</option>
+            <option value="💻">💻 Office / Server</option>
+            <option value="🏭">🏭 Industrial / Factory</option>
+            <option value="🌿">🌿 Greenhouse / Garden</option>
+            <option value="🗼">🗼 Tower / Mast</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="input-label">Security Clearance Level</label>
+          <select class="input-control" id="newRoomClearance">
+            <option value="Public">Public Access</option>
+            <option value="Restricted">Restricted (Staff Only)</option>
+            <option value="High Security">High Security (Clearance Req)</option>
+          </select>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btnCancelRoomModal">Cancel</button>
+          <button type="submit" class="btn btn-primary">➕ Add Room</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Add / Map Sensor -->
+  <div class="modal-overlay" id="addSensorModal">
+    <div class="modal-box" style="max-width: 520px;">
+      <div class="modal-header">
+        <h3 class="modal-title">🔌 Add / Map New Sensor</h3>
+        <button class="modal-close" id="btnCloseSensorModal">&times;</button>
+      </div>
+      <form id="formAddSensor" class="modal-body">
+        <div class="form-group">
+          <label class="input-label">Sensor Model / Type</label>
+          <select class="input-control" id="newSensorName" required>
+            <option value="">-- Select Sensor Model --</option>
+            <option value="DHT22">DHT22 Temperature & Humidity</option>
+            <option value="MQ-2">MQ-2 Gas / Smoke</option>
+            <option value="PIR">PIR Motion Detector</option>
+            <option value="HC-SR04">HC-SR04 Ultrasonic</option>
+            <option value="ZMPT101B">ZMPT101B AC Voltage</option>
+            <option value="Magnetic Reed">Magnetic Door Reed</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="input-label">Assign to Room / Zone</label>
+          <select class="input-control" id="newSensorRoom" required>
+            <!-- Dynamically populated via JS -->
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="input-label">Physical Hardware Pin Mapping</label>
+          <input type="text" class="input-control" id="newSensorPin" placeholder="e.g. GPIO 13, D2, PA0" required>
+        </div>
+        <div class="form-group">
+          <label class="input-label">Critical Alert Threshold (Optional)</label>
+          <input type="number" class="input-control" id="newSensorThreshold" placeholder="e.g. 50">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btnCancelSensorModal">Cancel</button>
+          <button type="submit" class="btn btn-primary">💾 Map Sensor</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Modal: Add / Configure IF / ELSE Automation Rule -->
   <div class="modal-overlay" id="modalAddRule">
     <div class="modal-box" style="max-width: 580px;">
